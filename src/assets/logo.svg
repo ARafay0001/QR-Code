@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-12 h-12">
+  <!-- Outer Focus Corners -->
+  <path d="M4 8V4H8" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 8V4H16" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M4 16V20H8" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 16V20H16" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- QR Position Detection Pattern (Top Left) -->
+  <rect x="7" y="7" width="4" height="4" rx="0.5" fill="#2563eb"/>
+  
+  <!-- QR Mini Data Bits -->
+  <rect x="13" y="7" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  <rect x="15" y="7" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  <rect x="13" y="9" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  
+  <rect x="7" y="13" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  <rect x="9" y="13" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  <rect x="7" y="15" width="1.5" height="1.5" rx="0.2" fill="#2563eb"/>
+  
+  <!-- Bottom Right Action Pixel -->
+  <rect x="13" y="13" width="3.5" height="3.5" rx="0.5" fill="#2563eb"/>
+</svg>
