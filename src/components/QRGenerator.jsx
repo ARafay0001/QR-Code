@@ -26,7 +26,7 @@ export default function QRGenerator() {
   });
   const [foregroundColor, setForegroundColor] = useState("#2563eb");
 const [backgroundColor, setBackgroundColor] = useState("#ffffff");
-const PREVIEW_SIZE = 200;
+const PREVIEW_SIZE = 180;
 
 const [downloadSize, setDownloadSize] = useState(250);
 

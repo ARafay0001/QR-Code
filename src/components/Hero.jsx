@@ -56,7 +56,7 @@ export default function Hero() {
           <div className="hidden lg:inline-block relative rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl shadow-2xl">
             <div className="rounded-2xl bg-white p-6 flex justify-center">
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://yourwebsite.com"
+                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://freeqrify.vercel.app"
                 alt="QR Code Preview"
                 className="w-64"
               />
