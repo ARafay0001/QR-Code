@@ -27,3 +27,17 @@ body {
 .secondary-btn {
   @apply rounded-xl border border-slate-700 px-6 py-3 transition hover:bg-slate-800;
 }
+
+@keyframes loadingBar {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.loading-bar {
+  animation: loadingBar 1.2s linear infinite;
+}

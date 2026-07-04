@@ -54,24 +54,21 @@ export default function ProductCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-10 cursor-pointer ">
-          {status === "live" ? (
-            <Link
-              to={href}
-              className="inline-flex items-center gap-2 font-semibold text-blue-400 transition-all group-hover:gap-3"
-            >
-              Open Tool
-              <ArrowUpRight
-                size={18}
-                className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
-              />
-            </Link>
-          ) : (
-            <span className="text-sm text-slate-500">
-              Available soon
-            </span>
-          )}
-        </div>
+        <div className="mt-auto pt-10">
+  {status === "live" ? (
+    <div className="inline-flex items-center gap-2 font-semibold text-blue-400 transition-all group-hover:gap-3">
+      Open Tool
+      <ArrowUpRight
+        size={18}
+        className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+      />
+    </div>
+  ) : (
+    <span className="text-sm text-slate-500">
+      Available soon
+    </span>
+  )}
+</div>
       </div>
     </Link>
   );

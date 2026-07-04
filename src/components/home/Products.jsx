@@ -15,7 +15,7 @@ const products = [
       "Generate beautiful QR codes with custom colors, logos, gradients, and multiple export formats.",
     icon: QrCode,
     status: "live",
-    href: "/qr-generator#qrcode",
+    href: "/qr-generator",
     features: [
       "Logo Support",
       "SVG & PNG Export",
@@ -39,7 +39,8 @@ const products = [
     description:
       "Remove image backgrounds in seconds with high-quality AI results.",
     icon: Image,
-    status: "soon",
+    status: "live",
+    href: "/background-remover",
     features: [
       "HD Quality",
       "One Click",

@@ -28,17 +28,17 @@ export default function QRGenerator() {
     latitude: "",
     longitude: "",
   });
-  const [foregroundColor, setForegroundColor] = useState("#2563eb");
+  const [foregroundColor, setForegroundColor] = useState("#000000");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const PREVIEW_SIZE = 180;
 
   const [downloadSize, setDownloadSize] = useState(250);
 
-  const [dotStyle, setDotStyle] = useState("rounded");
+  const [dotStyle, setDotStyle] = useState("square");
 
-  const [cornerSquareStyle, setCornerSquareStyle] = useState("extra-rounded");
+  const [cornerSquareStyle, setCornerSquareStyle] = useState("square");
 
-  const [cornerDotStyle, setCornerDotStyle] = useState("dot");
+  const [cornerDotStyle, setCornerDotStyle] = useState("square");
 
   const [logo, setLogo] = useState("");
   const handleChange = (e) => {

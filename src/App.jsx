@@ -1,22 +1,24 @@
-import Navbar from "./components/common/Navbar";
-import Hero from "./components/qr/QRHero";
-import QRGenerator from "./pages/QRGenerator";
-import Features from "./components/home/WhyChoose";
-import FAQ from "./components/home/FAQ";
-import Footer from "./components/common/Footer";
-import Home from "./pages/Home"
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import QRGenerator from "./pages/QRGenerator";
+import BackgroundRemover from "./pages/BackgroundRemover";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 export default function App() {
   return (
-    <>
-       <BrowserRouter>
+    <BrowserRouter>
+    <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
+
         <Route path="/qr-generator" element={<QRGenerator />} />
+
+        <Route
+          path="/background-remover"
+          element={<BackgroundRemover />}
+        />
       </Routes>
     </BrowserRouter>
-    </>
   );
 }
