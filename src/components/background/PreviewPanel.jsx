@@ -17,11 +17,11 @@ export default function PreviewPanel({
           <h3 className="font-semibold text-white">Preview</h3>
         </div>
 
-        <div className="relative flex h-full items-center justify-center bg-[linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b),linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b)] bg-[length:30px_30px] bg-[position:0_0,15px_15px] ">
+        <div className="relative flex h-[440px] items-center justify-center bg-[linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b),linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b)] bg-[length:30px_30px] bg-[position:0_0,15px_15px] ">
           {loading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-[linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b),linear-gradient(45deg,#1e293b_25%,transparent_25%,transparent_75%,#1e293b_75%,#1e293b)] bg-[length:30px_30px] bg-[position:0_0,15px_15px] backdrop-blur-md">
               <div className="w-[340px] rounded-2xl border border-slate-700 bg-slate-900/90 p-8 shadow-2xl">
-                <div className="flex justify-center">
+                <div className="flex justify-center items-center">
                   <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-blue-500"></div>
                 </div>
 
@@ -66,7 +66,7 @@ export default function PreviewPanel({
               </div>
 
               {resultImage && (
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex flex-wrap justify-center p-12 gap-4">
                   <a
                     href={resultImage}
                     download="background-removed.png"

@@ -6,7 +6,7 @@ export default function Toolbar({
   onRemoveBackground,
 }) {
   return (
-    <div className="mt-10 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur">
+    <div className=" rounded-3xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur">
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
