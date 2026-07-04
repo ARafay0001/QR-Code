@@ -1,9 +1,9 @@
 import jsPDF from "jspdf";
 
-import jpgIcon from "../assets/jpg.png";
-import pngIcon from "../assets/png.png";
-import svgIcon from "../assets/svg.png";
-import pdfIcon from "../assets/pdf.png";
+import jpgIcon from "../../assets/jpg.png";
+import pngIcon from "../../assets/png.png";
+import svgIcon from "../../assets/svg.png";
+import pdfIcon from "../../assets/pdf.png";
 
 const PREVIEW_SIZE = 200;
 
