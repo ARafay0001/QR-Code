@@ -51,7 +51,8 @@ const products = [
     description:
       "Reduce image size while preserving quality for faster websites.",
     icon: Minimize2,
-    status: "soon",
+    status: "live",
+    href: "/image-compressor",
     features: [
       "Fast Compression",
       "Multiple Formats",

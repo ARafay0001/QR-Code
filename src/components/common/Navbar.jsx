@@ -103,6 +103,13 @@ useEffect(() => {
         >
           Background Remover
         </Link>
+        <Link
+          to="/image-compressor"
+          className="block px-5 py-4 transition hover:bg-slate-800"
+          onClick={() => setToolsOpen(false)}
+        >
+         Image Compressor
+        </Link>
 
       </div>
     )}
@@ -199,6 +206,17 @@ useEffect(() => {
                 className="px-4 py-3 hover:bg-slate-700"
               >
                 Background Remover
+              </Link>
+
+              <Link
+                to="/image-compressor"
+                onClick={() => {
+                  setIsOpen(false);
+                  setToolsOpen(false);
+                }}
+                className="px-4 py-3 hover:bg-slate-700"
+              >
+                Image Compressor
               </Link>
 
             </div>
