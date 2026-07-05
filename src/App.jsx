@@ -3,24 +3,25 @@ import ImageCompressor from "./pages/ImageCompressor";
 import Home from "./pages/Home";
 import QRGenerator from "./pages/QRGenerator";
 import BackgroundRemover from "./pages/BackgroundRemover";
+import ResumeBuilder from "./pages/ResumeBuilder";
+import ResumeEditor from "./pages/ResumeEditor";
 import ScrollToTop from "./components/common/ScrollToTop";
 
 export default function App() {
   return (
     <BrowserRouter>
-    <ScrollToTop />
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
 
         <Route path="/qr-generator" element={<QRGenerator />} />
-<Route
-  path="/image-compressor"
-  element={<ImageCompressor />}
-/>
+        <Route path="/image-compressor" element={<ImageCompressor />} />
+        <Route path="/resume-builder" element={<ResumeBuilder />} />
         <Route
-          path="/background-remover"
-          element={<BackgroundRemover />}
+          path="/resume-builder/editor/:templateId"
+          element={<ResumeEditor />}
         />
+        <Route path="/background-remover" element={<BackgroundRemover />} />
       </Routes>
     </BrowserRouter>
   );

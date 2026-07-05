@@ -7,6 +7,7 @@ import {
 
 import ProductCard from "./ProductCard";
 import SectionTitle from "../ui/SectionTitle";
+import { href } from "react-router-dom";
 
 const products = [
   {
@@ -28,7 +29,8 @@ const products = [
     description:
       "Create ATS-friendly resumes with professionally designed templates.",
     icon: FileText,
-    status: "soon",
+    status: "live",
+    href: "/resume-builder",
     features: [
       "ATS Optimized",
       "AI Assisted",
