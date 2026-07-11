@@ -6,7 +6,12 @@ import Footer from "../components/common/Footer";
 import Products from "../components/home/Products";
 import HowItWorks from "../components/home/HowItWorks";
 import CTA from "../components/home/CTA";
+import { useEffect } from "react";
+import { preloadBackgroundModel } from "../utils/preloadAI";
 export default function Home() {
+  useEffect(() => {
+  preloadBackgroundModel();
+}, []);
   return (
     <>
       {/* Background Effects */}

@@ -5,10 +5,11 @@ import Footer from "../components/common/Footer";
 import Toolbar from "../components/background/Toolbar";
 import UploadArea from "../components/background/UploadArea";
 import PreviewPanel from "../components/background/PreviewPanel";
+import { removeBackground } from "@imgly/background-removal";
 import {
-  removeBackground,
-  preload,
-} from "@imgly/background-removal";
+  preloadBackgroundModel,
+  isModelLoaded,
+} from "../utils/preloadAI";
 const config = {
   debug: true,
   model: "isnet_fp16",
@@ -20,6 +21,49 @@ const config = {
   },
 };
 export default function BackgroundRemover() {
+  const [progress, setProgress] = useState(0);
+ const [aiLoading, setAiLoading] = useState(true);
+
+
+useEffect(() => {
+
+  let value = 0;
+
+  const interval = setInterval(() => {
+
+    value++;
+
+    setProgress(value);
+
+    if (value >= 100) {
+
+      clearInterval(interval);
+
+      setTimeout(() => {
+        setAiLoading(false);
+      }, 300);
+
+    }
+
+  }, 50);
+
+  return () => clearInterval(interval);
+
+}, []);useEffect(() => {
+
+  if (isModelLoaded()) {
+    setModelReady(true);
+    return;
+  }
+
+  preloadBackgroundModel()
+    .then(() => {
+      setModelReady(true);
+      console.log("✅ AI Ready");
+    })
+    .catch(console.error);
+
+}, []);
   const [selectedFile, setSelectedFile] = useState(null);
   const [resultImage, setResultImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,24 +73,12 @@ const resetImage = () => {
   setSelectedFile(null);
   setResultImage(null);
 };
-  // useEffect comes next...
-useEffect(() => {
-  const loadModel = async () => {
-    try {
-      await preload(config);
-
-      setModelReady(true);
-
-      console.log("AI model loaded.");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  loadModel();
-}, []);
 
 const handleRemoveBackground = async () => {
+  if (!modelReady) {
+  alert("AI is still preparing make sure you have a good internet connection.");
+  return;
+}
   if (!selectedFile) {
     alert("Please select an image first.");
     return;
@@ -86,9 +118,45 @@ const handleRemoveBackground = async () => {
   const originalImage = selectedFile
     ? URL.createObjectURL(selectedFile)
     : null;
-
+if (aiLoading) {
   return (
     <>
+      <Navbar />
+
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+
+        <div className="text-center">
+
+          <div className="mx-auto mb-8 h-16 w-16 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+
+          <h2 className="mt-6 text-3xl font-bold">
+  Preparing AI...
+</h2>
+
+<p className="mt-3 text-slate-400">
+  Preparing AI Model
+</p>
+
+<p className="mt-2 text-4xl font-black text-blue-400">
+  {progress}%
+</p><div className="mx-auto mt-8 h-3 w-80 overflow-hidden rounded-full bg-slate-800">
+
+  <div
+    className="h-full rounded-full bg-blue-500 transition-all duration-300"
+    style={{ width: `${progress}%` }}
+  />
+
+</div>
+
+        </div>
+
+      </div>
+    </>
+  );
+}
+  return (
+    <>
+  
       {/* Background Effects */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
@@ -147,7 +215,8 @@ const handleRemoveBackground = async () => {
 <div className="mt-10 flex justify-center">
   <Toolbar
     imageSelected={!!selectedFile}
-    loading={loading || !modelReady}
+   loading={loading}
+modelReady={modelReady}
     onRemoveBackground={handleRemoveBackground}
   />
 </div>
