@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@imgly/background-removal": "^1.7.0",
@@ -22,6 +25,7 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^1.21.0",
     "onnxruntime-web": "^1.21.0-dev.20250206-d981b153d3",
+    "pdf-lib": "^1.17.1",
     "qr-code-styling": "^1.9.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

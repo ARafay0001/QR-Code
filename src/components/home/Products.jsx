@@ -12,19 +12,19 @@ import { href } from "react-router-dom";
 
 const products = [
   {
-    title: "QR Generator",
-    description:
-      "Generate beautiful QR codes with custom colors, logos, gradients, and multiple export formats.",
-    icon: QrCode,
-    status: "live",
-    href: "/qr-generator",
-    features: [
-      "Logo Support",
-      "SVG & PNG Export",
-      "Custom Colors",
-      "Free Forever",
-    ],
-  },
+  title: "PDF Tools",
+  description:
+    "Merge, split, compress, convert and edit PDF files with a complete toolkit.",
+  icon: FileText,
+  status: "live",
+  href: "/pdf-tools",
+  features: [
+    "Merge & Split",
+    "Compress PDF",
+    "PDF to Word",
+    "JPG to PDF",
+  ],
+},
    {
     title: "Background Remover",
     description:
@@ -35,6 +35,17 @@ const products = [
     features: [
       "HD Quality",
       "One Click",
+    ],
+  }, {
+    title: "Image Compressor",
+    description:
+      "Reduce image size while preserving quality for faster websites.",
+    icon: Minimize2,
+    status: "live",
+    href: "/image-compressor",
+    features: [
+      "Fast Compression",
+      "Multiple Formats",
     ],
   },
   {
@@ -50,18 +61,20 @@ const products = [
     ],
   },
  
-  {
-    title: "Image Compressor",
+ {
+    title: "QR Generator",
     description:
-      "Reduce image size while preserving quality for faster websites.",
-    icon: Minimize2,
+      "Generate beautiful QR codes with custom colors, logos, gradients, and multiple export formats.",
+    icon: QrCode,
     status: "live",
-    href: "/image-compressor",
+    href: "/qr-generator",
     features: [
-      "Fast Compression",
-      "Multiple Formats",
+      "Logo Support",
+      "SVG & PNG Export",
+      "Custom Colors",
+      "Free Forever",
     ],
-  },
+  }
 ];
 
 export default function Products() {
@@ -73,7 +86,7 @@ export default function Products() {
         subtitle="Qrvia is building a growing suite of fast, privacy-focused online tools."
       />
 
-      <div className="mt-20 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+    <div className="mt-20 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
           <ProductCard
             key={product.title}
