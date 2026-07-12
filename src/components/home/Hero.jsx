@@ -30,13 +30,13 @@ export default function Hero() {
           tools—all in one place.
         </p>
 
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
-          <Link to="/tools">
+        <div  className="mt-12 cursor-pointer flex flex-wrap justify-center gap-4">
+          <a href="#products">
             <Button>
               Explore Tools
               <ArrowRight size={18} className="ml-2" />
             </Button>
-          </Link>
+          </a>
 
           <Link to="/background-remover">
             <Button variant="secondary">

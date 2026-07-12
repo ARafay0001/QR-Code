@@ -42,11 +42,11 @@ useEffect(() => {
 
       setTimeout(() => {
         setAiLoading(false);
-      }, 300);
+      }, 200);
 
     }
 
-  }, 50);
+  }, 30);
 
   return () => clearInterval(interval);
 
