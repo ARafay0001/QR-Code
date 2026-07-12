@@ -3,6 +3,7 @@ import {
   FileText,
   Image,
   Minimize2,
+  // SquareVideo ,
 } from "lucide-react";
 
 import ProductCard from "./ProductCard";
@@ -24,19 +25,7 @@ const products = [
       "Free Forever",
     ],
   },
-  {
-    title: "AI Resume Builder",
-    description:
-      "Create ATS-friendly resumes with professionally designed templates.",
-    icon: FileText,
-    status: "live",
-    href: "/resume-builder",
-    features: [
-      "ATS Optimized",
-      "AI Assisted",
-    ],
-  },
-  {
+   {
     title: "Background Remover",
     description:
       "Remove image backgrounds in seconds with high-quality AI results.",
@@ -48,6 +37,19 @@ const products = [
       "One Click",
     ],
   },
+  {
+    title: "Video Compressor",
+    description:
+      "Reduce video size while preserving quality for faster websites.",
+    icon: Minimize2,
+    status: "live",
+    href: "/video-compressor",
+    features: [
+      "HD Quality",
+      "One Click",
+    ],
+  },
+ 
   {
     title: "Image Compressor",
     description:
