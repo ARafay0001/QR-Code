@@ -9,6 +9,7 @@ import { removeBackground } from "@imgly/background-removal";
 import {
   preloadBackgroundModel,
   isModelLoaded,
+  getCurrentDevice,
 } from "../utils/preloadAI";
 const config = {
   debug: true,
@@ -49,20 +50,24 @@ useEffect(() => {
 
   return () => clearInterval(interval);
 
-}, []);useEffect(() => {
-
+}, []);
+useEffect(() => {
   if (isModelLoaded()) {
+    console.log("✅ AI already loaded.");
     setModelReady(true);
     return;
   }
 
+  console.log("⏳ Waiting for AI model...");
+
   preloadBackgroundModel()
     .then(() => {
-      setModelReady(true);
       console.log("✅ AI Ready");
+      setModelReady(true);
     })
-    .catch(console.error);
-
+    .catch((err) => {
+      console.error("❌ AI failed to load", err);
+    });
 }, []);
   const [selectedFile, setSelectedFile] = useState(null);
   const [resultImage, setResultImage] = useState(null);
@@ -76,15 +81,14 @@ const resetImage = () => {
 
 const handleRemoveBackground = async () => {
   if (!modelReady) {
-  alert("AI is still preparing make sure you have a good internet connection.");
-  return;
-}
+    alert("AI is still preparing. Please wait a moment.");
+    return;
+  }
+
   if (!selectedFile) {
     alert("Please select an image first.");
     return;
   }
-
-  let messageInterval;
 
   const messages = [
     "🔍 Detecting subject...",
@@ -96,10 +100,21 @@ const handleRemoveBackground = async () => {
   try {
     setLoading(true);
 
-    let index = 0;
-    setLoadingMessage(messages[index]);
+    setLoadingMessage(messages[0]);
 
-    setLoadingMessage("🔍 Finalizing PNG...");
+    const config = {
+      debug: true,
+      model: "isnet_fp16",
+      device: getCurrentDevice(), // GPU if available, otherwise CPU
+      publicPath: "/assets/",
+      output: {
+        format: "image/png",
+        quality: 1,
+        type: "foreground",
+      },
+    };
+
+    console.log(`🚀 Removing background using: ${config.device.toUpperCase()}`);
 
     const blob = await removeBackground(selectedFile, config);
 
@@ -110,7 +125,6 @@ const handleRemoveBackground = async () => {
     console.error(error);
     alert("Failed to remove background.");
   } finally {
-    clearInterval(messageInterval);
     setLoading(false);
     setLoadingMessage("");
   }

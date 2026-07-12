@@ -2,19 +2,25 @@ import { removeBackground } from "@imgly/background-removal";
 
 let loaded = false;
 let loadingPromise = null;
+let currentDevice = "cpu";
 
-const config = {
-  model: "isnet_fp16",
-  device: "cpu",
+async function getDevice() {
+  if ("gpu" in navigator) {
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
 
-  publicPath: "/assets/",
+      if (adapter) {
+        console.log("🚀 GPU detected");
+        return "gpu";
+      }
+    } catch (e) {
+      console.log("⚠️ GPU unavailable.");
+    }
+  }
 
-  output: {
-    format: "image/png",
-    quality: 1,
-    type: "foreground",
-  },
-};
+  console.log("🖥️ Using CPU");
+  return "cpu";
+}
 
 export async function preloadBackgroundModel() {
   if (loaded) {
@@ -23,16 +29,29 @@ export async function preloadBackgroundModel() {
   }
 
   if (loadingPromise) {
-    console.log("⏳ AI Model is already downloading...");
+    console.log("⏳ AI Model is already loading...");
     return loadingPromise;
   }
 
-  console.log("🚀 Starting AI model download...");
+  console.log("🚀 Initializing AI model...");
 
   const start = performance.now();
 
   loadingPromise = (async () => {
     try {
+      currentDevice = await getDevice();
+
+      const config = {
+        model: "isnet_fp16",
+        device: currentDevice,
+        publicPath: "/assets/",
+        output: {
+          format: "image/png",
+          quality: 1,
+          type: "foreground",
+        },
+      };
+
       const tinyImage =
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y0L0n8AAAAASUVORK5CYII=";
 
@@ -50,6 +69,7 @@ export async function preloadBackgroundModel() {
       );
     } catch (err) {
       console.error("❌ AI preload failed:", err);
+      loadingPromise = null;
     }
   })();
 
@@ -58,4 +78,8 @@ export async function preloadBackgroundModel() {
 
 export function isModelLoaded() {
   return loaded;
+}
+
+export function getCurrentDevice() {
+  return currentDevice;
 }
