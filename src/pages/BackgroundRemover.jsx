@@ -106,7 +106,7 @@ const handleRemoveBackground = async () => {
       debug: true,
       model: "isnet_fp16",
       device: getCurrentDevice(), // GPU if available, otherwise CPU
-      publicPath: "/assets/",
+      // publicPath: "/assets/",
       output: {
         format: "image/png",
         quality: 1,
@@ -122,9 +122,15 @@ const handleRemoveBackground = async () => {
 
     setResultImage(imageUrl);
   } catch (error) {
-    console.error(error);
-    alert("Failed to remove background.");
-  } finally {
+  console.error("========== BG REMOVAL ERROR ==========");
+  console.error(error);
+
+  if (error.stack) {
+    console.error(error.stack);
+  }
+
+  alert(error.message || "Failed to remove background.");
+} finally {
     setLoading(false);
     setLoadingMessage("");
   }

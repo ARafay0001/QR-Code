@@ -44,7 +44,7 @@ export async function preloadBackgroundModel() {
       const config = {
         model: "isnet_fp16",
         device: currentDevice,
-        publicPath: "/assets/",
+      publicPath: "/assets/",
         output: {
           format: "image/png",
           quality: 1,
