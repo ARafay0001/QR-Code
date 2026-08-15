@@ -140,9 +140,13 @@ export default function SplitPDF() {
   };
 
   const chooseFile = () => {
-    inputRef.current?.click();
-  };
+  inputRef.current.click();
+};
 
+const onChangeFile = () => {
+  inputRef.current.value = "";
+  inputRef.current.click();
+};
   const handleFile = async (e) => {
     const pdf = e.target.files[0];
 
@@ -217,7 +221,45 @@ export default function SplitPDF() {
       setSelectedPages([]);
     }
   };
+const handleDownload = async () => {
+  if (!file || selectedPages.length === 0) return;
 
+  try {
+    const bytes = await file.arrayBuffer();
+    const pdf = await PDFDocument.load(bytes);
+
+    const newPdf = await PDFDocument.create();
+
+    const pages = await newPdf.copyPages(
+      pdf,
+      selectedPages.map((page) => page - 1)
+    );
+
+    pages.forEach((page) => {
+      newPdf.addPage(page);
+    });
+
+    const pdfBytes = await newPdf.save();
+
+    const blob = new Blob([pdfBytes], {
+      type: "application/pdf",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${file.name.replace(/\.pdf$/i, "")}-split.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to create PDF:", error);
+  }
+};
   return (
     <>
       <Navbar />
@@ -268,29 +310,32 @@ export default function SplitPDF() {
             {file && (
               <div className="grid gap-8 lg:grid-cols-[340px_1fr]">
 
-                <PDFSidebar
-                  file={file}
+               <PDFSidebar
+  file={file}
 
-                  mode={mode}
-                  setMode={handleModeChange}
+  mode={mode}
+  setMode={handleModeChange}
 
-                  startPage={startPage}
-                  setStartPage={setStartPage}
+  startPage={startPage}
+  setStartPage={setStartPage}
 
-                  endPage={endPage}
-                  setEndPage={setEndPage}
+  endPage={endPage}
+  setEndPage={setEndPage}
 
-                  pageCount={pageCount}
+  pageCount={pageCount}
 
-                  selectedPages={selectedPages}
-                  setSelectedPages={setSelectedPages}
+  selectedPages={selectedPages}
+  setSelectedPages={setSelectedPages}
 
-                  pageInput={pageInput}
-                  setPageInput={handleCustomInput}
+  pageInput={pageInput}
+  setPageInput={handleCustomInput}
 
-                  inputError={inputError}
-                />
+  inputError={inputError}
 
+  onChangeFile={onChangeFile}
+
+  onDownload={handleDownload}
+/>
                 <PDFPreviewGrid
                   file={file}
                   pageCount={pageCount}

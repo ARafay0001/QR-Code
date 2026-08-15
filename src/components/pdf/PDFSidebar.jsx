@@ -14,7 +14,9 @@ export default function PDFSidebar({
   pageInput,
   setPageInput,
   inputError,
-}) {
+  onChangeFile,
+  onDownload,
+}) { {
   const downloadPDF = async () => {
   if (!file || selectedPages.length === 0) return;
 
@@ -498,23 +500,22 @@ export default function PDFSidebar({
         )}
 
       </div>
-        <button
-  onClick={downloadPDF}
-  disabled={selectedPages.length === 0}
-  className={`mt-6 flex w-full items-center justify-center gap-3 rounded-xl py-4 text-lg font-bold transition ${
-    selectedPages.length === 0
-      ? "cursor-not-allowed bg-slate-700 text-slate-500"
-      : "bg-blue-600 hover:bg-blue-700"
-  }`}
->
-  <Download size={20} />
+       <div className="mt-8 grid grid-cols-2 gap-3">
+  <button
+    onClick={onChangeFile}
+    className="rounded-xl border border-slate-700 bg-slate-800 py-3 font-semibold transition hover:border-blue-500 hover:bg-slate-700"
+  >
+    Change PDF
+  </button>
 
-  {selectedPages.length === 0
-    ? "Select Pages First"
-    : `Download PDF (${selectedPages.length} ${
-        selectedPages.length === 1 ? "Page" : "Pages"
-      })`}
+ <button
+  onClick={onDownload}
+  disabled={selectedPages.length === 0}
+  className="w-full rounded-xl bg-blue-600 py-3 font-semibold transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  Download PDF
 </button>
+</div>
     </div>
   );
-}
+}}
