@@ -9,9 +9,9 @@ import CTA from "../components/home/CTA";
 import { useEffect } from "react";
 import { preloadBackgroundModel } from "../utils/preloadAI";
 export default function Home() {
-  useEffect(() => {
-  preloadBackgroundModel();
-}, []);
+//   useEffect(() => {
+//   preloadBackgroundModel();
+// }, []);
   return (
     <>
       {/* Background Effects */}

@@ -26,9 +26,11 @@
     "lucide-react": "^1.21.0",
     "onnxruntime-web": "^1.21.0-dev.20250206-d981b153d3",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.296",
     "qr-code-styling": "^1.9.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-pdf": "^10.4.1",
     "react-router-dom": "^7.18.0",
     "tailwindcss": "^4.3.1"
   },
