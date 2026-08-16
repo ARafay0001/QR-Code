@@ -6,8 +6,6 @@ import QRForm from "../components/qr/QRForm";
 import placeholderQR from "../assets/blur-qr.jpg";
 import Navbar from "../components/common/Navbar";
 import Hero from "../components/qr/QRHero";
-import Features from "../components/home/WhyChoose";
-import FAQ from "../components/home/FAQ";
 import Footer from "../components/common/Footer";
 export default function QRGenerator() {
   const qrContainer = useRef(null);
