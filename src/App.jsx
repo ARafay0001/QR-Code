@@ -11,6 +11,7 @@ import PDFToWord from "./pages/pdf/PDFToWord";
 import PDFTools from "./pages/PDFTools";
 import MergePDF from "./pages/pdf/MergePDF";
 import SplitPDF from "./pages/pdf/SplitPDF";
+import UnitConverter from "./pages/Unitconverter";
 
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,8 @@ export default function App() {
         <Route path="/qr-generator" element={<QRGenerator />} />
 
         <Route path="/image-compressor" element={<ImageCompressor />} />
+
+        <Route path="/unit-converter" element={<UnitConverter />} />
 
         <Route path="/video-compressor" element={<VideoCompressor />} />
 

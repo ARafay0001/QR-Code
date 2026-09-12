@@ -3,6 +3,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Sparkles,
+  Ruler,
   Search,
   SlidersHorizontal,
   Download,
@@ -45,6 +46,15 @@ const products = [
     status: "live",
     href: "/background-remover",
     features: ["HD Quality", "One Click"],
+  },
+   {
+    title: "Unit Converter",
+    description:
+      "Unit Convertors - Length, Weight & Mass, Temperature, Volume, Area, Speed, Time, Data Storage, Pressure, Energy, Power, Angle, Frequency, Force",
+    icon: Ruler,
+    status: "live",
+    href: "/unit-converter",
+    features: ["Convert every unit", "One Click"],
   },
   {
     title: "Image Compressor",
