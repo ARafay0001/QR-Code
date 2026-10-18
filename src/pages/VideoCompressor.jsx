@@ -130,9 +130,9 @@ console.log({
 
           <div className="text-center">
 
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">
+            {/* <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">
               Video Compressor
-            </span>
+            </span> */}
 
             <h1 className="mt-6 text-5xl font-black">
               Compress Videos

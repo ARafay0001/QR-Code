@@ -341,7 +341,7 @@ export default function WebPToImage() {
             {/* <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">WebP Converter</span> */}
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">WebP to JPG &amp; PNG.</h1>
             <p className="mx-auto mt-3 flex max-w-xl items-center justify-center gap-2 text-slate-400">
-              <Zap size={16} className="shrink-0 text-yellow-400" />Multi-core batch conversion that runs entirely in your browser.
+              Multi-core batch conversion that runs entirely in your browser.
             </p>
           </div>
 

@@ -58,6 +58,15 @@ const products = [
     features: ["Convert every unit", "One Click"],
   },
    {
+    title: "Image to SVG & Vector",
+    description:
+      "Convert images to scalable vector graphics with ease.",
+    icon: Image,
+    status: "live",
+    href: "/image-to-vector",
+    features: ["Convert Image to SVG & Vector", "One Click"],
+  },
+   {
     title: "WebP to JPG & PNG",
     description:
       "Convert WebP images to JPG or PNG format with ease.",
@@ -67,22 +76,13 @@ const products = [
     features: ["WebP to JPG & PNG", "One Click"],
   },
   {
-    title: "Image Compressor",
+    title: "Image / Video Compressor",
     description:
-      "Reduce image size while preserving quality for faster websites.",
+      "Reduce image and video sizes while preserving quality for faster websites.",
     icon: Minimize2,
-    status: "live",
-    href: "/image-compressor",
-    features: ["Fast Compression", "Multiple Formats"],
-  },
-  {
-    title: "Video Compressor",
-    description:
-      "Reduce video size while preserving quality for faster websites.",
-    icon: Minimize2,
-    status: "live",
-    href: "/video-compressor",
-    features: ["HD Quality", "One Click"],
+    status: "live", 
+    href: "/image-video-compressor",
+    features: ["Fast Compression", "Multiple Formats","HD Quality", "One Click"],
   },
   {
     title: "QR Generator",

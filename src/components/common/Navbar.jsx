@@ -45,20 +45,12 @@ const TOOLS = [
     accentBg: "bg-emerald-500/10",
   },
   {
-    title: "Image Compressor",
-    description: "Shrink images without losing quality",
+    title: "Image / Video Compressor",
+    description: "Shrink images and video without losing quality",
     icon: Minimize2,
-    href: "/image-compressor",
+    href: "/image-video-compressor",
     accent: "text-cyan-400",
     accentBg: "bg-cyan-500/10",
-  },
-  {
-    title: "Video Compressor",
-    description: "Reduce video size for faster sharing",
-    icon: Video,
-    href: "/video-compressor",
-    accent: "text-pink-400",
-    accentBg: "bg-pink-500/10",
   },
   {
     title: "QR Generator",

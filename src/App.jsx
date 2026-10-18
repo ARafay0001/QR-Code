@@ -17,6 +17,8 @@ import DocumentScanner from "./pages/pdf/DocumentScanner";
 
 import NotFound from "./pages/NotFound";
 import WebpToImage from "./pages/WebptoImg";
+import CompressorTools from "./pages/CompressorTools";
+import ImagetoVector from "./pages/ImagetoVector";
 
 export default function App() {
   return (
@@ -43,11 +45,13 @@ export default function App() {
         <Route path="/pdf-tools/split" element={<SplitPDF />} />
 
         <Route path="/pdf-tools/compress" element={<CompressPDF />} />
+        <Route path="/image-video-compressor" element={<CompressorTools />} />
 
         <Route path="/pdf-tools/pdf-to-word" element={<PDFToWord />} />
         <Route path="/pdf-tools/pdf-editor" element={<PDFEditor />} />
         <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
         <Route path="/webp-to-image" element={<WebpToImage />} />
+        <Route path="/image-to-vector" element={<ImagetoVector />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />
