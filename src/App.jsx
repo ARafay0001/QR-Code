@@ -16,6 +16,7 @@ import PDFEditor from "./pages/pdf/PDFEditor";
 import DocumentScanner from "./pages/pdf/DocumentScanner";
 
 import NotFound from "./pages/NotFound";
+import WebpToImage from "./pages/WebptoImg";
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/pdf-tools/pdf-to-word" element={<PDFToWord />} />
         <Route path="/pdf-tools/pdf-editor" element={<PDFEditor />} />
         <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
+        <Route path="/webp-to-image" element={<WebpToImage />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />

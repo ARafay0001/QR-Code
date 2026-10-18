@@ -57,6 +57,15 @@ const products = [
     href: "/unit-converter",
     features: ["Convert every unit", "One Click"],
   },
+   {
+    title: "WebP to JPG & PNG",
+    description:
+      "Convert WebP images to JPG or PNG format with ease.",
+    icon: Image,
+    status: "live",
+    href: "/webp-to-image",
+    features: ["WebP to JPG & PNG", "One Click"],
+  },
   {
     title: "Image Compressor",
     description:
