@@ -12,6 +12,8 @@ import PDFTools from "./pages/PDFTools";
 import MergePDF from "./pages/pdf/MergePDF";
 import SplitPDF from "./pages/pdf/SplitPDF";
 import UnitConverter from "./pages/Unitconverter";
+import PDFEditor from "./pages/pdf/PDFEditor";
+import DocumentScanner from "./pages/pdf/DocumentScanner";
 
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +44,8 @@ export default function App() {
         <Route path="/pdf-tools/compress" element={<CompressPDF />} />
 
         <Route path="/pdf-tools/pdf-to-word" element={<PDFToWord />} />
+        <Route path="/pdf-tools/pdf-editor" element={<PDFEditor />} />
+        <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />

@@ -13,17 +13,12 @@ import {
 } from "lucide-react";
 
 const tools = [
+  
   {
-    title: "Merge PDF",
-    description: "Combine multiple PDF files into one document.",
-    path: "/pdf-tools/merge",
-    icon: FilePlus2,
-  },
-  {
-    title: "Split PDF",
-    description: "Extract selected pages from a PDF.",
-    path: "/pdf-tools/split",
-    icon: Scissors,
+    title: "Edit PDF",
+    description: "Edit, Merge, Delete content from a PDF.",
+    path: "/pdf-tools/pdf-editor",
+    icon: FileText,
   },
   {
     title: "Compress PDF",
@@ -32,29 +27,11 @@ const tools = [
     icon: Shrink,
   },
   {
-    title: "PDF to Word",
-    description: "Convert PDF into editable DOCX.",
-    path: "/pdf-tools/pdf-to-word",
-    icon: FileText,
-  },
-  {
     title: "JPG to PDF",
     description: "Convert images into a PDF document.",
     path: "/pdf-tools/jpg-to-pdf",
     icon: Image,
-  },
-  {
-    title: "Rotate PDF",
-    description: "Rotate PDF pages instantly.",
-    path: "/pdf-tools/rotate",
-    icon: RotateCw,
-  },
-  {
-    title: "Delete Pages",
-    description: "Remove unwanted pages from your PDF.",
-    path: "/pdf-tools/delete-pages",
-    icon: Trash2,
-  },
+  }
 ];
 
 export default function PDFTools() {

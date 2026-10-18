@@ -23,6 +23,7 @@ import Footer from "../components/common/Footer";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
 import SectionTitle from "../components/ui/SectionTitle";
+import ProductCard from "../components/ui/ProductCard";
 
 /* -------------------------------------------------------------------------- */
 /*  Data                                                                      */
@@ -190,10 +191,10 @@ function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="mx-auto flex max-w-7xl flex-col items-center px-4 pt-16 text-center sm:px-6 sm:pt-24">
-        <Badge>
+        {/* <Badge>
           <Sparkles size={14} className="mr-2" />
           FREE ONLINE TOOLS
-        </Badge>
+        </Badge> */}
 
         <h1 className="mt-6 max-w-5xl text-4xl font-black leading-tight sm:mt-8 sm:text-5xl md:text-7xl">
           One Place.
@@ -247,72 +248,72 @@ function Hero() {
 /*  Products                                                                  */
 /* -------------------------------------------------------------------------- */
 
-function ProductCard({ title, description, icon: Icon, status, href, features = [] }) {
-  return (
-    <Link
-      to={href}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500/40 hover:bg-slate-800/60 hover:shadow-[0_0_40px_rgba(37,99,235,.18)] sm:rounded-3xl sm:p-8 sm:hover:-translate-y-2"
-    >
-      {/* Background Glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-hover:from-blue-500/5 group-hover:to-cyan-500/5" />
+// function ProductCard({ title, description, icon: Icon, status, href, features = [] }) {
+//   return (
+//     <Link
+//       to={href}
+//       className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500/40 hover:bg-slate-800/60 hover:shadow-[0_0_40px_rgba(37,99,235,.18)] sm:rounded-3xl sm:p-8 sm:hover:-translate-y-2"
+//     >
+//       {/* Background Glow */}
+//       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-hover:from-blue-500/5 group-hover:to-cyan-500/5" />
 
-      <div className="relative z-10 flex h-full flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-14 sm:w-14 sm:rounded-2xl">
-            <Icon size={24} className="sm:size-7" />
-          </div>
+//       <div className="relative z-10 flex h-full flex-col">
+//         {/* Header */}
+//         <div className="flex items-center justify-between">
+//           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-14 sm:w-14 sm:rounded-2xl">
+//             <Icon size={24} className="sm:size-7" />
+//           </div>
 
-          <span
-            className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:px-3 sm:text-xs ${statusStyles[status]}`}
-          >
-            {status}
-          </span>
-        </div>
+//           <span
+//             className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:px-3 sm:text-xs ${statusStyles[status]}`}
+//           >
+//             {status}
+//           </span>
+//         </div>
 
-        {/* Title */}
-        <h3 className="mt-6 text-xl font-bold text-white sm:mt-8 sm:text-2xl">
-          {title}
-        </h3>
+//         {/* Title */}
+//         <h3 className="mt-6 text-xl font-bold text-white sm:mt-8 sm:text-2xl">
+//           {title}
+//         </h3>
 
-        {/* Description */}
-        <p className="mt-3 text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base sm:leading-7">
-          {description}
-        </p>
+//         {/* Description */}
+//         <p className="mt-3 text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base sm:leading-7">
+//           {description}
+//         </p>
 
-        {/* Features */}
-        <div className="mt-6 space-y-2.5 sm:mt-8 sm:space-y-3">
-          {features.map((feature) => (
-            <div
-              key={feature}
-              className="flex items-center gap-3 text-xs text-slate-300 sm:text-sm"
-            >
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500 sm:h-2 sm:w-2" />
-              <span>{feature}</span>
-            </div>
-          ))}
-        </div>
+//         {/* Features */}
+//         <div className="mt-6 space-y-2.5 sm:mt-8 sm:space-y-3">
+//           {features.map((feature) => (
+//             <div
+//               key={feature}
+//               className="flex items-center gap-3 text-xs text-slate-300 sm:text-sm"
+//             >
+//               <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500 sm:h-2 sm:w-2" />
+//               <span>{feature}</span>
+//             </div>
+//           ))}
+//         </div>
 
-        {/* Footer */}
-        <div className="mt-auto pt-8 sm:pt-10">
-          {status === "live" ? (
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-all group-hover:gap-3 sm:text-base">
-              Open Tool
-              <ArrowUpRight
-                size={18}
-                className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
-              />
-            </div>
-          ) : (
-            <span className="text-xs text-slate-500 sm:text-sm">
-              Available soon
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
+//         {/* Footer */}
+//         <div className="mt-auto pt-8 sm:pt-10">
+//           {status === "live" ? (
+//             <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-all group-hover:gap-3 sm:text-base">
+//               Open Tool
+//               <ArrowUpRight
+//                 size={18}
+//                 className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+//               />
+//             </div>
+//           ) : (
+//             <span className="text-xs text-slate-500 sm:text-sm">
+//               Available soon
+//             </span>
+//           )}
+//         </div>
+//       </div>
+//     </Link>
+//   );
+// }
 
 function Products() {
   return (
