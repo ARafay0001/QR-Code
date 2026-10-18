@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import WebpToImage from "./pages/WebptoImg";
 import CompressorTools from "./pages/CompressorTools";
 import ImagetoVector from "./pages/ImagetoVector";
+import FileShare from "./pages/FileShare";
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
         <Route path="/webp-to-image" element={<WebpToImage />} />
         <Route path="/image-to-vector" element={<ImagetoVector />} />
+        <Route path="/file-share" element={<FileShare />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />

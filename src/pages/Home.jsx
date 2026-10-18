@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   Sparkles,
   Ruler,
+  Upload,
   Search,
   SlidersHorizontal,
   Download,
@@ -37,7 +38,7 @@ const products = [
     icon: FileText,
     status: "live",
     href: "/pdf-tools",
-    features: ["Merge & Split", "Compress PDF", "PDF to Word", "JPG to PDF"],
+    features: ["Edit PDF", "Merge & Split", "Compress PDF" , "Image to PDF"],
   },
   {
     title: "Background Remover",
@@ -93,6 +94,20 @@ const products = [
     href: "/qr-generator",
     features: ["Logo Support", "SVG & PNG Export", "Custom Colors", "Free Forever"],
   },
+// {
+//   title: "File Share",
+//   description:
+//     "Share files instantly between devices connected to the same Wi-Fi network, without uploading them to the cloud.",
+//   icon: Upload,
+//   status: "live",
+//   href: "/file-share",
+//   features: [
+//     "Local Network Sharing",
+//     "Fast File Transfers",
+//     "No Cloud Uploads",
+//     "Private File Sharing",
+//   ],
+// },
 ];
 
 const steps = [
