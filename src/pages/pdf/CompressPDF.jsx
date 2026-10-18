@@ -261,9 +261,9 @@ export default function CompressPDF() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
           <div className="text-center">
-            <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
+            {/* <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
               PDF Tools
-            </span>
+            </span> */}
 
             <h1 className="mt-5 text-3xl font-black sm:mt-6 sm:text-5xl">
               Compress PDF
