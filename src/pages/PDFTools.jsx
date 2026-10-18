@@ -21,17 +21,17 @@ const tools = [
     icon: FileText,
   },
   {
+    title: "Image to PDF",
+    description: "Convert images into a PDF document.",
+    path: "/pdf-tools/image-to-pdf",
+    icon: Image,
+  },
+  {
     title: "Compress PDF",
     description: "Reduce PDF size while keeping quality.",
     path: "/pdf-tools/compress",
     icon: Shrink,
   },
-  {
-    title: "JPG to PDF",
-    description: "Convert images into a PDF document.",
-    path: "/pdf-tools/jpg-to-pdf",
-    icon: Image,
-  }
 ];
 
 export default function PDFTools() {
