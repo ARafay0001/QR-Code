@@ -7,10 +7,7 @@ import BackgroundRemover from "./pages/BackgroundRemover";
 import VideoCompressor from "./pages/VideoCompressor";
 import CompressPDF from "./pages/pdf/CompressPDF";
 import ScrollToTop from "./components/common/ScrollToTop";
-import PDFToWord from "./pages/pdf/PDFToWord";
 import PDFTools from "./pages/PDFTools";
-import MergePDF from "./pages/pdf/MergePDF";
-import SplitPDF from "./pages/pdf/SplitPDF";
 import UnitConverter from "./pages/Unitconverter";
 import PDFEditor from "./pages/pdf/PDFEditor";
 import DocumentScanner from "./pages/pdf/DocumentScanner";
@@ -19,11 +16,12 @@ import NotFound from "./pages/NotFound";
 import WebpToImage from "./pages/WebptoImg";
 import CompressorTools from "./pages/CompressorTools";
 import ImagetoVector from "./pages/ImagetoVector";
-import FileShare from "./pages/FileShare";
-
-export default function App() {
-  return (
-    <BrowserRouter>
+import VideoEditor from "./pages/VideoDownloader";
+  import VideoDownloader from "./pages/VideoDownloader";
+  
+  export default function App() {
+    return (
+      <BrowserRouter>
       <ScrollToTop />
 
       <Routes>
@@ -41,19 +39,16 @@ export default function App() {
 
         <Route path="/pdf-tools" element={<PDFTools />} />
 
-        <Route path="/pdf-tools/merge" element={<MergePDF />} />
-
-        <Route path="/pdf-tools/split" element={<SplitPDF />} />
-
         <Route path="/pdf-tools/compress" element={<CompressPDF />} />
         <Route path="/image-video-compressor" element={<CompressorTools />} />
 
-        <Route path="/pdf-tools/pdf-to-word" element={<PDFToWord />} />
         <Route path="/pdf-tools/pdf-editor" element={<PDFEditor />} />
         <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
         <Route path="/webp-to-image" element={<WebpToImage />} />
         <Route path="/image-to-vector" element={<ImagetoVector />} />
-        <Route path="/file-share" element={<FileShare />} />
+        <Route path="/video-editor" element={<VideoEditor />} />
+
+      <Route path="/video-downloader" element={<VideoDownloader />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />

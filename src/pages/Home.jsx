@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
-  ArrowUpRight,
   Sparkles,
   Ruler,
-  Upload,
   Search,
   SlidersHorizontal,
   Download,
@@ -16,15 +14,40 @@ import {
   Zap,
   ShieldCheck,
   Globe,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
-import SectionTitle from "../components/ui/SectionTitle";
 import ProductCard from "../components/ui/ProductCard";
+
+/* -------------------------------------------------------------------------- */
+/*  Shared                                                                    */
+/* -------------------------------------------------------------------------- */
+
+const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
+
+function SectionHeader({ title, subtitle, children, className = "" }) {
+  return (
+    <div
+      className={`flex flex-col gap-6 md:flex-row md:items-end md:justify-between ${className}`}
+    >
+      <div className="max-w-2xl">
+        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+            {subtitle}
+          </p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Data                                                                      */
@@ -38,7 +61,8 @@ const products = [
     icon: FileText,
     status: "live",
     href: "/pdf-tools",
-    features: ["Edit PDF", "Merge & Split", "Compress PDF" , "Image to PDF"],
+    category: "Documents",
+    features: ["Edit PDF", "Merge & Split", "Compress PDF", "Image to PDF"],
   },
   {
     title: "Background Remover",
@@ -47,33 +71,35 @@ const products = [
     icon: Image,
     status: "live",
     href: "/background-remover",
+    category: "Images",
     features: ["HD Quality", "One Click"],
   },
-   {
+  {
     title: "Unit Converter",
     description:
-      "Unit Convertors - Length, Weight & Mass, Temperature, Volume, Area, Speed, Time, Data Storage, Pressure, Energy, Power, Angle, Frequency, Force",
+      "Convert length, weight, temperature, volume, area, speed, time, data storage, pressure, energy, power, angle, frequency and force.",
     icon: Ruler,
     status: "live",
     href: "/unit-converter",
+    category: "Utilities",
     features: ["Convert every unit", "One Click"],
   },
-   {
+  {
     title: "Image to SVG & Vector",
-    description:
-      "Convert images to scalable vector graphics with ease.",
+    description: "Convert images to scalable vector graphics with ease.",
     icon: Image,
     status: "live",
     href: "/image-to-vector",
+    category: "Images",
     features: ["Convert Image to SVG & Vector", "One Click"],
   },
-   {
+  {
     title: "WebP to JPG & PNG",
-    description:
-      "Convert WebP images to JPG or PNG format with ease.",
+    description: "Convert WebP images to JPG or PNG format with ease.",
     icon: Image,
     status: "live",
     href: "/webp-to-image",
+    category: "Images",
     features: ["WebP to JPG & PNG", "One Click"],
   },
   {
@@ -81,9 +107,20 @@ const products = [
     description:
       "Reduce image and video sizes while preserving quality for faster websites.",
     icon: Minimize2,
-    status: "live", 
+    status: "live",
     href: "/image-video-compressor",
-    features: ["Fast Compression", "Multiple Formats","HD Quality", "One Click"],
+    category: "Images",
+    features: ["Fast Compression", "Multiple Formats", "HD Quality", "One Click"],
+  },
+  {
+    title: "Video Editor, Vocal Saperator",
+    description:
+      "Edit videos, remove vocals, and enhance audio with our online video editor.",
+    icon: Minimize2,
+    status: "live",
+    href: "/video-editor",
+    category: "Images",
+    features: ["Video Editor", "Vocal Saperator", "Multiple Formats", "HD Quality", "One Click"],
   },
   {
     title: "QR Generator",
@@ -92,79 +129,65 @@ const products = [
     icon: QrCode,
     status: "live",
     href: "/qr-generator",
+    category: "Utilities",
     features: ["Logo Support", "SVG & PNG Export", "Custom Colors", "Free Forever"],
   },
-// {
-//   title: "File Share",
-//   description:
-//     "Share files instantly between devices connected to the same Wi-Fi network, without uploading them to the cloud.",
-//   icon: Upload,
-//   status: "live",
-//   href: "/file-share",
-//   features: [
-//     "Local Network Sharing",
-//     "Fast File Transfers",
-//     "No Cloud Uploads",
-//     "Private File Sharing",
-//   ],
-// },
 ];
+
+const categories = ["All", ...new Set(products.map((p) => p.category))];
 
 const steps = [
   {
-    number: "01",
-    title: "Choose a Tool",
+    title: "Choose a tool",
     description:
-      "Browse our growing collection of online tools and select the one that fits your needs.",
+      "Browse the collection and pick the tool that fits your task.",
     icon: Search,
   },
   {
-    number: "02",
     title: "Customize",
     description:
-      "Adjust the settings, colors, or options to create exactly what you need.",
+      "Adjust settings, colors, or options to get exactly what you need.",
     icon: SlidersHorizontal,
   },
   {
-    number: "03",
     title: "Download",
     description:
-      "Export your finished result instantly in high quality without unnecessary steps.",
+      "Export your finished result instantly, with no extra steps.",
     icon: Download,
   },
 ];
 
 const features = [
   {
-    title: "Lightning Fast",
+    title: "Lightning fast",
     description:
-      "Every tool is optimized for speed, delivering results instantly without unnecessary waiting.",
+      "Every tool is optimized for speed, delivering results without unnecessary waiting.",
     icon: Zap,
-    accent: "text-yellow-400",
+    accent: "text-yellow-400 bg-yellow-400/10",
     span: "md:col-span-2",
   },
   {
-    title: "Privacy First",
+    title: "Privacy first",
     description:
       "Your files and data stay secure. We avoid collecting unnecessary personal information.",
     icon: ShieldCheck,
-    accent: "text-emerald-400",
+    accent: "text-emerald-400 bg-emerald-400/10",
     span: "",
   },
   {
-    title: "Free to Use",
+    title: "Free to use",
     description:
       "Core tools are completely free, with no sign-up required to get started.",
     icon: Globe,
-    accent: "text-blue-400",
+    accent: "text-blue-400 bg-blue-400/10",
     span: "",
   },
   {
-    title: "Beautiful Experience",
+    title: "Works on any device",
     description:
-      "Modern UI, responsive design, and an enjoyable experience across desktop and mobile devices.",
+      "A clean, responsive interface that feels just as good on your phone as on your desktop.",
     icon: Sparkles,
-    accent: "text-violet-400",
+    accent: "text-violet-400 bg-violet-400/10",
     span: "md:col-span-2",
   },
 ];
@@ -192,7 +215,7 @@ const faqs = [
   {
     question: "What tools are coming next?",
     answer:
-      "We're working on an AI Resume Builder, Background Remover, Image Compressor, and many more useful online tools.",
+      "We're working on an AI Resume Builder and many more useful online tools. Check back often.",
   },
   {
     question: "Which file formats do you support?",
@@ -201,69 +224,131 @@ const faqs = [
   },
 ];
 
-const statusStyles = {
-  live: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-  beta: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
-  soon: "bg-slate-800 text-slate-400 border border-slate-700",
-};
-
 /* -------------------------------------------------------------------------- */
 /*  Hero                                                                      */
 /* -------------------------------------------------------------------------- */
 
+function ToolPreview() {
+  const rows = products.slice(0, 5);
+
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-blue-600/20 via-cyan-400/10 to-violet-600/20 blur-3xl" />
+
+      <div className="relative overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/80 shadow-2xl shadow-blue-950/40 backdrop-blur-xl">
+        <div className="flex items-center gap-2 border-b border-slate-800 px-5 py-3.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+          <span className="ml-3 text-xs font-medium text-slate-400">
+            Popular tools
+          </span>
+        </div>
+
+        <ul className="divide-y divide-slate-800/80">
+          {rows.map(({ title, icon: Icon, href, category }) => (
+            <li key={title}>
+              <Link
+                to={href}
+                className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-800/50 focus:outline-none focus-visible:bg-slate-800/50"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600/10 text-blue-400">
+                  <Icon size={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-white">
+                    {title}
+                  </span>
+                  <span className="block text-xs text-slate-500">
+                    {category}
+                  </span>
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-slate-600 transition-colors group-hover:text-blue-400"
+                />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="mx-auto flex max-w-7xl flex-col items-center px-4 pt-16 text-center sm:px-6 sm:pt-24">
-        {/* <Badge>
-          <Sparkles size={14} className="mr-2" />
-          FREE ONLINE TOOLS
-        </Badge> */}
+    <section>
+      <div
+        className={`${container} grid items-center gap-14 pb-16 pt-14 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-24 lg:pt-28`}
+      >
+        <div>
+          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
+            One place.
+            <br />
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
+              Every tool you need.
+            </span>
+          </h1>
 
-        <h1 className="mt-6 max-w-5xl text-4xl font-black leading-tight sm:mt-8 sm:text-5xl md:text-7xl">
-          One Place.
-          <br />
-          <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
-            Every Tool You Need.
-          </span>
-        </h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 sm:text-lg sm:leading-8">
+            Generate QR codes, remove image backgrounds with AI, compress
+            files, and convert formats. Fast, free, and beautifully designed
+            online tools, all in one place.
+          </p>
 
-        <p className="mt-6 max-w-3xl text-base leading-7 text-slate-400 sm:mt-8 sm:text-lg sm:leading-8">
-          Generate QR codes, remove image backgrounds with AI, compress
-          images, convert files, and access a growing collection of fast,
-          free, and beautifully designed online tools&mdash;all in one place.
-        </p>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a href="#products" className="w-full sm:w-auto">
+              <Button className="w-full justify-center sm:w-auto">
+                Explore tools
+                <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </a>
 
-        <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:mt-12 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4">
-          <a href="#products" className="w-full sm:w-auto">
-            <Button className="w-full justify-center sm:w-auto">
-              Explore Tools
-              <ArrowRight size={18} className="ml-2" />
-            </Button>
-          </a>
-
-          <Link to="/background-remover" className="w-full sm:w-auto">
-            <Button variant="secondary" className="w-full justify-center sm:w-auto">
-              Try AI Background Remover
-            </Button>
-          </Link>
+            <Link to="/background-remover" className="w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                className="w-full justify-center sm:w-auto"
+              >
+                Try AI Background Remover
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-2.5 text-xs text-slate-400 sm:mt-12 sm:gap-3 sm:text-sm">
-          <span className="rounded-full border border-slate-700 px-3 py-1.5 sm:px-4 sm:py-2">
-            QR Generator
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1.5 sm:px-4 sm:py-2">
-            AI Background Remover
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1.5 sm:px-4 sm:py-2">
-            Image Compressor
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1.5 sm:px-4 sm:py-2">
-            More Coming Soon
-          </span>
-        </div>
+        <ToolPreview />
       </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Stats strip                                                               */
+/* -------------------------------------------------------------------------- */
+
+function Stats() {
+  const stats = [
+    { value: `${products.length}`, label: "Tools live today" },
+    { value: "$0", label: "Free, forever" },
+    { value: "0", label: "Sign-ups required" },
+  ];
+
+  return (
+    <section className="border-y border-slate-800/80 bg-slate-950/40 backdrop-blur">
+      <dl
+        className={`${container} grid grid-cols-3 divide-x divide-slate-800/80`}
+      >
+        {stats.map((s) => (
+          <div key={s.label} className="px-2 py-6 text-center sm:px-6 sm:py-8">
+            <dt className="order-2 text-xs text-slate-400 sm:text-sm">
+              {s.label}
+            </dt>
+            <dd className="text-2xl font-bold text-white sm:text-4xl">
+              {s.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -272,147 +357,91 @@ function Hero() {
 /*  Products                                                                  */
 /* -------------------------------------------------------------------------- */
 
-// function ProductCard({ title, description, icon: Icon, status, href, features = [] }) {
-//   return (
-//     <Link
-//       to={href}
-//       className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500/40 hover:bg-slate-800/60 hover:shadow-[0_0_40px_rgba(37,99,235,.18)] sm:rounded-3xl sm:p-8 sm:hover:-translate-y-2"
-//     >
-//       {/* Background Glow */}
-//       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-hover:from-blue-500/5 group-hover:to-cyan-500/5" />
-
-//       <div className="relative z-10 flex h-full flex-col">
-//         {/* Header */}
-//         <div className="flex items-center justify-between">
-//           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-14 sm:w-14 sm:rounded-2xl">
-//             <Icon size={24} className="sm:size-7" />
-//           </div>
-
-//           <span
-//             className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:px-3 sm:text-xs ${statusStyles[status]}`}
-//           >
-//             {status}
-//           </span>
-//         </div>
-
-//         {/* Title */}
-//         <h3 className="mt-6 text-xl font-bold text-white sm:mt-8 sm:text-2xl">
-//           {title}
-//         </h3>
-
-//         {/* Description */}
-//         <p className="mt-3 text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base sm:leading-7">
-//           {description}
-//         </p>
-
-//         {/* Features */}
-//         <div className="mt-6 space-y-2.5 sm:mt-8 sm:space-y-3">
-//           {features.map((feature) => (
-//             <div
-//               key={feature}
-//               className="flex items-center gap-3 text-xs text-slate-300 sm:text-sm"
-//             >
-//               <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500 sm:h-2 sm:w-2" />
-//               <span>{feature}</span>
-//             </div>
-//           ))}
-//         </div>
-
-//         {/* Footer */}
-//         <div className="mt-auto pt-8 sm:pt-10">
-//           {status === "live" ? (
-//             <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition-all group-hover:gap-3 sm:text-base">
-//               Open Tool
-//               <ArrowUpRight
-//                 size={18}
-//                 className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
-//               />
-//             </div>
-//           ) : (
-//             <span className="text-xs text-slate-500 sm:text-sm">
-//               Available soon
-//             </span>
-//           )}
-//         </div>
-//       </div>
-//     </Link>
-//   );
-// }
-
 function Products() {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+
+  const filteredProducts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return products.filter((product) => {
+      const matchesCategory =
+        category === "All" || product.category === category;
+      const matchesSearch =
+        !query ||
+        product.title.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [search, category]);
+
   return (
-    <section
-      id="products"
-      className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-32"
-    >
-      <SectionTitle
-        badge="PRODUCTS"
+    <section id="tools" className={`${container} scroll-mt-24 py-20 sm:py-28`}>
+      <SectionHeader
         title="Everything you need in one platform."
-        subtitle="Qrvia is building a growing suite of fast, privacy-focused online tools."
-      />
-
-      <div className="mt-12 grid gap-5 sm:mt-20 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.title} {...product} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  How It Works                                                              */
-/* -------------------------------------------------------------------------- */
-
-function HowItWorks() {
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-32">
-      <div className="mx-auto max-w-3xl text-center">
-        <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
-          HOW IT WORKS
-        </span>
-
-        <h2 className="mt-5 text-3xl font-bold text-white sm:mt-6 sm:text-5xl">
-          Three simple steps.
-        </h2>
-
-        <p className="mt-4 text-base leading-7 text-slate-400 sm:mt-6 sm:text-lg sm:leading-8">
-          Every Qrvia tool follows the same simple workflow, helping you get
-          results in seconds.
-        </p>
-      </div>
-
-      <div className="relative mt-12 grid gap-6 sm:mt-24 sm:gap-10 lg:grid-cols-3">
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-
-          return (
-            <div
-              key={step.number}
-              className="group relative rounded-2xl border border-slate-800 bg-slate-900/60 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500/40 hover:shadow-[0_0_40px_rgba(37,99,235,.18)] sm:rounded-3xl sm:p-8 sm:hover:-translate-y-2"
+        subtitle="Qrvia is a growing suite of fast, privacy-focused online tools."
+      >
+        <div className="flex w-full items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 md:w-80">
+          <Search size={18} className="shrink-0 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tools..."
+            aria-label="Search tools"
+            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="text-xs font-medium text-slate-400 transition hover:text-white"
             >
-              <span className="absolute right-6 top-6 text-4xl font-black text-slate-800 sm:right-8 sm:top-8 sm:text-6xl">
-                {step.number}
-              </span>
+              Clear
+            </button>
+          )}
+        </div>
+      </SectionHeader>
 
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-16 sm:w-16 sm:rounded-2xl">
-                <Icon size={28} className="sm:size-8" />
-              </div>
-
-              <h3 className="mt-6 text-xl font-bold text-white sm:mt-8 sm:text-2xl">
-                {step.title}
-              </h3>
-
-              <p className="mt-3 text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base sm:leading-7">
-                {step.description}
-              </p>
-
-              {index !== steps.length - 1 && (
-                <div className="absolute -right-5 top-1/2 hidden h-0.5 w-10 bg-gradient-to-r from-blue-500 to-transparent lg:block" />
-              )}
-            </div>
+      {/* Category filters */}
+      <div
+        className="mt-8 flex flex-wrap gap-2"
+        role="group"
+        aria-label="Filter by category"
+      >
+        {categories.map((c) => {
+          const active = c === category;
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCategory(c)}
+              aria-pressed={active}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                active
+                  ? "border-blue-500/50 bg-blue-500/15 text-blue-300"
+                  : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"
+              }`}
+            >
+              {c}
+            </button>
           );
         })}
+      </div>
+
+      {/* Cards */}
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(({ category: _category, ...product }) => (
+            <ProductCard key={product.title} {...product} />
+          ))
+        ) : (
+          <p className="col-span-full rounded-2xl border border-dashed border-slate-700 py-14 text-center text-slate-400">
+            No tools match &ldquo;{search}&rdquo;. Try a different search or
+            category.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -424,50 +453,82 @@ function HowItWorks() {
 
 function WhyChoose() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-32">
-      <div className="mx-auto max-w-3xl text-center">
-        <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
-          WHY QRVIA
-        </span>
+    <section className={`${container} py-20 sm:py-28`}>
+      <SectionHeader
+        title="Built for speed. Designed for everyone."
+        subtitle="Every Qrvia tool is crafted with performance, simplicity, and privacy in mind."
+      />
 
-        <h2 className="mt-5 text-3xl font-bold text-white sm:mt-6 sm:text-5xl">
-          Built for speed.
-          <br />
-          Designed for everyone.
-        </h2>
-
-        <p className="mt-4 text-base leading-7 text-slate-400 sm:mt-6 sm:text-lg sm:leading-8">
-          Every Qrvia tool is crafted with performance, simplicity, and
-          privacy in mind.
-        </p>
-      </div>
-
-      <div className="mt-12 grid gap-4 sm:mt-20 sm:gap-6 md:grid-cols-3">
+      <div className="mt-12 grid gap-4 sm:gap-6 md:grid-cols-3">
         {features.map((feature) => {
           const Icon = feature.icon;
 
           return (
             <div
               key={feature.title}
-              className={`group rounded-2xl border border-slate-800 bg-slate-900/60 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500/40 hover:shadow-[0_0_40px_rgba(37,99,235,.18)] sm:rounded-3xl sm:p-8 sm:hover:-translate-y-2 ${feature.span}`}
+              className={`rounded-2xl border border-slate-800 bg-slate-900/60 p-6 transition-colors hover:border-slate-600 sm:p-8 ${feature.span}`}
             >
               <div
-                className={`mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-800 sm:mb-6 sm:h-16 sm:w-16 sm:rounded-2xl ${feature.accent}`}
+                className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${feature.accent}`}
               >
-                <Icon size={28} className="sm:size-8" />
+                <Icon size={24} />
               </div>
 
-              <h3 className="text-xl font-bold text-white sm:text-2xl">
+              <h3 className="text-xl font-semibold text-white">
                 {feature.title}
               </h3>
 
-              <p className="mt-3 text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base sm:leading-7">
+              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
                 {feature.description}
               </p>
             </div>
           );
         })}
       </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  How It Works                                                              */
+/* -------------------------------------------------------------------------- */
+
+function HowItWorks() {
+  return (
+    <section className={`${container} py-20 sm:py-28`}>
+      <SectionHeader
+        title="Three simple steps."
+        subtitle="Every Qrvia tool follows the same workflow, so you get results in seconds."
+      />
+
+      <ol className="mt-12 grid overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 lg:grid-cols-3">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+
+          return (
+            <li
+              key={step.title}
+              className="relative border-b border-slate-800 p-6 last:border-b-0 sm:p-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400">
+                  <Icon size={24} />
+                </span>
+                <span className="text-sm font-semibold text-slate-600">
+                  Step {index + 1}
+                </span>
+              </div>
+
+              <h3 className="mt-6 text-xl font-semibold text-white">
+                {step.title}
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+                {step.description}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }
@@ -480,61 +541,65 @@ function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-32">
-      <div className="text-center">
-        <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
-          FAQ
-        </span>
+    <section className={`${container} py-20 sm:py-28`}>
+      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            Frequently asked questions
+          </h2>
+          <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+            Everything you need to know before using Qrvia.
+          </p>
+        </div>
 
-        <h2 className="mt-5 text-3xl font-bold text-white sm:mt-6 sm:text-5xl">
-          Frequently Asked Questions
-        </h2>
+        <div className="space-y-3">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            const panelId = `faq-panel-${index}`;
 
-        <p className="mt-4 text-base text-slate-400 sm:mt-6 sm:text-lg">
-          Everything you need to know before using Qrvia.
-        </p>
-      </div>
-
-      <div className="mt-10 space-y-4 sm:mt-16 sm:space-y-5">
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
-
-          return (
-            <div
-              key={faq.question}
-              className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur transition-all duration-300 hover:border-blue-500/40 sm:rounded-2xl"
-            >
-              <button
-                onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-8 sm:py-6"
-              >
-                <h3 className="text-base font-semibold text-white sm:text-lg">
-                  {faq.question}
-                </h3>
-
-                <ChevronDown
-                  size={20}
-                  className={`shrink-0 text-slate-400 transition-transform duration-300 ${
-                    isOpen ? "rotate-180 text-blue-400" : ""
-                  }`}
-                />
-              </button>
-
+            return (
               <div
-                className={`grid transition-all duration-300 ${
-                  isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                key={faq.question}
+                className={`overflow-hidden rounded-xl border bg-slate-900/60 transition-colors ${
+                  isOpen
+                    ? "border-blue-500/40"
+                    : "border-slate-800 hover:border-slate-600"
                 }`}
               >
-                <div className="overflow-hidden">
-                  <p className="px-5 pb-5 text-sm leading-6 text-slate-400 sm:px-8 sm:pb-6 sm:text-base sm:leading-7">
-                    {faq.answer}
-                  </p>
+                <button
+                  onClick={() => setOpenIndex(isOpen ? -1 : index)}
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 sm:px-6"
+                >
+                  <h3 className="text-base font-semibold text-white sm:text-lg">
+                    {faq.question}
+                  </h3>
+
+                  <ChevronDown
+                    size={20}
+                    className={`shrink-0 transition-transform duration-300 motion-reduce:transition-none ${
+                      isOpen ? "rotate-180 text-blue-400" : "text-slate-500"
+                    }`}
+                  />
+                </button>
+
+                <div
+                  id={panelId}
+                  className={`grid transition-all duration-300 motion-reduce:transition-none ${
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="px-5 pb-5 text-sm leading-6 text-slate-400 sm:px-6 sm:text-base sm:leading-7">
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -546,46 +611,29 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-32">
-      <div className="relative overflow-hidden rounded-[28px] border border-slate-800 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 px-6 py-14 text-center shadow-[0_0_80px_rgba(37,99,235,.15)] sm:rounded-[40px] sm:px-8 sm:py-20 md:px-16">
-        {/* Background Glow */}
-        <div className="absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-400/20 blur-[120px]" />
+    <section className={`${container} pb-20 pt-10 sm:pb-28`}>
+      <div className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 px-6 py-14 sm:px-12 sm:py-20 lg:px-16">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-cyan-400/25 blur-[120px]" />
 
-        <div className="relative z-10">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs text-blue-100 backdrop-blur sm:text-sm">
-            <Sparkles size={16} />
-            Start Building Today
+        <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
+              Ready to create something amazing?
+            </h2>
+            <p className="mt-5 text-base leading-7 text-blue-100 sm:text-lg sm:leading-8">
+              Generate QR codes in seconds and explore a growing collection of
+              fast, modern, privacy-focused online tools.
+            </p>
           </div>
 
-          {/* Heading */}
-          <h2 className="mt-6 text-3xl font-black text-white sm:mt-8 sm:text-4xl md:text-6xl">
-            Ready to create
-            <br />
-            something amazing?
-          </h2>
-
-          {/* Description */}
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-blue-100 sm:mt-6 sm:text-lg sm:leading-8">
-            Generate QR codes in seconds and explore a growing collection of
-            fast, modern, privacy-focused online tools.
-          </p>
-
-          {/* Buttons */}
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-4">
-            <Link
-              to="/qr-generator"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 font-semibold text-slate-900 transition-all duration-300 hover:scale-105 sm:w-auto sm:py-4"
-            >
-              Launch QR Generator
-              <ArrowRight size={18} />
-            </Link>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row lg:flex-col xl:flex-row">
+           
 
             <Link
-              to="/tools"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-7 py-3.5 font-semibold text-white backdrop-blur transition-all duration-300 hover:bg-white/20 sm:w-auto sm:py-4"
+              to="#tools"
+              className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/10 px-7 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              Explore Tools
+              Explore tools
             </Link>
           </div>
         </div>
@@ -600,26 +648,35 @@ function CTA() {
 
 export default function Home() {
   return (
-    <>
-      {/* Background Effects */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-72 w-72 rounded-full bg-blue-600/20 blur-[100px] sm:h-96 sm:w-96 sm:blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[320px] w-[320px] rounded-full bg-violet-600/15 blur-[120px] sm:h-[500px] sm:w-[500px] sm:blur-[180px]" />
+    /*
+      NOTE: `overflow-x-clip` (not `overflow-x-hidden`) is required here.
+      `overflow-x-hidden` turns this wrapper into a scroll container and
+      silently breaks `position: sticky` on the navbar.
+    */
+    <div className="relative isolate min-h-screen overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      {/* Background glows */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-72 w-72 rounded-full bg-blue-600/20 blur-[100px] sm:h-96 sm:w-96 sm:blur-[140px]" />
+        <div className="absolute -right-32 top-1/2 h-[320px] w-[320px] rounded-full bg-violet-600/15 blur-[120px] sm:h-[500px] sm:w-[500px] sm:blur-[180px]" />
         <div className="absolute bottom-0 left-1/2 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[110px] sm:h-[400px] sm:w-[400px] sm:blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      {/* Sticky navbar */}
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
         <Navbar />
+      </header>
 
+      <main>
         <Hero />
+        <Stats />
         <Products />
         <WhyChoose />
         <HowItWorks />
         <FAQ />
         <CTA />
+      </main>
 
-        <Footer />
-      </div>
-    </>
+      <Footer />
+    </div>
   );
 }
