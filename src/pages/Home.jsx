@@ -6,6 +6,7 @@ import {
   Search,
   SlidersHorizontal,
   Download,
+  Keyboard,
   ChevronDown,
   QrCode,
   FileText,
@@ -122,6 +123,16 @@ const products = [
   //   category: "Images",
   //   features: ["Video Editor", "Vocal Saperator", "Multiple Formats", "HD Quality", "One Click"],
   // },
+  {
+    title: "Typing Tutor",
+    description:
+      "Improve your typing skills with our interactive typing tutor.",
+    icon: Keyboard,
+    status: "live",
+    href: "/typing-tutor",
+    category: "Utilities",
+    features: ["Test", "Learn", "Type"],
+  },
   {
     title: "QR Generator",
     description:

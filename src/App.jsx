@@ -18,6 +18,7 @@ import CompressorTools from "./pages/CompressorTools";
 import ImagetoVector from "./pages/ImagetoVector";
 import VideoEditor from "./pages/VideoDownloader";
   import VideoDownloader from "./pages/VideoDownloader";
+  import Typingtutor from "./pages/Typingtutor";
   
   export default function App() {
     return (
@@ -49,6 +50,7 @@ import VideoEditor from "./pages/VideoDownloader";
         <Route path="/video-editor" element={<VideoEditor />} />
 
       <Route path="/video-downloader" element={<VideoDownloader />} />
+      <Route path="/typing-tutor" element={<Typingtutor />} />
 
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />
