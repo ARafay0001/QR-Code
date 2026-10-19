@@ -112,16 +112,16 @@ const products = [
     category: "Images",
     features: ["Fast Compression", "Multiple Formats", "HD Quality", "One Click"],
   },
-  {
-    title: "Video Editor, Vocal Saperator",
-    description:
-      "Edit videos, remove vocals, and enhance audio with our online video editor.",
-    icon: Minimize2,
-    status: "live",
-    href: "/video-editor",
-    category: "Images",
-    features: ["Video Editor", "Vocal Saperator", "Multiple Formats", "HD Quality", "One Click"],
-  },
+  // {
+  //   title: "Video Editor, Vocal Saperator",
+  //   description:
+  //     "Edit videos, remove vocals, and enhance audio with our online video editor.",
+  //   icon: Minimize2,
+  //   status: "live",
+  //   href: "/video-editor",
+  //   category: "Images",
+  //   features: ["Video Editor", "Vocal Saperator", "Multiple Formats", "HD Quality", "One Click"],
+  // },
   {
     title: "QR Generator",
     description:
