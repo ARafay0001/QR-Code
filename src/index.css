@@ -1,7 +1,43 @@
 @import "tailwindcss";
 
+
 html {
   font-size: 75%; /* 12px instead of the default 16px; same as browser zoom 75% */
+}
+
+/* Themed scrollbars. Only active inside an element with class "themed-scroll". */
+
+/* Chrome, Edge, Safari, Opera */
+.themed-scroll::-webkit-scrollbar,
+.themed-scroll *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.themed-scroll::-webkit-scrollbar-track,
+.themed-scroll *::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.themed-scroll::-webkit-scrollbar-thumb,
+.themed-scroll *::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 9999px;
+  border: 2px solid #0f172a;
+}
+.themed-scroll::-webkit-scrollbar-thumb:hover,
+.themed-scroll *::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+.themed-scroll::-webkit-scrollbar-corner,
+.themed-scroll *::-webkit-scrollbar-corner {
+  background: #0f172a;
+}
+
+/* Firefox: these properties are inherited, so one rule covers every child */
+@supports (-moz-appearance: none) {
+  .themed-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #475569 #0f172a;
+  }
 }
 
 html {
