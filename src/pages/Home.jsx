@@ -11,6 +11,7 @@ import {
   QrCode,
   FileText,
   Image,
+  Wrench,
   Minimize2,
   Zap,
   ShieldCheck,
@@ -124,6 +125,16 @@ const products = [
     category: "Images",
     features: ["Fast Compression", "Multiple Formats", "HD Quality", "One Click"],
   },
+  {
+    title: "Mouse / Keyboard Input Tester",
+    description:
+      "Test your mouse and keyboard inputs with our interactive tester.",
+    icon: Wrench,
+    status: "live",
+    href: "/input-tester",
+    category: "Utilities",
+    features: ["Mouse", "Keyboard","Gamepad", "Steering Wheel","joystick" ,"Real-time Feedback"],
+  },
   // {
   //   title: "Video Editor, Vocal Saperator",
   //   description:
@@ -152,7 +163,7 @@ const products = [
     status: "live",
     href: "/qr-generator",
     category: "Utilities",
-    features: ["Logo Support", "SVG & PNG Export", "Custom Colors", "Free Forever"],
+    features: ["Logo Support", "SVG & PNG Export", "Custom Colors"],
   },
 ];
 

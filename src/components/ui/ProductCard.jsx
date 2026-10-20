@@ -177,7 +177,7 @@ export default function ProductCard({
           {title}
         </h3>
 
-        <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-400 sm:text-[15px]">
+        <p className="mt-2.5 line-clamp-3 text-[14px] leading-6 text-slate-400 sm:text-[15px]">
           {description}
         </p>
 
@@ -197,12 +197,12 @@ export default function ProductCard({
         )}
 
         {/* Footer */}
-        <div className="mt-auto flex items-center justify-between border-t border-slate-800/80 pt-5 sm:mt-auto">
+        <div className="mt-auto flex items-center justify-end border-t border-slate-800/80 pt-5 sm:mt-auto">
           {isLive ? (
             <>
-              <span className="text-sm font-semibold text-slate-200 transition-colors group-hover:text-white">
+              {/* <span className="text-sm font-semibold text-slate-200 transition-colors group-hover:text-white">
                 Open tool
-              </span>
+              </span> */}
               <span
                 className={`flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-800/80 text-slate-300 transition-all duration-300 group-hover:text-white ${a.btn}`}
               >

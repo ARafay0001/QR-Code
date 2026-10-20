@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { X, Smartphone, Monitor, ExternalLink } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -9,6 +10,8 @@ import Footer from "../components/common/Footer";
 /*  • Own expression parser/evaluator – no eval().                            */
 /*  • SHIFT (yellow) / ALPHA (red) / Base-N (blue) key layers.                */
 /*  • MODE menu (Calculate, Base-N), SETUP, CALC, SOLVE, ENG, DMS, RCL/STO.   */
+/*  • Landscape (desktop default) / portrait (mobile default) layouts.        */
+/*  • Pop-out window (Document Picture-in-Picture, popup fallback).           */
 /* ========================================================================== */
 
 const PI = Math.PI;
@@ -395,7 +398,7 @@ const KS = {
 };
 
 const Frac = ({ n, d }) => (
-  <span className="inline-flex items-center gap-1 align-middle text-2xl leading-none">
+  <span className="inline-flex items-center gap-1 align-middle text-xl leading-none sm:text-2xl">
     {n < 0 && "−"}
     <span className="inline-flex flex-col items-center leading-tight">
       <span className="border-b-2 border-current px-1">{Math.abs(n)}</span>
@@ -681,8 +684,8 @@ function ToolPanel({ mode, angle, onMenu, onSetup }) {
         </div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button onClick={onMenu} className={`h-10 rounded-[7px] text-[12px] font-bold ${KS.mod}`}>MODE</button>
-        <button onClick={onSetup} className={`h-10 rounded-[7px] text-[12px] font-bold ${KS.mod}`}>SETUP</button>
+        <button onClick={onMenu} className={`h-9 rounded-[7px] text-[11px] font-bold ${KS.mod}`}>MODE</button>
+        <button onClick={onSetup} className={`h-9 rounded-[7px] text-[11px] font-bold ${KS.mod}`}>SETUP</button>
       </div>
     </div>
   );
@@ -705,8 +708,8 @@ function tplRange(s, idx) {
 /* Draws stacked fractions, mixed numbers and ∫ / Σ templates inside the LCD */
 function renderExpr(s, pos, show, ovr) {
   let kk = 0;
-  const Cur = () => <span key={`c${kk++}`} className={`inline-block animate-pulse bg-current ${ovr ? "h-[3px] w-3 translate-y-2" : "h-5 w-[2px] translate-y-1"}`} />;
-  const box = (r) => (<>{r.empty && <span className="mx-px inline-block h-3.5 w-2.5 border border-dashed border-current opacity-60" />}{r.nodes}</>);
+  const Cur = () => <span key={`c${kk++}`} className={`inline-block animate-pulse bg-current ${ovr ? "h-[3px] w-3 translate-y-2" : "h-4 w-[2px] translate-y-0.5"}`} />;
+  const box = (r) => (<>{r.empty && <span className="mx-px inline-block h-3 w-2 border border-dashed border-current opacity-60" />}{r.nodes}</>);
   const fracEl = (n, d) => (
     <span key={`f${kk++}`} className="mx-0.5 inline-flex flex-col items-center align-middle leading-tight">
       <span className="border-b-2 border-current px-1">{box(n)}</span>
@@ -737,8 +740,8 @@ function renderExpr(s, pos, show, ovr) {
         const a = seq(i + 4, (x) => x === ","), b = seq(a.i + 1, (x) => x === ","), f = seq(b.i + 1, (x) => x === ")");
         nodes.push(
           <span key={`o${kk++}`} className="inline-flex items-center align-middle">
-            <span className="mr-1 inline-flex flex-col items-center text-[10px] leading-none">
-              <span>{box(b)}</span><span className="text-2xl leading-none">{c}</span><span>{c === "Σ" && "X="}{box(a)}</span>
+            <span className="mr-1 inline-flex flex-col items-center text-[9px] leading-none">
+              <span>{box(b)}</span><span className="text-xl leading-none">{c}</span><span>{c === "Σ" && "X="}{box(a)}</span>
             </span>
             {c === "Σ" && "("}{box(f)}{c === "Σ" ? ")" : <span className="ml-0.5">dx</span>}
           </span>
@@ -806,6 +809,33 @@ function ConvPanel({ value, onUse, onClose }) {
   );
 }
 
+/* ------------------------------ pop-out window ---------------------------- */
+
+const PIP_SIZE = { portrait: [400, 700], landscape: [820, 520] };
+
+function copyStyles(w) {
+  [...document.styleSheets].forEach((sheet) => {
+    try {
+      const st = w.document.createElement("style");
+      st.textContent = [...sheet.cssRules].map((r) => r.cssText).join("\n");
+      w.document.head.appendChild(st);
+    } catch (e) {
+      if (sheet.href) {
+        const l = w.document.createElement("link");
+        l.rel = "stylesheet";
+        l.href = sheet.href;
+        w.document.head.appendChild(l);
+      }
+    }
+  });
+  w.document.documentElement.className = document.documentElement.className;
+  w.document.body.style.margin = "0";
+  w.document.body.style.background = "#d5dae0";
+  w.document.title = "Calculator";
+}
+
+const mq = () => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
 /* ================================== PAGE ================================== */
 
 export default function ScientificCalculator() {
@@ -838,6 +868,52 @@ export default function ScientificCalculator() {
   const [clrOpen, setClrOpen] = useState(false);
   const [ovr, setOvr] = useState(false);
   const [off, setOff] = useState(false);
+
+  /* layout: landscape is the desktop default, portrait the mobile default */
+  const [wide, setWide] = useState(mq);
+  const [layout, setLayout] = useState(() => (mq() ? "landscape" : "portrait"));
+  const [pip, setPip] = useState(null);
+  const pipRef = useRef(null);
+  const prevLayout = useRef("landscape");
+
+  useEffect(() => {
+    const m = window.matchMedia("(min-width: 768px)");
+    const f = () => setWide(m.matches);
+    m.addEventListener("change", f);
+    return () => m.removeEventListener("change", f);
+  }, []);
+
+  useEffect(() => { pipRef.current = pip; }, [pip]);
+  useEffect(() => () => { try { pipRef.current?.close(); } catch (e) { /* already closed */ } }, []);
+
+  const land = (wide || !!pip) && layout === "landscape";
+  const canToggle = wide || !!pip;
+
+  const toggleLayout = () => {
+    const next = layout === "landscape" ? "portrait" : "landscape";
+    setLayout(next);
+    if (pip) { try { pip.resizeTo(...PIP_SIZE[next]); } catch (e) { /* not allowed */ } }
+  };
+
+  const popOut = async () => {
+    if (pip) return;
+    let w = null;
+    try {
+      if (window.documentPictureInPicture) {
+        w = await window.documentPictureInPicture.requestWindow({ width: PIP_SIZE.portrait[0], height: PIP_SIZE.portrait[1] });
+      } else {
+        w = window.open("", "calc-popout", `popup=yes,width=${PIP_SIZE.portrait[0]},height=${PIP_SIZE.portrait[1]}`);
+      }
+    } catch (e) { w = null; }
+    if (!w) return;
+    copyStyles(w);
+    prevLayout.current = layout;
+    setLayout("portrait");
+    w.addEventListener("pagehide", () => { setPip(null); setLayout(prevLayout.current); });
+    setPip(w);
+  };
+
+  const popIn = () => { try { pip.close(); } catch (e) { setPip(null); } };
 
   const b = mode === "base" ? base : 10;
 
@@ -1069,7 +1145,7 @@ export default function ScientificCalculator() {
   const overlay = setup || menu || prompt || constOpen || convOpen || clrOpen;
   const isTool = !!TOOLS[mode];
 
-  /* physical keyboard */
+  /* physical keyboard (main window and the pop-out window) */
   useEffect(() => {
     const h = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey || overlay || isTool || off) return;
@@ -1077,12 +1153,12 @@ export default function ScientificCalculator() {
       if (id) { e.preventDefault(); press(BY[id]); return; }
       if (TEXT[e.key]) insert(TEXT[e.key]);
     };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
+    const targets = [window, pip].filter(Boolean);
+    targets.forEach((t) => t.addEventListener("keydown", h));
+    return () => targets.forEach((t) => t.removeEventListener("keydown", h));
   });
 
   /* display */
-  const mm = (t) => t.replace(/-/g, "−");
   const fr = frac && res ? toFrac(res.v) : null;
   let shown = "";
   if (res) {
@@ -1104,7 +1180,7 @@ export default function ScientificCalculator() {
     return (
       <div key={k.id} className="flex min-w-0 flex-col">
         {!plain && (
-          <div className="flex h-4 min-w-0 items-end justify-between gap-0.5 px-0.5 text-[8px] font-bold leading-none min-[380px]:text-[9px] sm:text-[10px]">
+          <div className="flex h-3.5 min-w-0 items-end justify-between gap-0.5 px-0.5 text-[7px] font-bold leading-none sm:text-[8px]">
             <span className="text-[#c08d1b]">{k.sl}</span>
             {k.bl && <span className="text-[#1f7e8c]">{k.bl}</span>}
             <span className="text-[#b83f46]">{k.al}</span>
@@ -1113,7 +1189,7 @@ export default function ScientificCalculator() {
         <button
           onClick={() => press(k)}
           aria-label={k.l}
-          className={`h-[clamp(44px,11vw,48px)] min-h-[44px] min-w-0 touch-manipulation select-none rounded-[7px] border border-black/10 px-0.5 text-[11px] font-bold shadow-[0_3px_0_rgba(35,45,55,.3),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 active:translate-y-[2px] active:shadow-none min-[380px]:text-[12px] sm:text-[13px] ${style} ${on ? "ring-2 ring-amber-300" : ""} ${k.id === "alpha" && alpha ? "!ring-red-400" : ""}`}
+          className={`h-9 min-w-0 touch-manipulation select-none rounded-md border border-black/10 px-0.5 text-[10px] font-bold shadow-[0_2px_0_rgba(35,45,55,.3),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 active:translate-y-[2px] active:shadow-none sm:text-[11px] ${style} ${on ? "ring-2 ring-amber-300" : ""} ${k.id === "alpha" && alpha ? "!ring-red-400" : ""}`}
         >
           {k.l}
         </button>
@@ -1123,10 +1199,10 @@ export default function ScientificCalculator() {
 
   const dpad = (
     <div key="PAD" className="col-span-2 row-span-2 flex items-center justify-center">
-      <div className="grid h-[clamp(84px,27vw,100px)] w-[clamp(84px,27vw,100px)] grid-cols-3 grid-rows-3 gap-0.5 rounded-full bg-gradient-to-b from-[#cbd0d5] to-[#aab2bb] p-1 shadow-[inset_0_2px_5px_rgba(50,60,70,.2)]">
+      <div className="grid h-[76px] w-[76px] grid-cols-3 grid-rows-3 gap-0.5 rounded-full bg-gradient-to-b from-[#cbd0d5] to-[#aab2bb] p-1 shadow-[inset_0_2px_5px_rgba(50,60,70,.2)]">
         {DPAD.map((k) => (
           <button key={k.id} onClick={() => press(k)} aria-label={k.id}
-            className={`flex touch-manipulation items-center justify-center rounded-md border border-black/10 text-[11px] font-bold shadow-[0_2px_0_rgba(35,45,55,.28)] active:translate-y-px ${KS.pad} ${k.cls}`}>{k.l}</button>
+            className={`flex touch-manipulation items-center justify-center rounded-md border border-black/10 text-[9px] font-bold shadow-[0_2px_0_rgba(35,45,55,.28)] active:translate-y-px ${KS.pad} ${k.cls}`}>{k.l}</button>
         ))}
       </div>
     </div>
@@ -1134,6 +1210,163 @@ export default function ScientificCalculator() {
 
   const chip = (on, onClick, text) => (
     <button key={text} onClick={onClick} className={`rounded-md border px-3 py-1.5 text-sm font-semibold ${on ? "border-[#d3a83d] bg-[#e0b94f] text-[#202832]" : "border-[#aeb8c2] text-[#263b53]"}`}>{text}</button>
+  );
+
+  const tbtn = "inline-flex h-7 items-center gap-1 rounded-md border border-[#9aa4ae] bg-white/60 px-2 text-[11px] font-bold text-[#263b53] hover:bg-white";
+
+  const shell = pip
+    ? "relative min-h-screen w-full min-w-0 bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-3"
+    : `relative mx-auto mt-5 w-full min-w-0 rounded-[1.5rem] border border-[#aeb6bf] bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-white/80 sm:mt-6 sm:rounded-[2rem] sm:p-6 ${land ? "max-w-[820px]" : "max-w-[400px]"}`;
+
+  const body = (
+    <div className={shell}>
+      {/* toolbar */}
+      <div className="mb-3 flex min-w-0 items-center justify-between gap-2 px-0.5">
+        <span className="text-[11px] font-black tracking-[0.14em] text-[#263b53]">SCIENTIFIC</span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {canToggle && (
+            <button onClick={toggleLayout} className={tbtn} title={land ? "Switch to portrait" : "Switch to landscape"}>
+              {land ? <Smartphone size={13} /> : <Monitor size={13} />}
+              {land ? "Portrait" : "Landscape"}
+            </button>
+          )}
+          {wide && !pip && (
+            <button onClick={popOut} className={tbtn} title="Open the calculator in its own small window">
+              <ExternalLink size={13} />Pop out
+            </button>
+          )}
+        </div>
+      </div>
+
+      {isTool ? (
+        <ToolPanel mode={mode} angle={angle} onMenu={() => setMenu(true)} onSetup={() => setSetup(true)} />
+      ) : (
+        <>
+          {/* LCD */}
+          <div className="rounded-lg border border-[#7d8790] bg-[#535e68] p-1.5 shadow-inner">
+            <div className={`relative flex min-w-0 flex-col rounded-md bg-[#dce8cc] px-3 py-1.5 font-mono text-[#202a1c] shadow-[inset_0_2px_7px_rgba(0,0,0,.28)] ${land ? "h-28" : "h-32"}`}>
+              {off && <div className="absolute inset-0 z-10 rounded-md bg-[#8f9b86]" />}
+              <div className="flex h-4 gap-2 text-[10px] font-bold">{tags.map((t) => <span key={t}>{t}</span>)}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto break-all text-sm leading-snug sm:text-base">
+                {renderExpr(s, pos, !fresh, ovr)}
+              </div>
+              <div className="flex min-h-[2rem] items-end justify-end break-all text-right text-xl font-semibold sm:text-2xl">
+                {err ? <span className="text-lg">{err}</span> : res ? (
+                  <>
+                    {res.label}
+                    {fr ? <Frac n={fr.n} d={fr.d} /> : shown.replace(/-/g, "−")}
+                  </>
+                ) : ""}
+              </div>
+            </div>
+          </div>
+
+          {/* keys */}
+          <div className={land ? "mt-4 flex items-end gap-5" : "mt-4"}>
+            <div className={land ? "min-w-0 flex-[6]" : ""}>
+              <div className="grid grid-cols-6 gap-x-1 gap-y-1 sm:gap-x-1.5">
+                {ROW1.map((k) => (k.id === "PAD" ? dpad : key(k)))}
+              </div>
+              <div className="mt-1 space-y-1">
+                {ROWS.map((r, i) => <div key={i} className="grid grid-cols-6 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k))}</div>)}
+              </div>
+            </div>
+            <div className={`space-y-1.5 ${land ? "min-w-0 flex-[5]" : "mt-4"}`}>
+              {PAD.map((r, i) => <div key={i} className="grid grid-cols-5 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k, !k.sl && !k.al))}</div>)}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* MODE menu */}
+      {menu && (
+        <Overlay title="Menu" onClose={() => setMenu(false)}>
+          {[["calc", "Calculate"], ["base", "Base-N"], ["eq", "Equation"], ["matrix", "Matrix"], ["stat", "Statistics"], ["table", "Table"]].map(([v, t], i) => (
+            <button key={v} onClick={() => { setMode(v); setBase(10); act({ act: "ac" }); setMenu(false); }}
+              className={`mt-3 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left font-semibold ${mode === v ? "border-[#d3a83d] bg-[#f6e7b8]" : "border-[#aeb8c2]"}`}>
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-[#344b68] text-xs text-white">{i + 1}</span>{t}
+            </button>
+          ))}
+          <p className="mt-4 text-xs text-slate-600">Equation solves quadratic, cubic and 2–3 unknown linear systems. Matrix has MatA and MatB (up to 4×4). Statistics does 1-variable and A+BX regression. Table builds f(X) tables. In Base-N, the DEC, HEX, BIN and OCT keys (x², x▫, log, ln) pick the number base. Use ALPHA + a key for the digits A–F.</p>
+        </Overlay>
+      )}
+
+      {/* CALC prompt */}
+      {prompt && (
+        <Overlay title="Enter values" onClose={() => setPrompt(null)}>
+          <div className="mt-4 space-y-3">
+            {prompt.names.map((n) => (
+              <label key={n} className="flex items-center gap-3 text-sm font-semibold">
+                <span className="w-6 text-lg">{n} =</span>
+                <input value={prompt.vals[n]} onChange={(e) => setPrompt({ ...prompt, vals: { ...prompt.vals, [n]: e.target.value } })}
+                  onKeyDown={(e) => { if (e.key === "Enter") runPrompt(); }}
+                  className="w-full rounded-md border border-[#aeb8c2] bg-white px-3 py-2 font-mono" />
+              </label>
+            ))}
+          </div>
+          <button onClick={runPrompt} className="mt-5 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-white">Calculate</button>
+        </Overlay>
+      )}
+
+      {/* CONST */}
+      {constOpen && (
+        <Overlay title="Constants (CONST)" onClose={() => setConstOpen(false)}>
+          <div className="mt-3 space-y-1.5">
+            {CONSTS.map(([sym, name, v, u]) => (
+              <button key={sym} onClick={() => { setConstOpen(false); insert(sym); }} className="flex w-full items-center gap-3 rounded-md border border-[#aeb8c2] px-3 py-1.5 text-left hover:bg-white">
+                <span className="w-9 text-base font-bold">{sym}</span>
+                <span className="min-w-0 flex-1 text-xs"><span className="block font-semibold">{name}</span><span className="block truncate font-mono text-[#4c5b6b]">{fmtNum(v, { type: "norm", n: 0 })} {u}</span></span>
+              </button>
+            ))}
+          </div>
+        </Overlay>
+      )}
+
+      {/* CONV */}
+      {convOpen && (
+        <ConvPanel value={convVal} onClose={() => setConvOpen(false)}
+          onUse={(v) => { setConvOpen(false); setS(String(v)); setPos(String(v).length); setRes({ v }); setAns(v); setFresh(true); setErr(""); resetView(); }} />
+      )}
+
+      {/* CLR */}
+      {clrOpen && (
+        <Overlay title="Clear (CLR)" onClose={() => setClrOpen(false)}>
+          {[
+            ["1: Setup data", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); }],
+            ["2: Memory", () => { setVars({}); setAns(0); setHist([]); setHi(-1); }],
+            ["3: All", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setAns(0); setHist([]); setHi(-1); setMode("calc"); setBase(10); }],
+          ].map(([t, fn2]) => (
+            <button key={t} onClick={() => { fn2(); act({ act: "ac" }); setClrOpen(false); }} className="mt-3 block w-full rounded-lg border border-[#aeb8c2] px-3 py-2.5 text-left font-semibold hover:bg-white">{t}</button>
+          ))}
+        </Overlay>
+      )}
+
+      {/* SETUP */}
+      {setup && (
+        <Overlay title="Setup" onClose={() => setSetup(false)}>
+          <p className="mt-4 text-xs font-semibold text-slate-600">Angle unit</p>
+          <div className="mt-2 flex gap-2">
+            {[["deg", "Degree"], ["rad", "Radian"], ["gra", "Gradian"]].map(([v, t]) => chip(angle === v, () => setAngle(v), t))}
+          </div>
+          <p className="mt-5 text-xs font-semibold text-slate-600">Number format</p>
+          <div className="mt-2 flex gap-2">
+            {[["norm", "Normal"], ["fix", "Fix"], ["sci", "Sci"]].map(([v, t]) => chip(fmt.type === v, () => setFmt({ type: v, n: v === "fix" ? 2 : v === "sci" ? 3 : 0 }), t))}
+          </div>
+          {fmt.type !== "norm" && (
+            <>
+              <p className="mt-4 text-xs font-semibold text-slate-600">{fmt.type === "fix" ? "Decimal places" : "Significant digits"}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {Array.from({ length: fmt.type === "fix" ? 10 : 9 }, (_, i) => (fmt.type === "fix" ? i : i + 1)).map((n) => chip(fmt.n === n, () => setFmt({ ...fmt, n }), String(n)))}
+              </div>
+            </>
+          )}
+          <div className="mt-6 flex gap-2">
+            <button onClick={() => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-slate-600 px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
+            <button onClick={() => setSetup(false)} className="rounded-md bg-amber-300 px-4 py-1.5 text-sm font-semibold text-black">Done</button>
+          </div>
+        </Overlay>
+      )}
+    </div>
   );
 
   return (
@@ -1146,153 +1379,22 @@ export default function ScientificCalculator() {
           <p className="mt-2 text-xs text-slate-400 sm:text-sm">Works like a Casio fx-991CW. Runs fully in your browser.</p>
         </div>
 
-        <div className="relative mx-auto mt-5 w-full max-w-[440px] min-w-0 rounded-[1.5rem] border border-[#aeb6bf] bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-3 shadow-[0_20px_45px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-white/80 sm:mt-6 sm:rounded-[1.8rem] sm:p-4">
-          {/* header */}
-          {/* <div className="mb-3 flex min-w-0 items-center justify-between gap-2 px-0.5">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="text-[11px] font-black tracking-[0.12em] text-[#263b53] sm:text-xs">CASIO</span>
-              <span className="hidden text-[9px] font-bold tracking-wide text-[#536478] min-[360px]:inline sm:text-[10px]">NATURAL-V.P.A.M.</span>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <div aria-hidden="true" className="grid h-5 w-12 grid-cols-6 gap-px rounded-sm border border-[#89939d] bg-[#303d4b] p-0.5 sm:h-6 sm:w-16">
-                {Array.from({ length: 6 }, (_, i) => <span key={i} className="rounded-[1px] bg-gradient-to-b from-[#71839a] to-[#34475d]" />)}
-              </div>
-              <p className="text-xs font-extrabold tracking-wider text-[#263b53] sm:text-sm">fx-991CW</p>
-            </div>
-          </div> */}
-
-          {isTool ? (
-            <ToolPanel mode={mode} angle={angle} onMenu={() => setMenu(true)} onSetup={() => setSetup(true)} />
-          ) : (
+        {pip ? (
           <>
-          {/* LCD */}
-          <div className="rounded-lg border mt-5 border-[#7d8790] bg-[#535e68] p-1.5 shadow-inner">
-            <div className="relative flex h-32 min-w-0 flex-col rounded-md bg-[#dce8cc] px-2 py-1.5 font-mono text-[#202a1c] shadow-[inset_0_2px_7px_rgba(0,0,0,.28)] sm:h-36 sm:px-3">
-              {off && <div className="absolute inset-0 z-10 rounded-md bg-[#8f9b86]" />}
-              <div className="flex h-4 gap-2 text-[10px] font-bold">{tags.map((t) => <span key={t}>{t}</span>)}</div>
-              <div className="min-h-0 flex-1 overflow-y-auto break-all text-base leading-snug sm:text-lg">
-                {renderExpr(s, pos, !fresh, ovr)}
-              </div>
-              <div className="flex min-h-[2.25rem] items-end justify-end break-all text-right text-2xl font-semibold sm:text-3xl">
-                {err ? <span className="text-xl">{err}</span> : res ? (
-                  <>
-                    {res.label}
-                    {fr ? <Frac n={fr.n} d={fr.d} /> : shown.replace(/-/g, "−")}
-                  </>
-                ) : ""}
-              </div>
+            <div className="mx-auto mt-6 w-full max-w-[400px] rounded-2xl border border-slate-700 bg-slate-900/70 p-6 text-center">
+              <p className="text-sm text-slate-300">The calculator is open in its own window.</p>
+              <button onClick={popIn} className="mt-4 rounded-md bg-amber-300 px-4 py-2 text-sm font-semibold text-black">Bring it back here</button>
             </div>
-          </div>
-
-          {/* keys */}
-          <div className="mt-3 grid grid-cols-6 gap-x-1 gap-y-1.5 sm:gap-x-1.5">
-            {ROW1.map((k) => (k.id === "PAD" ? dpad : key(k)))}
-          </div>
-          <div className="mt-1.5 space-y-1.5">
-            {ROWS.map((r, i) => <div key={i} className="grid grid-cols-6 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k))}</div>)}
-          </div>
-          <div className="mt-3 space-y-1.5 sm:space-y-2">
-            {PAD.map((r, i) => <div key={i} className="grid grid-cols-5 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k, !k.sl && !k.al))}</div>)}
-          </div>
-
+            {createPortal(body, pip.document.body)}
           </>
-          )}
+        ) : body}
 
-          {/* MODE menu */}
-          {menu && (
-            <Overlay title="Menu" onClose={() => setMenu(false)}>
-              {[["calc", "Calculate"], ["base", "Base-N"], ["eq", "Equation"], ["matrix", "Matrix"], ["stat", "Statistics"], ["table", "Table"]].map(([v, t], i) => (
-                <button key={v} onClick={() => { setMode(v); setBase(10); act({ act: "ac" }); setMenu(false); }}
-                  className={`mt-3 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left font-semibold ${mode === v ? "border-[#d3a83d] bg-[#f6e7b8]" : "border-[#aeb8c2]"}`}>
-                  <span className="flex h-6 w-6 items-center justify-center rounded bg-[#344b68] text-xs text-white">{i + 1}</span>{t}
-                </button>
-              ))}
-              <p className="mt-4 text-xs text-slate-600">Equation solves quadratic, cubic and 2–3 unknown linear systems. Matrix has MatA and MatB (up to 4×4). Statistics does 1-variable and A+BX regression. Table builds f(X) tables. In Base-N, the DEC, HEX, BIN and OCT keys (x², x▫, log, ln) pick the number base. Use ALPHA + a key for the digits A–F.</p>
-            </Overlay>
-          )}
-
-          {/* CALC prompt */}
-          {prompt && (
-            <Overlay title="Enter values" onClose={() => setPrompt(null)}>
-              <div className="mt-4 space-y-3">
-                {prompt.names.map((n) => (
-                  <label key={n} className="flex items-center gap-3 text-sm font-semibold">
-                    <span className="w-6 text-lg">{n} =</span>
-                    <input value={prompt.vals[n]} onChange={(e) => setPrompt({ ...prompt, vals: { ...prompt.vals, [n]: e.target.value } })}
-                      onKeyDown={(e) => { if (e.key === "Enter") runPrompt(); }}
-                      className="w-full rounded-md border border-[#aeb8c2] bg-white px-3 py-2 font-mono" />
-                  </label>
-                ))}
-              </div>
-              <button onClick={runPrompt} className="mt-5 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-white">Calculate</button>
-            </Overlay>
-          )}
-
-          {/* CONST */}
-          {constOpen && (
-            <Overlay title="Constants (CONST)" onClose={() => setConstOpen(false)}>
-              <div className="mt-3 space-y-1.5">
-                {CONSTS.map(([sym, name, v, u]) => (
-                  <button key={sym} onClick={() => { setConstOpen(false); insert(sym); }} className="flex w-full items-center gap-3 rounded-md border border-[#aeb8c2] px-3 py-1.5 text-left hover:bg-white">
-                    <span className="w-9 text-base font-bold">{sym}</span>
-                    <span className="min-w-0 flex-1 text-xs"><span className="block font-semibold">{name}</span><span className="block truncate font-mono text-[#4c5b6b]">{fmtNum(v, { type: "norm", n: 0 })} {u}</span></span>
-                  </button>
-                ))}
-              </div>
-            </Overlay>
-          )}
-
-          {/* CONV */}
-          {convOpen && (
-            <ConvPanel value={convVal} onClose={() => setConvOpen(false)}
-              onUse={(v) => { setConvOpen(false); setS(String(v)); setPos(String(v).length); setRes({ v }); setAns(v); setFresh(true); setErr(""); resetView(); }} />
-          )}
-
-          {/* CLR */}
-          {clrOpen && (
-            <Overlay title="Clear (CLR)" onClose={() => setClrOpen(false)}>
-              {[
-                ["1: Setup data", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); }],
-                ["2: Memory", () => { setVars({}); setAns(0); setHist([]); setHi(-1); }],
-                ["3: All", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setAns(0); setHist([]); setHi(-1); setMode("calc"); setBase(10); }],
-              ].map(([t, fn2]) => (
-                <button key={t} onClick={() => { fn2(); act({ act: "ac" }); setClrOpen(false); }} className="mt-3 block w-full rounded-lg border border-[#aeb8c2] px-3 py-2.5 text-left font-semibold hover:bg-white">{t}</button>
-              ))}
-            </Overlay>
-          )}
-
-          {/* SETUP */}
-          {setup && (
-            <Overlay title="Setup" onClose={() => setSetup(false)}>
-              <p className="mt-4 text-xs font-semibold text-slate-600">Angle unit</p>
-              <div className="mt-2 flex gap-2">
-                {[["deg", "Degree"], ["rad", "Radian"], ["gra", "Gradian"]].map(([v, t]) => chip(angle === v, () => setAngle(v), t))}
-              </div>
-              <p className="mt-5 text-xs font-semibold text-slate-600">Number format</p>
-              <div className="mt-2 flex gap-2">
-                {[["norm", "Normal"], ["fix", "Fix"], ["sci", "Sci"]].map(([v, t]) => chip(fmt.type === v, () => setFmt({ type: v, n: v === "fix" ? 2 : v === "sci" ? 3 : 0 }), t))}
-              </div>
-              {fmt.type !== "norm" && (
-                <>
-                  <p className="mt-4 text-xs font-semibold text-slate-600">{fmt.type === "fix" ? "Decimal places" : "Significant digits"}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {Array.from({ length: fmt.type === "fix" ? 10 : 9 }, (_, i) => (fmt.type === "fix" ? i : i + 1)).map((n) => chip(fmt.n === n, () => setFmt({ ...fmt, n }), String(n)))}
-                  </div>
-                </>
-              )}
-              <div className="mt-6 flex gap-2">
-                <button onClick={() => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-slate-600 px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
-                <button onClick={() => setSetup(false)} className="rounded-md bg-amber-300 px-4 py-1.5 text-sm font-semibold text-black">Done</button>
-              </div>
-            </Overlay>
-          )}
-        </div>
-
-        <div className="mx-auto mt-5 max-w-[440px] space-y-2 px-1 text-xs text-slate-400 sm:mt-6 sm:space-y-1.5">
+        <div className="mx-auto mt-5 max-w-[820px] space-y-2 px-1 text-xs text-slate-400 sm:mt-6 sm:space-y-1.5">
           <p><span className="font-semibold text-[#c08d1b]">SHIFT</span> then a key uses the yellow function. <span className="font-semibold text-[#b83f46]">ALPHA</span> then a key uses the red letter. <span className="font-semibold text-slate-200">SHIFT + MODE</span> opens SETUP, MODE opens the menu.</p>
           <p>Fractions: type the top number, press a⁄b, then the bottom number. Store a value: SHIFT + RCL (STO), then ALPHA and a letter. ▲ ▼ browse history.</p>
           <p>CALC asks for the variables in your expression. SOLVE: type an equation with ALPHA + CALC for "=", e.g. X² − 4 = 0, then SHIFT + CALC. ∫ and Σ use X, e.g. ∫(X², 0, 3).</p>
           <p>Templates: ▫⁄▫ and ∫ₐᵇ▫ draw natural fractions and integrals; fill each box and move between them with ◀ ▶. SHIFT + 7 CONST (constants), SHIFT + 8 CONV (unit conversion), SHIFT + 9 CLR, SHIFT + DEL INS (insert/overwrite), SHIFT + AC OFF (press ON to wake).</p>
+          <p>Layout: on desktop use the Portrait / Landscape button on the calculator. Pop out opens a small always-on-top window (Chrome / Edge) or a popup window (other browsers) in portrait, which you can also switch to landscape.</p>
           <p>Keyboard works too: digits, + − * / ( ) ^, Enter, Backspace, Esc, arrows, and s c t l n r for sin cos tan log ln √.</p>
         </div>
       </main>
