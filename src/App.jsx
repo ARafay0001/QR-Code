@@ -23,7 +23,8 @@ import VideoEditor from "./pages/VideoDownloader";
   import InputTester from "./pages/InputTester";
 import PDFtoWord from "./pages/pdf/PdftoWord";
 import PDFtoExcel from "./pages/pdf/PdftoExcel.jsx";
-  
+
+import Texttool from "./pages/Texttool.jsx";
   export default function App() {
     return (
       <BrowserRouter>
@@ -61,6 +62,7 @@ import PDFtoExcel from "./pages/pdf/PdftoExcel.jsx";
       <Route path="/typing-tutor" element={<Typingtutor />} />
       <Route path="/scientific-calculator" element={<ScientificCalculator />} />
       <Route path="/input-tester" element={<InputTester />} />
+      <Route path="/text-tool" element={<Texttool />} />
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />
       </Routes>

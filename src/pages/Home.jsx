@@ -9,6 +9,7 @@ import {
   Keyboard,
   ChevronDown,
   QrCode,
+  Text,
   FileText,
   Image,
   Wrench,
@@ -154,6 +155,16 @@ const products = [
     href: "/typing-tutor",
     category: "Utilities",
     features: ["Test", "Learn", "Type"],
+  },
+  {
+    title: "Text Tool",
+    description:
+      "Convert, clean, encode and count text with 50+ free tools.",
+    icon: Text,
+    status: "live",
+    href: "/text-tool",
+    category: "Utilities",
+    features: ["Convert", "Clean", "Encode", "Count"],
   },
   {
     title: "QR Generator",
