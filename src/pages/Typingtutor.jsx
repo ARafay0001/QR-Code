@@ -844,7 +844,7 @@ function LineChart({ series, labels = [], markers = [], height = 200 }) {
 
 /* ---------------------------- virtual keyboard ---------------------------- */
 
-const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, ghost }) {
+const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, ghost, active })  {
   if (ghost) return <div style={{ flex }} />;
   const color = finger ? FINGER_COLORS[finger] : "#64748b";
   const isPressed = pressed && pressed.key === id;
@@ -861,6 +861,10 @@ const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, gh
     };
   }
 
+    if (active) {
+    style = { ...style, background: "#f59e0b33", borderColor: "#f59e0b", color: "#fbbf24", boxShadow: "0 0 12px #f59e0b88" };
+  }
+
   return (
     <div
       style={style}
@@ -872,12 +876,13 @@ const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, gh
           : ""
       }`}
     >
-      {label}
+          {label}
+      {active && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-amber-400" />}
     </div>
   );
 });
 
-const VirtualKeyboard = memo(function VirtualKeyboard({ nextChar, pressed }) {
+const VirtualKeyboard = memo(function VirtualKeyboard({ nextChar, pressed, caps }) {
   const next = charToKey(nextChar);
   const nextInfo = next ? KEY_INFO[next.base] : null;
   const shiftId = next?.shift ? (nextInfo.hand === "left" ? "rshift" : "lshift") : null;
@@ -895,6 +900,7 @@ const VirtualKeyboard = memo(function VirtualKeyboard({ nextChar, pressed }) {
                 isNext={shiftId === row.left.id}
                 pressed={pressed}
                 ghost={row.left.id === "gap"}
+                active={row.left.id === "caps" && caps}
               />
             )}
             {[...row.keys].map((k, i) => (
@@ -1063,7 +1069,7 @@ function NextKeyCard({ nextChar }) {
 function TypingSession({ session, settings, onSetting, onFinish, onRestart, onExit }) {
   const timed = session.type === "test" && session.mode === "time";
   const duration = session.duration || 0;
-
+  const [caps, setCaps] = useState(false);
   const [words, setWords] = useState(() => buildWords(session));
   const target = useMemo(() => words.join(" "), [words]);
   const [typed, setTyped] = useState("");
@@ -1261,6 +1267,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
   };
 
   const handleKeyDown = (e) => {
+    setCaps(e.getModifierState?.("CapsLock") ?? false);
     if (e.key === "Tab") {
       e.preventDefault();
       onRestart();
@@ -1271,6 +1278,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
       onExit();
       return;
     }
+    if (e.key === "CapsLock") return "caps";
     const id = pressedId(e);
     if (id) setPressed({ key: id, ok: e.key === targetRef.current[typedRef.current.length] || id.endsWith("shift") });
   };
@@ -1393,7 +1401,10 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
               value={typed}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              onKeyUp={() => setPressed(null)}
+             onKeyUp={(e) => {
+  setPressed(null);
+  setCaps(e.getModifierState?.("CapsLock") ?? false);
+}}
               onPaste={(e) => e.preventDefault()}
               onDrop={(e) => e.preventDefault()}
               onFocus={() => setFocused(true)}
@@ -1435,7 +1446,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
 
         {settings.keyboard && (
           <div className="mt-3">
-            <VirtualKeyboard nextChar={target[typed.length]} pressed={pressed} />
+            <VirtualKeyboard nextChar={target[typed.length]} pressed={pressed} caps={caps} />
           </div>
         )}
 
@@ -1449,6 +1460,11 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
           <p className="text-xs text-slate-400">
             <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Tab</kbd> new text ·{" "}
             <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Esc</kbd> exit
+            {caps && (
+  <span className="ml-3 rounded-md border border-amber-500/50 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">
+    Caps Lock is on
+  </span>
+)}
           </p>
         </div>
       </div>
