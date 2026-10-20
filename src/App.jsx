@@ -21,6 +21,7 @@ import VideoEditor from "./pages/VideoDownloader";
   import Typingtutor from "./pages/Typingtutor";
   import ScientificCalculator from "./pages/ScientificCalculator";
   import InputTester from "./pages/InputTester";
+import PDFToWord from "./pages/pdf/PdftoWord";
   
   export default function App() {
     return (
@@ -47,6 +48,7 @@ import VideoEditor from "./pages/VideoDownloader";
 
         <Route path="/pdf-tools/pdf-editor" element={<PDFEditor />} />
         <Route path="/pdf-tools/image-to-pdf" element={<DocumentScanner />} />
+        <Route path="/pdf-tools/pdf-to-word" element={<PDFToWord />} />
         <Route path="/webp-to-image" element={<WebpToImage />} />
         <Route path="/image-to-vector" element={<ImagetoVector />} />
         <Route path="/video-editor" element={<VideoEditor />} />

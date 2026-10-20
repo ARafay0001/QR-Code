@@ -32,6 +32,12 @@ const tools = [
     path: "/pdf-tools/compress",
     icon: Shrink,
   },
+  {
+    title: "PDF to Word",
+    description: "Convert PDF files to editable Word documents.",
+    path: "/pdf-tools/pdf-to-word",
+    icon: FileText,
+  },
 ];
 
 export default function PDFTools() {
