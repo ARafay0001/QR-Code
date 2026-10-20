@@ -38,6 +38,12 @@ const tools = [
     path: "/pdf-tools/pdf-to-word",
     icon: FileText,
   },
+  {
+    title: "PDF to Excel",
+    description: "Convert PDF files to editable Excel documents.",
+    path: "/pdf-tools/pdf-to-excel",
+    icon: FileText,
+  },
 ];
 
 export default function PDFTools() {
