@@ -14,6 +14,7 @@ import {
   Minimize2,
   Zap,
   ShieldCheck,
+  Calculator,
   Globe,
   ChevronRight,
 } from "lucide-react";
@@ -84,6 +85,16 @@ const products = [
     href: "/unit-converter",
     category: "Utilities",
     features: ["Convert every unit", "One Click"],
+  },
+  {
+    title: "Scientific Calculator",
+    description:
+      "Perform advanced mathematical calculations with this powerful scientific calculator.",
+    icon: Calculator,
+    status: "live",
+    href: "/scientific-calculator",
+    category: "Utilities",
+    features: ["Advanced Functions", "Scientific Notation", "Graphing Capabilities"],
   },
   {
     title: "Image to SVG & Vector",

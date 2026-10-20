@@ -19,6 +19,7 @@ import ImagetoVector from "./pages/ImagetoVector";
 import VideoEditor from "./pages/VideoDownloader";
   import VideoDownloader from "./pages/VideoDownloader";
   import Typingtutor from "./pages/Typingtutor";
+  import ScientificCalculator from "./pages/ScientificCalculator";
   
   export default function App() {
     return (
@@ -51,7 +52,7 @@ import VideoEditor from "./pages/VideoDownloader";
 
       <Route path="/video-downloader" element={<VideoDownloader />} />
       <Route path="/typing-tutor" element={<Typingtutor />} />
-
+      <Route path="/scientific-calculator" element={<ScientificCalculator />} />
         {/* 404 - MUST BE LAST */}
         <Route path="*" element={<NotFound />} />
       </Routes>

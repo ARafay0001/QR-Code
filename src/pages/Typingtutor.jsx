@@ -31,6 +31,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import Navbar from "../components/common/Navbar";
+import Footer from "../components/common/Footer";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                    */
@@ -369,10 +371,10 @@ const KEY_INFO = (() => {
 })();
 
 const STORAGE_KEY = "typeflow:v1";
-const LINE_HEIGHT = 44;
+const LINE_HEIGHT = 40;
 
 const DEFAULT_STORE = {
-  settings: { sound: false, keyboard: true, strict: false, effects: true },
+  settings: { sound: true, keyboard: true, strict: false, effects: true },
   test: {
     mode: "time",
     duration: 30,
@@ -583,19 +585,47 @@ function pressedId(e) {
 /* --------------------------------- sound ---------------------------------- */
 
 let audioCtx;
+function getAudio() {
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone({ type = "sine", from, to = from, dur = 0.1, vol = 0.1, delay = 0 }) {
+  const ctx = getAudio();
+  const t0 = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(from, t0);
+  if (to !== from) osc.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.006);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.03);
+}
+
+// Correct key = soft "pop". Wrong key = low "bonk".
 function beep(ok) {
   try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = ok ? "triangle" : "sawtooth";
-    osc.frequency.value = ok ? 520 + Math.random() * 60 : 140;
-    gain.gain.value = 0.04;
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.06);
-    osc.stop(audioCtx.currentTime + 0.07);
+    if (ok) {
+      const f = 820 + Math.random() * 140; // tiny pitch variation keeps it from sounding robotic
+      playTone({ type: "sine", from: f * 1.6, to: f * 0.6, dur: 0.07, vol: 0.14 });
+    } else {
+      playTone({ type: "triangle", from: 210, to: 105, dur: 0.14, vol: 0.16 });
+    }
+  } catch {
+    /* audio is optional */
+  }
+}
+
+// Three rising notes when a run finishes.
+function chime() {
+  try {
+    [660, 880, 1320].forEach((f, i) => playTone({ type: "sine", from: f, dur: 0.22, vol: 0.09, delay: i * 0.1 }));
   } catch {
     /* audio is optional */
   }
@@ -669,6 +699,29 @@ function Toggle({ checked, onChange, label, icon: Icon }) {
     >
       {Icon && <Icon size={14} />}
       {label}
+    </button>
+  );
+}
+
+// Big, obvious sound switch for the top bar of a typing run.
+function SoundButton({ on, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onToggle(!on);
+        if (!on) beep(true); // preview the sound when switching on
+      }}
+      aria-pressed={on}
+      aria-label={on ? "Turn sound off" : "Turn sound on"}
+      className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${focusRing} ${
+        on
+          ? "border-blue-500/60 bg-blue-600/20 text-blue-100"
+          : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
+      }`}
+    >
+      {on ? <Volume2 size={16} /> : <VolumeX size={16} />}
+      <span className="hidden sm:inline">{on ? "Sound on" : "Sound off"}</span>
     </button>
   );
 }
@@ -811,7 +864,7 @@ const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, gh
   return (
     <div
       style={style}
-      className={`flex h-9 min-w-0 select-none items-center justify-center rounded-md border text-xs font-semibold transition-transform sm:h-11 sm:text-sm ${
+      className={`flex h-8 min-w-0 select-none items-center justify-center rounded-md border text-[11px] font-semibold transition-transform sm:h-9 sm:text-xs xl:h-10 xl:text-sm ${
         isPressed
           ? pressed.ok
             ? "scale-95 ring-2 ring-white"
@@ -829,17 +882,11 @@ const VirtualKeyboard = memo(function VirtualKeyboard({ nextChar, pressed }) {
   const nextInfo = next ? KEY_INFO[next.base] : null;
   const shiftId = next?.shift ? (nextInfo.hand === "left" ? "rshift" : "lshift") : null;
 
-  const hint = nextInfo
-    ? `Use your ${FINGER_NAMES[nextInfo.finger]}${
-        shiftId ? ` and hold ${shiftId === "rshift" ? "right" : "left"} Shift` : ""
-      }`
-    : null;
-
   return (
     <div className="hidden sm:block" aria-hidden="true">
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {KB_ROWS.map((row) => (
-          <div key={row.keys} className="flex gap-1.5">
+          <div key={row.keys} className="flex gap-1">
             {row.left && (
               <Key
                 id={row.left.id}
@@ -872,14 +919,12 @@ const VirtualKeyboard = memo(function VirtualKeyboard({ nextChar, pressed }) {
             )}
           </div>
         ))}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1">
           <div style={{ flex: 4 }} />
           <Key id=" " label="Space" flex={7} finger="thumb" isNext={next?.base === " "} pressed={pressed} />
           <div style={{ flex: 4 }} />
         </div>
       </div>
-
-      <p className="mt-3 h-5 text-center text-sm text-slate-400">{hint}</p>
     </div>
   );
 });
@@ -937,33 +982,79 @@ function instructionFor(s) {
   }
 }
 
-function InstructionBanner({ session, running }) {
-  const { title, body } = instructionFor(session);
+// Little hands: the finger you should use for the next key lights up.
+const HAND_FINGERS = [
+  ["lp", 22],
+  ["lr", 30],
+  ["lm", 36],
+  ["li", 30],
+  ["thumb", 18],
+  ["ri", 30],
+  ["rm", 36],
+  ["rr", 30],
+  ["rp", 22],
+];
+
+function FingerGuide({ active, color }) {
+  return (
+    <div className="flex items-end gap-1.5" aria-hidden="true">
+      {HAND_FINGERS.map(([finger, h]) => {
+        const on = finger === active;
+        return (
+          <span
+            key={finger}
+            className="w-3.5 rounded-full transition-all duration-150"
+            style={{
+              height: h + (on ? 8 : 0),
+              background: on ? color : "#475569",
+              boxShadow: on ? `0 0 14px ${color}` : "none",
+              opacity: on ? 1 : 0.55,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// Compact "which key, which finger" card that sits beside the text.
+function NextKeyCard({ nextChar }) {
+  const key = charToKey(nextChar);
+  const info = key ? KEY_INFO[key.base] : null;
+
+  if (!info) {
+    return <div className="hidden rounded-2xl border border-slate-700 bg-slate-900/40 lg:block" />;
+  }
+
+  const color = FINGER_COLORS[info.finger];
+  const shiftSide = key.shift ? (info.hand === "left" ? "right" : "left") : null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-blue-500/40 bg-blue-500/10 p-5 sm:p-6">
-      <div className="flex items-start gap-4">
-        <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600/30 text-blue-200">
-          <Keyboard size={24} />
+    <div
+      className="flex flex-col justify-center gap-3 rounded-2xl border-2 px-4 py-3"
+      style={{ borderColor: `${color}aa`, background: `${color}1f`, boxShadow: `0 0 22px ${color}33` }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="flex h-14 min-w-14 items-center justify-center rounded-xl px-2 font-mono text-2xl font-extrabold text-slate-900"
+          style={{ background: color, boxShadow: `0 0 16px ${color}99` }}
+        >
+          {nextChar === " " ? "Space" : nextChar}
         </div>
-        <div>
-          <p className="text-xl font-bold text-white sm:text-2xl">{title}</p>
-          <p className="mt-2 text-base leading-relaxed text-blue-100 sm:min-h-[3.5rem] sm:text-lg">
-            {running ? "Keep going. Fix any mistake with Backspace, then carry on." : body}
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-300">Next key</p>
+          <p className="text-base font-bold leading-tight text-white">
+            <span style={{ color }}>{FINGER_NAMES[info.finger]}</span>
           </p>
+          {shiftSide && (
+            <p className="text-sm text-slate-200">
+              + hold <b style={{ color }}>{shiftSide} Shift</b>
+            </p>
+          )}
         </div>
       </div>
-
-      <div className="mt-5 flex flex-wrap gap-3 text-sm sm:text-base">
-        <span className="flex items-center gap-2 rounded-lg bg-slate-900/60 px-3 py-1.5 text-green-300">
-          <i className="h-3 w-3 rounded-full bg-green-400" /> Green: correct
-        </span>
-        <span className="flex items-center gap-2 rounded-lg bg-slate-900/60 px-3 py-1.5 text-red-300">
-          <i className="h-3 w-3 rounded-full bg-red-400" /> Red: mistake
-        </span>
-        <span className="flex items-center gap-2 rounded-lg bg-slate-900/60 px-3 py-1.5 text-blue-200">
-          <i className="h-4 w-0.5 bg-blue-400" /> Blue bar: next letter
-        </span>
+      <div className="flex justify-center">
+        <FingerGuide active={info.finger} color={color} />
       </div>
     </div>
   );
@@ -993,7 +1084,9 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
   const startRef = useRef(0);
   const doneRef = useRef(false);
   const statsRef = useRef({ total: 0, mistakes: 0, keys: {}, samples: [] });
+  const soundRef = useRef(settings.sound);
   targetRef.current = target;
+  soundRef.current = settings.sound;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -1046,6 +1139,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
       doneRef.current = true;
       statusRef.current = "done";
       setStatus("done");
+      if (soundRef.current) chime();
 
       const s = statsRef.current;
       const tgt = targetRef.current;
@@ -1187,9 +1281,10 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
   const liveAcc = total ? Math.round(((total - statsRef.current.mistakes) / total) * 100) : 100;
   const progress = timed ? elapsed / (duration * 1000) : typed.length / target.length;
   const timeLabel = timed ? Math.max(0, Math.ceil((duration * 1000 - elapsed) / 1000)) : formatTime(elapsed);
+  const { title } = instructionFor(session);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto w-full max-w-6xl">
       <style>{`
         @keyframes tf-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
         @keyframes tf-fly-ok{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),-54px) scale(1.7)}}
@@ -1197,9 +1292,9 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
         @media (prefers-reduced-motion: reduce){.tf-fx{display:none}}
       `}</style>
 
-      <div className="rounded-3xl bg-slate-800 p-5 shadow-2xl sm:p-8">
-        {/* Top bar */}
-        <div className="flex items-center justify-between gap-3">
+      <div className="rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-5">
+        {/* Top bar: exit, title, live stats, sound, restart */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onExit}
@@ -1208,7 +1303,27 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
             <X size={16} />
             <span className="hidden sm:inline">Exit</span>
           </button>
-          <h2 className="truncate text-center text-lg font-bold sm:text-xl">{sessionTitle(session)}</h2>
+
+          <h2 className="min-w-0 flex-1 truncate text-base font-bold sm:text-lg">{sessionTitle(session)}</h2>
+
+          <div className="flex items-center gap-2" aria-live="off">
+            {[
+              ["WPM", liveWpm, "text-blue-400"],
+              ["Acc", `${liveAcc}%`, liveAcc >= 95 ? "text-green-400" : liveAcc >= 85 ? "text-yellow-300" : "text-red-400"],
+              [timed ? "Left" : "Time", timeLabel, "text-cyan-300"],
+            ].map(([label, value, color]) => (
+              <div
+                key={label}
+                className="flex items-baseline gap-1.5 rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-1.5"
+              >
+                <span className={`text-xl font-bold tabular-nums ${color}`}>{value}</span>
+                <span className="text-[10px] uppercase tracking-wide text-slate-400">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          <SoundButton on={settings.sound} onToggle={(v) => onSetting({ sound: v })} />
+
           <button
             type="button"
             onClick={onRestart}
@@ -1220,22 +1335,8 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
           </button>
         </div>
 
-        {/* Live stats */}
-        <div className="mt-6 grid grid-cols-3 gap-3 text-center" aria-live="off">
-          {[
-            ["WPM", liveWpm, "text-blue-400"],
-            ["Accuracy", `${liveAcc}%`, liveAcc >= 95 ? "text-green-400" : liveAcc >= 85 ? "text-yellow-300" : "text-red-400"],
-            [timed ? "Time left" : "Time", timeLabel, "text-cyan-300"],
-          ].map(([label, value, color]) => (
-            <div key={label} className="rounded-2xl border border-slate-700 bg-slate-900/70 py-3">
-              <div className={`text-2xl font-bold tabular-nums sm:text-3xl ${color}`}>{value}</div>
-              <div className="text-xs uppercase tracking-wide text-slate-400">{label}</div>
-            </div>
-          ))}
-        </div>
-
         <div
-          className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-700"
+          className="mt-3 h-1 overflow-hidden rounded-full bg-slate-700"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
@@ -1247,120 +1348,109 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
           />
         </div>
 
-        {/* Instructions */}
-        <InstructionBanner session={session} running={status !== "idle"} />
+        {/* One-line instruction */}
+        <p className="mt-3 text-sm text-slate-300 sm:text-base">
+          <Keyboard size={16} className="mr-2 inline text-blue-300" />
+          <b className="text-white">{title}</b>
+          <span className="text-slate-400">
+            {status === "idle" ? " · press any key to start" : " · fix mistakes with Backspace"}
+          </span>
+        </p>
 
-        {/* Text area */}
-        <div
-          ref={wrapRef}
-          className="relative mt-4 rounded-2xl border border-slate-700 bg-slate-900 px-5 py-4"
-          style={shake ? { animation: "tf-shake .18s" } : undefined}
-        >
+        {/* Text area + next key card side by side */}
+        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_270px]">
           <div
-            ref={boxRef}
-            className="relative flex flex-wrap overflow-hidden scroll-smooth font-mono text-xl sm:text-2xl"
-            style={{ height: LINE_HEIGHT * 3, lineHeight: `${LINE_HEIGHT}px` }}
+            ref={wrapRef}
+            className="relative rounded-2xl border border-slate-700 bg-slate-900 px-5 py-4"
+            style={shake ? { animation: "tf-shake .18s" } : undefined}
           >
-            {wordMeta.map((m, i) => (
-              <Word
-                key={i}
-                text={m.text}
-                start={m.start}
-                typed={typed.slice(m.start, m.start + m.text.length)}
-                active={i === activeIdx}
-              />
-            ))}
-          </div>
-
-          {!focused && (
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-900/70 backdrop-blur-sm">
-              <span className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200">
-                Click here or press any key to focus
-              </span>
+            <div
+              ref={boxRef}
+              className="relative flex flex-wrap overflow-hidden scroll-smooth font-mono text-xl sm:text-2xl"
+              style={{ height: LINE_HEIGHT * 3, lineHeight: `${LINE_HEIGHT}px` }}
+            >
+              {wordMeta.map((m, i) => (
+                <Word
+                  key={i}
+                  text={m.text}
+                  start={m.start}
+                  typed={typed.slice(m.start, m.start + m.text.length)}
+                  active={i === activeIdx}
+                />
+              ))}
             </div>
-          )}
 
-          <textarea
-            ref={inputRef}
-            value={typed}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onKeyUp={() => setPressed(null)}
-            onPaste={(e) => e.preventDefault()}
-            onDrop={(e) => e.preventDefault()}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            aria-label="Type the text shown above"
-            autoCapitalize="off"
-            autoCorrect="off"
-            autoComplete="off"
-            spellCheck={false}
-            className="absolute inset-0 z-20 h-full w-full cursor-text resize-none opacity-0"
-          />
-
-          {/* Flying letters */}
-          <div className="pointer-events-none absolute inset-0 z-30" aria-hidden="true">
-            {fx.map((f) => (
-              <span
-                key={f.id}
-                className="tf-fx absolute -translate-x-1/2 font-mono text-2xl font-bold sm:text-3xl"
-                style={{ left: f.left, top: f.top }}
-              >
-                <span
-                  className="block"
-                  style={{
-                    "--dx": `${f.dx}px`,
-                    color: f.ok ? "#4ade80" : "#f87171",
-                    textShadow: f.ok ? "0 0 12px rgba(74,222,128,.7)" : "0 0 12px rgba(248,113,113,.7)",
-                    animation: `${f.ok ? "tf-fly-ok" : "tf-fly-bad"} .75s ease-out forwards`,
-                  }}
-                >
-                  {f.ch}
+            {!focused && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-900/70 backdrop-blur-sm">
+                <span className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200">
+                  Click here or press any key to focus
                 </span>
-              </span>
-            ))}
-          </div>
-        </div>
+              </div>
+            )}
 
-        {/* Options */}
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <Toggle
-            checked={settings.keyboard}
-            onChange={(v) => onSetting({ keyboard: v })}
-            label="Keyboard guide"
-            icon={Keyboard}
-          />
-          <Toggle
-            checked={settings.strict}
-            onChange={(v) => onSetting({ strict: v })}
-            label="Stop on mistakes"
-            icon={Target}
-          />
-          <Toggle
-            checked={settings.effects}
-            onChange={(v) => onSetting({ effects: v })}
-            label="Animations"
-            icon={Zap}
-          />
-          <Toggle
-            checked={settings.sound}
-            onChange={(v) => onSetting({ sound: v })}
-            label="Sound"
-            icon={settings.sound ? Volume2 : VolumeX}
-          />
+            <textarea
+              ref={inputRef}
+              value={typed}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onKeyUp={() => setPressed(null)}
+              onPaste={(e) => e.preventDefault()}
+              onDrop={(e) => e.preventDefault()}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              aria-label="Type the text shown above"
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              spellCheck={false}
+              className="absolute inset-0 z-20 h-full w-full cursor-text resize-none opacity-0"
+            />
+
+            {/* Flying letters */}
+            <div className="pointer-events-none absolute inset-0 z-30" aria-hidden="true">
+              {fx.map((f) => (
+                <span
+                  key={f.id}
+                  className="tf-fx absolute -translate-x-1/2 font-mono text-2xl font-bold sm:text-3xl"
+                  style={{ left: f.left, top: f.top }}
+                >
+                  <span
+                    className="block"
+                    style={{
+                      "--dx": `${f.dx}px`,
+                      color: f.ok ? "#4ade80" : "#f87171",
+                      textShadow: f.ok ? "0 0 12px rgba(74,222,128,.7)" : "0 0 12px rgba(248,113,113,.7)",
+                      animation: `${f.ok ? "tf-fly-ok" : "tf-fly-bad"} .75s ease-out forwards`,
+                    }}
+                  >
+                    {f.ch}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <NextKeyCard nextChar={target[typed.length]} />
         </div>
 
         {settings.keyboard && (
-          <div className="mt-6">
+          <div className="mt-3">
             <VirtualKeyboard nextChar={target[typed.length]} pressed={pressed} />
           </div>
         )}
 
-        <p className="mt-6 text-center text-sm text-slate-300 sm:text-base">
-          <kbd className="rounded-md bg-slate-700 px-2 py-1 font-mono text-slate-100">Tab</kbd> new text ·{" "}
-          <kbd className="rounded-md bg-slate-700 px-2 py-1 font-mono text-slate-100">Esc</kbd> exit ·{" "}
-          <kbd className="rounded-md bg-slate-700 px-2 py-1 font-mono text-slate-100">Backspace</kbd> fixes a mistake
-        </p>
+        {/* Options + shortcuts on one row */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Toggle checked={settings.keyboard} onChange={(v) => onSetting({ keyboard: v })} label="Keyboard guide" icon={Keyboard} />
+            <Toggle checked={settings.strict} onChange={(v) => onSetting({ strict: v })} label="Stop on mistakes" icon={Target} />
+            <Toggle checked={settings.effects} onChange={(v) => onSetting({ effects: v })} label="Animations" icon={Zap} />
+          </div>
+          <p className="text-xs text-slate-400">
+            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Tab</kbd> new text ·{" "}
+            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Esc</kbd> exit
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -1389,111 +1479,113 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
   const lesson = session.type === "lesson" ? session.lesson : null;
 
   return (
-    <div className="mx-auto max-w-4xl rounded-3xl bg-slate-800 p-5 shadow-2xl sm:p-8">
-      <div className="text-center">
-        <p className="text-sm font-medium text-slate-400">{sessionTitle(session)}</p>
+    <div className="mx-auto w-full max-w-6xl rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-6">
+      <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-6">
+        {/* Left: score */}
+        <div className="text-center">
+          <p className="text-sm font-medium text-slate-400">{sessionTitle(session)}</p>
 
-        {lesson && (
-          <div className="mt-3 flex flex-col items-center gap-2">
-            <Stars count={result.stars} />
-            <p className={`text-sm font-medium ${result.passed ? "text-green-400" : "text-yellow-300"}`}>
-              {result.passed
-                ? "Lesson passed!"
-                : `Goal: ${lesson.goal} WPM with at least 92% accuracy. Give it another go.`}
+          {lesson && (
+            <div className="mt-2 flex flex-col items-center gap-1.5">
+              <Stars count={result.stars} />
+              <p className={`text-sm font-medium ${result.passed ? "text-green-400" : "text-yellow-300"}`}>
+                {result.passed ? "Lesson passed!" : `Goal: ${lesson.goal} WPM with 92% accuracy. Try again!`}
+              </p>
+            </div>
+          )}
+
+          {result.isBest && (
+            <p className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-3 py-1 text-sm font-medium text-yellow-200">
+              <Trophy size={14} /> New personal best!
             </p>
-          </div>
-        )}
+          )}
 
-        {result.isBest && (
-          <p className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-4 py-1.5 text-sm font-medium text-yellow-200">
-            <Trophy size={16} /> New personal best!
-          </p>
-        )}
-
-        <div className="mt-6 flex items-end justify-center gap-10">
-          <div>
-            <div className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl">
-              {result.wpm}
+          <div className="mt-4 flex items-end justify-center gap-8">
+            <div>
+              <div className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-5xl font-extrabold text-transparent sm:text-6xl">
+                {result.wpm}
+              </div>
+              <div className="text-xs uppercase tracking-wide text-slate-400">WPM</div>
             </div>
-            <div className="text-sm uppercase tracking-wide text-slate-400">WPM</div>
-          </div>
-          <div>
-            <div
-              className={`text-6xl font-extrabold sm:text-7xl ${
-                result.accuracy >= 95 ? "text-green-400" : result.accuracy >= 85 ? "text-yellow-300" : "text-red-400"
-              }`}
-            >
-              {result.accuracy}%
-            </div>
-            <div className="text-sm uppercase tracking-wide text-slate-400">Accuracy</div>
-          </div>
-        </div>
-
-        <p className="mt-4 text-sm text-slate-400">
-          Level: <span className="font-semibold text-slate-200">{levelFor(result.wpm)}</span>
-          {result.prevBest > 0 && !result.isBest && <> · Personal best: {result.prevBest} WPM</>}
-        </p>
-      </div>
-
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ["Raw speed", `${result.raw} WPM`],
-          ["Mistakes", result.mistakes],
-          ["Time", `${result.seconds}s`],
-          ["Consistency", result.consistency === null ? "–" : `${result.consistency}%`],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4 text-center">
-            <div className="text-2xl font-bold text-white">{value}</div>
-            <div className="text-xs uppercase tracking-wide text-slate-400">{label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-          <span className="font-medium uppercase tracking-wide">Speed over time</span>
-          <span className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <i className="h-0.5 w-4 bg-blue-400" /> WPM
-            </span>
-            <span className="flex items-center gap-1">
-              <i className="h-0.5 w-4 border-t border-dashed border-slate-400" /> Raw
-            </span>
-            <span className="flex items-center gap-1 text-red-400">× Mistake</span>
-          </span>
-        </div>
-        <LineChart
-          labels={labels}
-          markers={markers}
-          series={[
-            { name: "WPM", color: "#60a5fa", data: samples.map((s) => Math.round(s.wpm)) },
-            { name: "Raw", color: "#94a3b8", thin: true, data: samples.map((s) => Math.round(s.raw)) },
-          ]}
-        />
-      </div>
-
-      {result.weak.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Keys to practice</div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {result.weak.map(([k, v]) => (
-              <span
-                key={k}
-                className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm text-red-200"
+            <div>
+              <div
+                className={`text-5xl font-extrabold sm:text-6xl ${
+                  result.accuracy >= 95 ? "text-green-400" : result.accuracy >= 85 ? "text-yellow-300" : "text-red-400"
+                }`}
               >
-                <b className="font-mono">{keyLabel(k)}</b> · {v.m} missed
-              </span>
+                {result.accuracy}%
+              </div>
+              <div className="text-xs uppercase tracking-wide text-slate-400">Accuracy</div>
+            </div>
+          </div>
+
+          <p className="mt-3 text-sm text-slate-400">
+            Level: <span className="font-semibold text-slate-200">{levelFor(result.wpm)}</span>
+            {result.prevBest > 0 && !result.isBest && <> · Best: {result.prevBest} WPM</>}
+          </p>
+
+          <div className="mt-4 grid grid-cols-4 gap-2 lg:grid-cols-2">
+            {[
+              ["Raw", `${result.raw} WPM`],
+              ["Mistakes", result.mistakes],
+              ["Time", `${result.seconds}s`],
+              ["Steady", result.consistency === null ? "–" : `${result.consistency}%`],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-xl border border-slate-700 bg-slate-900/70 px-2 py-2.5">
+                <div className="text-lg font-bold text-white">{value}</div>
+                <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        {/* Right: chart + weak keys */}
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="font-medium uppercase tracking-wide">Speed over time</span>
+              <span className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <i className="h-0.5 w-4 bg-blue-400" /> WPM
+                </span>
+                <span className="flex items-center gap-1">
+                  <i className="h-0.5 w-4 border-t border-dashed border-slate-400" /> Raw
+                </span>
+                <span className="flex items-center gap-1 text-red-400">× Mistake</span>
+              </span>
+            </div>
+            <LineChart
+              height={150}
+              labels={labels}
+              markers={markers}
+              series={[
+                { name: "WPM", color: "#60a5fa", data: samples.map((s) => Math.round(s.wpm)) },
+                { name: "Raw", color: "#94a3b8", thin: true, data: samples.map((s) => Math.round(s.raw)) },
+              ]}
+            />
+          </div>
+
+          {result.weak.length > 0 && (
+            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
+              <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Keys to practice</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {result.weak.map(([k, v]) => (
+                  <span key={k} className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200">
+                    <b className="font-mono">{keyLabel(k)}</b> · {v.m} missed
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
         {lesson && result.passed && onNextLesson && (
           <button
             type="button"
             onClick={onNextLesson}
-            className={`flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold transition hover:bg-green-700 ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 font-semibold transition hover:bg-green-700 ${focusRing}`}
           >
             Next lesson <ArrowRight size={18} />
           </button>
@@ -1501,7 +1593,7 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
         <button
           type="button"
           onClick={onRestart}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-700 ${focusRing}`}
+          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-semibold transition hover:bg-blue-700 ${focusRing}`}
         >
           <RotateCcw size={18} /> Try again
         </button>
@@ -1509,7 +1601,7 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
           <button
             type="button"
             onClick={onDrill}
-            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-700 px-6 py-3 font-semibold transition hover:bg-slate-600 ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-700 px-5 py-2.5 font-semibold transition hover:bg-slate-600 ${focusRing}`}
           >
             <Target size={18} /> Drill weak keys
           </button>
@@ -1517,16 +1609,15 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
         <button
           type="button"
           onClick={onExit}
-          className={`cursor-pointer rounded-xl border border-slate-600 px-6 py-3 font-semibold text-slate-300 transition hover:bg-slate-700 ${focusRing}`}
+          className={`cursor-pointer rounded-xl border border-slate-600 px-5 py-2.5 font-semibold text-slate-300 transition hover:bg-slate-700 ${focusRing}`}
         >
           Back to menu
         </button>
+        <span className="text-xs text-slate-400">
+          <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Enter</kbd> retry ·{" "}
+          <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Esc</kbd> menu
+        </span>
       </div>
-
-      <p className="mt-4 text-center text-xs text-slate-400">
-        Press <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Enter</kbd> to retry or{" "}
-        <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Esc</kbd> for the menu
-      </p>
     </div>
   );
 }
@@ -2074,9 +2165,15 @@ export default function TypingTutor() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-12 text-white sm:py-16">
-      {content}
+   return (
+    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+        <Navbar />
+      </header>
+
+      <main className={`flex-1 px-4 ${session ? "py-3 sm:py-4" : "py-12 sm:py-16"}`}>{content}</main>
+
+      <Footer />
     </div>
   );
 }

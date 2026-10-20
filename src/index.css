@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 html {
+  font-size: 75%; /* 12px instead of the default 16px; same as browser zoom 75% */
+}
+
+html {
   scroll-behavior: smooth;
 }
 
 body {
+ 
   @apply bg-slate-950 text-white;
 }
 
