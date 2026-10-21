@@ -21,10 +21,6 @@ import Footer from "../components/common/Footer";
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const VALID_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-const PAGE_TITLE = "Free Background Remover – Remove Image Background Online";
-const PAGE_DESC =
-  "Remove the background from any image in seconds. Free, private and runs in your browser – no upload, no account. Download a transparent PNG.";
-
 const LOADING_MESSAGES = [
   "🔍 Detecting subject...",
   "✂️ Separating foreground...",
@@ -216,73 +212,10 @@ async function downscaleIfNeeded(file, maxSide) {
 }
 
 /* ------------------------------------------------------------------ */
-/* SEO helpers                                                         */
-/* ------------------------------------------------------------------ */
-
-function setMeta(attr, key, content) {
-  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
-  if (!el) {
-    el = document.createElement("meta");
-    el.setAttribute(attr, key);
-    document.head.appendChild(el);
-  }
-  el.setAttribute("content", content);
-}
-
-function useSeo() {
-  useEffect(() => {
-    document.title = PAGE_TITLE;
-    setMeta("name", "description", PAGE_DESC);
-    setMeta("name", "robots", "index,follow");
-    setMeta("property", "og:title", PAGE_TITLE);
-    setMeta("property", "og:description", PAGE_DESC);
-    setMeta("property", "og:type", "website");
-    setMeta("name", "twitter:card", "summary_large_image");
-    setMeta("name", "twitter:title", PAGE_TITLE);
-    setMeta("name", "twitter:description", PAGE_DESC);
-
-    let canonical = document.head.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    canonical.href = window.location.origin + window.location.pathname;
-
-    const ld = document.createElement("script");
-    ld.type = "application/ld+json";
-    ld.text = JSON.stringify([
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        name: "Background Remover",
-        description: PAGE_DESC,
-        applicationCategory: "MultimediaApplication",
-        operatingSystem: "Any",
-        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: FAQ.map((f) => ({
-          "@type": "Question",
-          name: f.q,
-          acceptedAnswer: { "@type": "Answer", text: f.a },
-        })),
-      },
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-}
-
-/* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
 export default function BackgroundRemover() {
-  useSeo();
-
   const inputRef = useRef(null);
   const previewRef = useRef(null);
   const runIdRef = useRef(0);
@@ -466,9 +399,9 @@ export default function BackgroundRemover() {
         <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           {/* Hero */}
           <header className="text-center">
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">
+            {/* <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">
               Background Remover
-            </span>
+            </span> */}
 
             <h1 className="mt-6 text-4xl font-black sm:text-5xl">
               Remove Image Backgrounds

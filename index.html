@@ -1,127 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="themed-scroll">
   <head>
     <meta charset="UTF-8" />
-
-    <!-- Responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Theme -->
-    <meta name="theme-color" content="#0f172a" />
-
-    <!-- SEO -->
-    <title>Qrvia | Free Online tools</title>
-
+    <meta name="theme-color" content="#020617" />
+    <meta name="robots" content="index, follow" />
+    <title>Qrvia | Free Online Tools for QR Codes, Images &amp; More</title>
     <meta
       name="description"
-      content="Generate beautiful QR codes for URLs, Text, WiFi, Email, Phone, SMS, WhatsApp, and Locations. Customize colors, logos, dot styles, and download in PNG, SVG, JPEG, or PDF for free."
+      content="Use free online tools for everyday tasks: create QR codes, remove image backgrounds with AI, compress images and videos, convert files, and more."
     />
-
-    <meta
-      name="keywords"
-      content="QR Code Generator, Free QR Code Generator, QR Code Maker, QR Creator, QR Generator with Logo, QR PNG, QR SVG, QR PDF, QR JPEG, WiFi QR Code, WhatsApp QR Code"
-    />
-
-    <meta name="author" content="Qrvia" />
-
-    <meta name="robots" content="index, follow" />
-
-    <!-- Canonical -->
     <link rel="canonical" href="https://freeqrify.vercel.app/" />
-
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
-
     <meta
       property="og:title"
-      content="Qrvia | Free QR Code Generator"
+      content="Qrvia | Free Online Tools for QR Codes, Images &amp; More"
     />
-
     <meta
       property="og:description"
-      content="Create beautiful QR codes with custom colors, logos, multiple styles, and download them instantly."
+      content="Free online tools for QR codes, image compression, AI background removal, video compression, and everyday tasks."
     />
-
+    <meta property="og:url" content="https://freeqrify.vercel.app/" />
+    <meta property="og:site_name" content="Qrvia" />
     <meta
       property="og:image"
-      content="https://freeqrify.vercel.app/preview.png"
+      content="https://freeqrify.vercel.app/preview.png.jpg"
     />
-
-    <meta
-      property="og:url"
-      content="https://freeqrify.vercel.app/"
-    />
-
-    <meta property="og:site_name" content="Qrvia" />
-
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-
     <meta
       name="twitter:title"
-      content="Qrvia | Free QR Code Generator"
+      content="Qrvia | Free Online Tools for QR Codes, Images &amp; More"
     />
-
     <meta
       name="twitter:description"
-      content="Generate QR codes online for free with logos, custom colors, and multiple download formats."
+      content="Free online tools for QR codes, image compression, AI background removal, video compression, and everyday tasks."
     />
-
     <meta
       name="twitter:image"
-      content="https://freeqrify.vercel.app/preview.png"
+      content="https://freeqrify.vercel.app/preview.png.jpg"
     />
-    <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Qrvia",
-  "url": "https://your-domain.com",
-  "applicationCategory": "UtilitiesApplication",
-  "operatingSystem": "Any",
-  "browserRequirements": "Requires JavaScript",
-  "description": "Free online QR Code Generator with logo upload, custom colors, multiple QR types, and downloads in PNG, SVG, JPEG, and PDF.",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "creator": {
-    "@type": "Organization",
-    "name": "Qrvia"
-  },
-  "featureList": [
-    "Generate QR Codes",
-    "Custom Colors",
-    "Logo Upload",
-    "PNG Download",
-    "SVG Download",
-    "JPEG Download",
-    "PDF Download",
-    "WiFi QR Codes",
-    "WhatsApp QR Codes",
-    "Email QR Codes",
-    "Location QR Codes"
-  ]
-}
-</script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-V96VJNG74R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-V96VJNG74R');
-</script>
+    <script id="route-json-ld" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Qrvia",
+        "url": "https://freeqrify.vercel.app/",
+        "description": "Free online tools for QR codes, images, documents, and everyday tasks."
+      }
+    </script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-V96VJNG74R"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        window.dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-V96VJNG74R");
+    </script>
   </head>
-
   <body>
     <div id="root"></div>
-
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

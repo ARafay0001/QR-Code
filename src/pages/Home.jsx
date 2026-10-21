@@ -328,7 +328,7 @@ function Hero() {
       >
         <div>
           <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-            One place.
+            Free online tools.
             <br />
             <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
               Every tool you need.
@@ -336,13 +336,13 @@ function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 sm:text-lg sm:leading-8">
-            Generate QR codes, remove image backgrounds with AI, compress
-            files, and convert formats. Fast, free, and beautifully designed
-            online tools, all in one place.
+            Create a free QR code, remove image backgrounds with AI, compress
+            images online, or reduce video file sizes. Explore practical tools
+            for files, documents, and everyday tasks in one place.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a href="#products" className="w-full sm:w-auto">
+            <a href="#tools" className="w-full sm:w-auto">
               <Button className="w-full justify-center sm:w-auto">
                 Explore tools
                 <ArrowRight size={18} className="ml-2" />
@@ -585,7 +585,7 @@ function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className={`${container} py-20 sm:py-28`}>
+    <section id="faq" className={`${container} scroll-mt-24 py-20 sm:py-28`}>
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -706,9 +706,9 @@ export default function Home() {
       </div>
 
       {/* Sticky navbar */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+      <div className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
         <Navbar />
-      </header>
+      </div>
 
       <main>
         <Hero />

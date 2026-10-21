@@ -5,7 +5,7 @@ export default function Button({
   ...props
 }) {
   const base =
-    "inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition-all duration-300";
+    "inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none";
 
   const variants = {
     primary:

@@ -11,10 +11,13 @@ import {
   Image as ImageIcon,
   Ruler,
   Minimize2,
-  Video,
   LayoutGrid,
+  Calculator,
+  Keyboard,
+  Type,
+  Wrench,
 } from "lucide-react";
-
+import logo from "../../assets/logo.svg";
 /* -------------------------------------------------------------------------- */
 /*  Tools                                                                    */
 /* -------------------------------------------------------------------------- */
@@ -45,12 +48,36 @@ const TOOLS = [
     accentBg: "bg-emerald-500/10",
   },
   {
-    title: "Image / Video Compressor",
-    description: "Shrink images and video without losing quality",
+    title: "Image Compressor",
+    description: "Compress JPEG, PNG, and WebP images",
     icon: Minimize2,
-    href: "/image-video-compressor",
+    href: "/image-compressor",
     accent: "text-cyan-400",
     accentBg: "bg-cyan-500/10",
+  },
+  {
+    title: "Video Compressor",
+    description: "Compress video files in your browser",
+    icon: Minimize2,
+    href: "/video-compressor",
+    accent: "text-indigo-400",
+    accentBg: "bg-indigo-500/10",
+  },
+  {
+    title: "Image to Vector",
+    description: "Trace images into SVG vector graphics",
+    icon: ImageIcon,
+    href: "/image-to-vector",
+    accent: "text-pink-400",
+    accentBg: "bg-pink-500/10",
+  },
+  {
+    title: "WebP Converter",
+    description: "Convert WebP images to JPG or PNG",
+    icon: ImageIcon,
+    href: "/webp-to-image",
+    accent: "text-amber-400",
+    accentBg: "bg-amber-500/10",
   },
   {
     title: "QR Generator",
@@ -59,6 +86,38 @@ const TOOLS = [
     href: "/qr-generator",
     accent: "text-blue-400",
     accentBg: "bg-blue-500/10",
+  },
+  {
+    title: "Scientific Calculator",
+    description: "Calculate with advanced math functions",
+    icon: Calculator,
+    href: "/scientific-calculator",
+    accent: "text-orange-400",
+    accentBg: "bg-orange-500/10",
+  },
+  {
+    title: "Typing Tutor",
+    description: "Practice typing and track your progress",
+    icon: Keyboard,
+    href: "/typing-tutor",
+    accent: "text-lime-400",
+    accentBg: "bg-lime-500/10",
+  },
+  {
+    title: "Text Tools",
+    description: "Transform, clean, encode, and count text",
+    icon: Type,
+    href: "/text-tool",
+    accent: "text-fuchsia-400",
+    accentBg: "bg-fuchsia-500/10",
+  },
+  {
+    title: "Input Tester",
+    description: "Check keyboard, mouse, and controller inputs",
+    icon: Wrench,
+    href: "/input-tester",
+    accent: "text-teal-400",
+    accentBg: "bg-teal-500/10",
   },
 ];
 
@@ -108,10 +167,10 @@ export default function Navbar() {
         setMobileOpen(false);
       }
     };
-    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("pointerdown", onMouseDown);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("pointerdown", onMouseDown);
       document.removeEventListener("keydown", onKey);
     };
   }, []);
@@ -129,6 +188,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 px-3 py-3 sm:px-5 sm:py-5">
       <nav
+        aria-label="Primary navigation"
         className={`relative mx-auto flex max-w-7xl items-center justify-between rounded-full border px-3 py-2.5 backdrop-blur-xl transition-all duration-300 sm:px-4 ${
           scrolled
             ? "border-slate-700/80 bg-slate-900/85 shadow-[0_10px_40px_rgba(0,0,0,.45)]"
@@ -136,9 +196,9 @@ export default function Navbar() {
         }`}
       >
         {/* Logo */}
-        <Link to="/" className="group flex items-center gap-2.5 pl-1">
-          <div className="rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 p-2 shadow-[0_0_20px_rgba(59,130,246,.45)] transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
-            <QrCode size={18} className="text-white" />
+        <Link to="/" aria-label="Qrvia home" className="group flex items-center gap-2.5 pl-1">
+          <div>
+            <img src={logo} alt="" className="h-6 w-6" />
           </div>
           <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">
             Qrvia
@@ -157,7 +217,8 @@ export default function Navbar() {
               onClick={() => setToolsOpen((o) => !o)}
               aria-expanded={toolsOpen}
               aria-haspopup="true"
-              className={`${linkBase} flex items-center gap-1.5 ${
+              aria-controls="desktop-tools"
+              className={`${linkBase} flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 ${
                 toolsOpen || activeTool ? linkActive : linkIdle
               }`}
             >
@@ -177,7 +238,10 @@ export default function Navbar() {
                   : "invisible -translate-y-2 scale-95 opacity-0"
               }`}
             >
-              <div className="overflow-hidden rounded-3xl border border-slate-700/80 bg-slate-900/95 shadow-[0_30px_80px_rgba(0,0,0,.6)] backdrop-blur-2xl">
+              <div
+                id="desktop-tools"
+                className="max-h-[70vh] overflow-y-auto rounded-3xl border border-slate-700/80 bg-slate-900/95 shadow-[0_30px_80px_rgba(0,0,0,.6)] backdrop-blur-2xl"
+              >
                 <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
                   <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
                     All Tools
@@ -265,6 +329,7 @@ export default function Navbar() {
           onClick={() => setMobileOpen((o) => !o)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
           className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-800/60 text-white transition-colors hover:bg-slate-700 md:hidden"
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -273,7 +338,11 @@ export default function Navbar() {
 
       {/* Mobile sheet (only mounted while open) */}
       {mobileOpen && (
-        <div className="mx-auto mt-3 max-w-7xl md:hidden">
+        <nav
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          className="mx-auto mt-3 max-w-7xl md:hidden"
+        >
           <div className="max-h-[75vh] overflow-y-auto rounded-3xl border border-slate-700/80 bg-slate-900/95 p-3 shadow-[0_30px_80px_rgba(0,0,0,.6)] backdrop-blur-2xl">
             <NavLink to="/" end className={mobileLinkClass}>
               Home
@@ -281,6 +350,8 @@ export default function Navbar() {
 
             <button
               onClick={() => setMobileToolsOpen((o) => !o)}
+              aria-expanded={mobileToolsOpen}
+              aria-controls="mobile-tools"
               className="flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-base font-medium text-slate-300"
             >
               Tools
@@ -293,7 +364,7 @@ export default function Navbar() {
             </button>
 
             {mobileToolsOpen && (
-              <div className="space-y-1 pb-2">
+              <div id="mobile-tools" className="space-y-1 pb-2">
                 {TOOLS.map((tool) => {
                   const Icon = tool.icon;
                   const active = location.pathname.startsWith(tool.href);
@@ -332,7 +403,7 @@ export default function Navbar() {
               Contact
             </NavLink>
           </div>
-        </div>
+        </nav>
       )}
     </header>
   );

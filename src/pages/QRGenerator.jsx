@@ -1061,9 +1061,9 @@ export default function QRGenerator() {
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 sm:pl-10">
-                <h2 className="text-center text-3xl font-bold sm:text-4xl">
+                <h1 className="text-center text-3xl font-bold sm:text-4xl">
                   QR Code Generator
-                </h2>
+                </h1>
                 <p className="mt-3 text-center text-slate-400">
                   Pick a type, enter your details and your QR code appears instantly.
                 </p>

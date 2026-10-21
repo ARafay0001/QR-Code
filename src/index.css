@@ -1,84 +1,154 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+  --color-brand: #3b82f6;
+  --color-page: #020617;
+  --color-surface: #0f172a;
+  --color-border: #1e293b;
+  --color-text: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-focus: #60a5fa;
+  --container-width: 80rem;
+  --page-gutter: clamp(1rem, 4vw, 2rem);
+  --radius-card: 1rem;
+  --transition-fast: 180ms;
+}
 
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
 html {
   font-size: 75%; /* 12px instead of the default 16px; same as browser zoom 75% */
 }
 
-/* Themed scrollbars. Only active inside an element with class "themed-scroll". */
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* Chrome, Edge, Safari, Opera */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:not(:disabled),
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
 .themed-scroll::-webkit-scrollbar,
 .themed-scroll *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
+
 .themed-scroll::-webkit-scrollbar-track,
-.themed-scroll *::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-.themed-scroll::-webkit-scrollbar-thumb,
-.themed-scroll *::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 9999px;
-  border: 2px solid #0f172a;
-}
-.themed-scroll::-webkit-scrollbar-thumb:hover,
-.themed-scroll *::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
-}
+.themed-scroll *::-webkit-scrollbar-track,
 .themed-scroll::-webkit-scrollbar-corner,
 .themed-scroll *::-webkit-scrollbar-corner {
-  background: #0f172a;
+  background: var(--color-page);
 }
 
-/* Firefox: these properties are inherited, so one rule covers every child */
+.themed-scroll::-webkit-scrollbar-thumb,
+.themed-scroll *::-webkit-scrollbar-thumb {
+  border: 2px solid var(--color-page);
+  border-radius: 9999px;
+  background: #475569;
+}
+
+.themed-scroll::-webkit-scrollbar-thumb:hover,
+.themed-scroll *::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand);
+}
+
 @supports (-moz-appearance: none) {
   .themed-scroll {
+    scrollbar-color: #475569 var(--color-page);
     scrollbar-width: thin;
-    scrollbar-color: #475569 #0f172a;
   }
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
- 
-  @apply bg-slate-950 text-white;
 }
 
 .container-custom {
-  @apply max-w-7xl mx-auto px-6;
+  width: min(100% - (var(--page-gutter) * 2), var(--container-width));
+  margin-inline: auto;
 }
 
 .section {
-  @apply py-24;
+  padding-block: 6rem;
 }
 
 .card {
-  @apply rounded-3xl border border-slate-800 bg-slate-900 shadow-lg;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 15%);
 }
 
 .primary-btn {
-  @apply rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-700;
+  border-radius: 0.75rem;
+  background: var(--color-brand);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: background-color var(--transition-fast);
+}
+
+.primary-btn:hover {
+  background: #2563eb;
 }
 
 .secondary-btn {
-  @apply rounded-xl border border-slate-700 px-6 py-3 transition hover:bg-slate-800;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: background-color var(--transition-fast);
+}
+
+.secondary-btn:hover {
+  background: #1e293b;
 }
 
 @keyframes loadingBar {
-  0% {
-    transform: translateX(-120%);
-  }
-
-  100% {
-    transform: translateX(320%);
-  }
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
 }
 
 .loading-bar {
   animation: loadingBar 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
