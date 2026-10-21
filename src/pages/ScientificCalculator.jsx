@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Smartphone, Monitor, ExternalLink } from "lucide-react";
+import { X, Smartphone, Monitor, ExternalLink, ClipboardPaste } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -12,9 +12,13 @@ import Footer from "../components/common/Footer";
 /*  • MODE menu (Calculate, Base-N), SETUP, CALC, SOLVE, ENG, DMS, RCL/STO.   */
 /*  • Landscape (desktop default) / portrait (mobile default) layouts.        */
 /*  • Pop-out window (Document Picture-in-Picture, popup fallback).           */
+/*  • Extended range: results beyond 1.8×10³⁰⁸ (171!, 10^400 …) are kept as  */
+/*    mantissa × 10^exponent instead of crashing with Math ERROR.             */
 /* ========================================================================== */
 
 const PI = Math.PI;
+/* Angle unit used at start-up and after every reset ("deg" | "rad" | "gra") */
+const DEFAULT_ANGLE = "rad";
 const SUPS = { "-": "⁻", 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" };
 const sup = (n) => String(n).replace(/[-0-9]/g, (c) => SUPS[c]);
 
@@ -43,6 +47,90 @@ const VARS = "ABCDEFXYM";
 
 const Err = (m) => new Error(m);
 
+/* ------------------- extended-range numbers (beyond 1e308) ----------------
+   A value is either a normal JS number or an object { m, e } that stands for
+   m × 10^e with 1 ≤ |m| < 10. Normal numbers are used whenever they fit, so
+   everyday calculations are unaffected.                                      */
+
+const isB = (x) => typeof x === "object" && x !== null;
+const N = (v) => { if (isB(v)) throw Err("Math"); return v; }; /* "numbers only" guard */
+
+function norm(m, e) {
+  if (m === 0) return 0;
+  if (!Number.isFinite(m)) throw Err("Math");
+  const k = Math.floor(Math.log10(Math.abs(m)));
+  m /= Math.pow(10, k);
+  e += k;
+  if (Math.abs(m) >= 10) { m /= 10; e++; } else if (Math.abs(m) < 1) { m *= 10; e--; }
+  if (e > -290 && e < 290) return Number(m + "e" + e);
+  return { m, e };
+}
+
+const toB = (x) => {
+  if (isB(x)) return x;
+  if (x === 0) return { m: 0, e: 0 };
+  let k = Math.floor(Math.log10(Math.abs(x)));
+  let m = x / Math.pow(10, k);
+  if (Math.abs(m) >= 10) { m /= 10; k++; } else if (Math.abs(m) < 1) { m *= 10; k--; }
+  return { m, e: k };
+};
+
+/* a^b computed through logarithms – works when the result leaves double range */
+function powL(a, b) {
+  if (isB(b)) throw Err("Math");
+  const x = toB(a);
+  if (x.m === 0) { if (b <= 0) throw Err("Math"); return 0; }
+  let sg = 1;
+  if (x.m < 0) {
+    if (!Number.isInteger(b)) throw Err("Math");
+    sg = Math.abs(b) % 2 === 1 ? -1 : 1;
+  }
+  const L = b * (Math.log10(Math.abs(x.m)) + x.e);
+  const e = Math.floor(L);
+  return norm(sg * Math.pow(10, L - e), e);
+}
+
+function bigOp(o, a, b) {
+  const x = toB(a), y = toB(b);
+  switch (o) {
+    case "×": return norm(x.m * y.m, x.e + y.e);
+    case "÷": if (y.m === 0) throw Err("Math"); return norm(x.m / y.m, x.e - y.e);
+    case "+": case "-": {
+      const s = o === "+" ? 1 : -1;
+      if (x.m === 0) return norm(s * y.m, y.e);
+      if (y.m === 0) return norm(x.m, x.e);
+      const d = x.e - y.e;
+      if (d > 20) return norm(x.m, x.e);
+      if (d < -20) return norm(s * y.m, y.e);
+      return norm(x.m + s * y.m * Math.pow(10, -d), x.e);
+    }
+    case "^": return powL(a, b);
+    default: throw Err("Math");
+  }
+}
+
+function bigFn(name, x) {
+  const L = Math.log10(Math.abs(x.m)) + x.e;
+  switch (name) {
+    case "log": if (x.m < 0) throw Err("Math"); return L;
+    case "ln": if (x.m < 0) throw Err("Math"); return L * Math.LN10;
+    case "Abs": return norm(Math.abs(x.m), x.e);
+    case "√": if (x.m < 0) throw Err("Math"); return powL(x, 0.5);
+    case "∛": {
+      const r = powL({ m: Math.abs(x.m), e: x.e }, 1 / 3);
+      return x.m < 0 ? (isB(r) ? norm(-r.m, r.e) : -r) : r;
+    }
+    default: throw Err("Math");
+  }
+}
+
+const parseNum = (str) => {
+  const v = parseFloat(str);
+  const [mm, ee] = str.split("e");
+  if (ee !== undefined && (!Number.isFinite(v) || (v === 0 && parseFloat(mm) !== 0))) return norm(parseFloat(mm), parseInt(ee, 10));
+  return v;
+};
+
 function lex(s, base = 10) {
   const t = [];
   let i = 0;
@@ -60,7 +148,7 @@ function lex(s, base = 10) {
       const d = /^(\d+(?:\.\d*)?)°(?:(\d+(?:\.\d*)?)′)?(?:(\d+(?:\.\d*)?)″)?/.exec(rest);
       if (d) { t.push({ k: "n", v: +d[1] + (+d[2] || 0) / 60 + (+d[3] || 0) / 3600 }); i += d[0].length; continue; }
       const m = /^(\d+(?:\.\d*)?|\.\d+)(ᴇ[+-]?\d+)?/.exec(rest);
-      if (m) { t.push({ k: "n", v: parseFloat(m[0].replace("ᴇ", "e")) }); i += m[0].length; continue; }
+      if (m) { t.push({ k: "n", v: parseNum(m[0].replace("ᴇ", "e")) }); i += m[0].length; continue; }
     }
     if (s.startsWith("⁻¹", i)) { t.push({ k: "o", v: "⁻¹" }); i += 2; continue; }
     if (base === 10 && "πe".concat(VARS).includes(c)) { t.push({ k: "c", v: c }); i++; continue; }
@@ -165,11 +253,20 @@ function parse(tk) {
 
 /* ------------------------------- evaluator -------------------------------- */
 
+/* n! – exact doubles up to 170!, extended range (mantissa × 10^exp) beyond */
 const fact = (n) => {
-  if (!Number.isInteger(n) || n < 0 || n > 170) throw Err("Math");
-  let r = 1;
-  for (let i = 2; i <= n; i++) r *= i;
-  return r;
+  if (!Number.isInteger(n) || n < 0 || n > 100000) throw Err("Math");
+  if (n <= 170) {
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+  }
+  let m = 1, e = 0;
+  for (let i = 2; i <= n; i++) {
+    m *= i;
+    if (m > 1e250) { m /= 1e250; e += 250; }
+  }
+  return norm(m, e);
 };
 const isInt = (...v) => v.every((x) => Number.isInteger(x) && x >= 0);
 
@@ -184,23 +281,35 @@ function ev(n, E) {
       if (v === "Ran#") return Math.floor(Math.random() * 1000) / 1000;
       return E.vars[v] || 0;
     }
-    case "neg": return -ev(n.a, E);
+    case "neg": { const x = ev(n.a, E); return isB(x) ? norm(-x.m, x.e) : -x; }
     case "p": {
       const x = ev(n.a, E);
-      if (n.o === "!") return fact(x);
-      if (n.o === "²") return x * x;
-      if (n.o === "³") return x * x * x;
+      if (n.o === "!") return fact(N(x));
+      if (isB(x)) {
+        if (n.o === "²") return bigOp("×", x, x);
+        if (n.o === "³") return bigOp("×", bigOp("×", x, x), x);
+        if (n.o === "⁻¹") return norm(1 / x.m, -x.e);
+        return norm(x.m, x.e - 2);
+      }
+      if (n.o === "²") { const r = x * x; return Number.isFinite(r) ? r : bigOp("×", x, x); }
+      if (n.o === "³") { const r = x * x * x; return Number.isFinite(r) ? r : bigOp("×", bigOp("×", x, x), x); }
       if (n.o === "⁻¹") { if (x === 0) throw Err("Math"); return 1 / x; }
       return x / 100;
     }
     case "b": {
       const a = ev(n.a, E), b = ev(n.b, E);
+      if (isB(a) || isB(b)) return bigOp(n.o, a, b);
       switch (n.o) {
         case "+": return a + b;
         case "-": return a - b;
-        case "×": return a * b;
-        case "÷": if (b === 0) throw Err("Math"); return a / b;
-        case "^": { if (a === 0 && b === 0) throw Err("Math"); const r = Math.pow(a, b); if (Number.isNaN(r)) throw Err("Math"); return r; }
+        case "×": { const r = a * b; return Number.isFinite(r) ? r : bigOp("×", a, b); }
+        case "÷": { if (b === 0) throw Err("Math"); const r = a / b; return Number.isFinite(r) ? r : bigOp("÷", a, b); }
+        case "^": {
+          if (a === 0 && b <= 0) throw Err("Math");
+          const r = Math.pow(a, b);
+          if (Number.isNaN(r)) throw Err("Math");
+          return Number.isFinite(r) && !(r === 0 && a !== 0) ? r : powL(a, b);
+        }
         case "nPr": { if (!isInt(a, b) || b > a) throw Err("Math"); let r = 1; for (let i = 0; i < b; i++) r *= a - i; return r; }
         case "nCr": { if (!isInt(a, b) || b > a) throw Err("Math"); const k = Math.min(b, a - b); let r = 1; for (let i = 1; i <= k; i++) r = (r * (a - k + i)) / i; return Math.round(r); }
         case "ˣ√": {
@@ -223,25 +332,26 @@ function fn(n, E) {
 
   if (name === "∫" || name === "Σ" || name === "d/dx") {
     const E2 = { ...E, vars: { ...E.vars } };
-    const g = (t) => { E2.vars.X = t; return ev(A[0], E2); };
+    const g = (t) => { E2.vars.X = t; return N(ev(A[0], E2)); };
     if (name === "∫") {
-      const a = ev(A[1], E), b = ev(A[2], E), N = 2000, h = (b - a) / N;
+      const a = N(ev(A[1], E)), b = N(ev(A[2], E)), K = 2000, h = (b - a) / K;
       let sum = g(a) + g(b);
-      for (let i = 1; i < N; i++) sum += g(a + i * h) * (i % 2 ? 4 : 2);
+      for (let i = 1; i < K; i++) sum += g(a + i * h) * (i % 2 ? 4 : 2);
       return (sum * h) / 3;
     }
     if (name === "Σ") {
-      const a = Math.round(ev(A[1], E)), b = Math.round(ev(A[2], E));
+      const a = Math.round(N(ev(A[1], E))), b = Math.round(N(ev(A[2], E)));
       if (b - a > 1e6) throw Err("Math");
       let sum = 0;
       for (let i = a; i <= b; i++) sum += g(i);
       return sum;
     }
-    const a = ev(A[1], E), h = 1e-3 * Math.max(1, Math.abs(a));
+    const a = N(ev(A[1], E)), h = 1e-3 * Math.max(1, Math.abs(a));
     return (g(a - 2 * h) - 8 * g(a - h) + 8 * g(a + h) - g(a + 2 * h)) / (12 * h);
   }
 
   const x = ev(A[0], E);
+  if (isB(x)) return bigFn(name, x);
   const D = E.angle;
   const toR = (v) => (D === "deg" ? (v * PI) / 180 : D === "gra" ? (v * PI) / 200 : v);
   const fromR = (v) => (D === "deg" ? (v * 180) / PI : D === "gra" ? (v * 200) / PI : v);
@@ -265,7 +375,7 @@ function fn(n, E) {
     case "tanh⁻¹": if (Math.abs(x) >= 1) throw Err("Math"); return Math.atanh(x);
     case "log": if (x <= 0) throw Err("Math"); return Math.log10(x);
     case "ln": if (x <= 0) throw Err("Math"); return Math.log(x);
-    case "logb": { const y = ev(A[1], E); if (x <= 0 || x === 1 || y <= 0) throw Err("Math"); return Math.log(y) / Math.log(x); }
+    case "logb": { const y = N(ev(A[1], E)); if (x <= 0 || x === 1 || y <= 0) throw Err("Math"); return Math.log(y) / Math.log(x); }
     case "√": if (x < 0) throw Err("Math"); return Math.sqrt(x);
     case "∛": return Math.cbrt(x);
     case "Abs": return Math.abs(x);
@@ -275,7 +385,16 @@ function fn(n, E) {
 
 /* ------------------------------- formatting ------------------------------- */
 
+function fmtBig(v, f) {
+  const d = f.type === "sci" ? Math.max(0, f.n - 1) : 9;
+  let m = Number(Math.abs(v.m).toPrecision(d + 1)), e = v.e;
+  if (m >= 10) { m /= 10; e++; }
+  const t = f.type === "sci" ? m.toFixed(d) : String(m);
+  return `${v.m < 0 ? "-" : ""}${t}×10${sup(e)}`;
+}
+
 function fmtNum(v, f) {
+  if (isB(v)) return fmtBig(v, f);
   if (v === 0) return "0";
   const sci = (d) => {
     const [m, e] = v.toExponential(d).split("e");
@@ -288,8 +407,35 @@ function fmtNum(v, f) {
   return String(Number(v.toPrecision(10)));
 }
 
-const fmtEng = (v, e) => `${Number((v / Math.pow(10, e)).toPrecision(10))}×10${sup(e)}`;
+const fmtEng = (v, e) => `${Number((isB(v) ? v.m * Math.pow(10, v.e - e) : v / Math.pow(10, e)).toPrecision(10))}×10${sup(e)}`;
 const fmtBase = (v, b) => { const t = Math.trunc(v); return (t < 0 ? t >>> 0 : t).toString(b).toUpperCase(); };
+
+/* a number as text that the expression lexer can read back (uses ᴇ, not e) */
+const vstr = (v) => (isB(v) ? `${v.m}ᴇ${v.e}` : String(v).replace("e", "ᴇ"));
+
+/* Turns pasted plain text (2*3, sqrt(16), pi, asin(0.5), 1e5 …) into calculator text */
+const normalizeInput = (t, hexMode = false) =>
+  t.replace(/\s+/g, "").replace(/=+$/, "")
+    .replace(/d\/dx/g, "\u0001")
+    .replace(/[−–]/g, "-")
+    .replace(/\*\*/g, "^")
+    .replace(/\*/g, "×")
+    .replace(/\//g, "÷")
+    .replace(/\u0001/g, "d/dx")
+    .replace(/(?:arc|a)(sin|cos|tan)h/g, "$1h⁻¹")
+    .replace(/(?:arc|a)(sin|cos|tan)/g, "$1⁻¹")
+    .replace(/(sin|cos|tan)(h?)\^-1/g, "$1$2⁻¹")
+    .replace(/sqrt/g, "√")
+    .replace(/cbrt/g, "∛")
+    .replace(/abs\(/gi, "Abs(")
+    .replace(/log10\(/g, "log(")
+    .replace(/exp\(/g, "e^(")
+    .replace(/pi/gi, "π")
+    .replace(/npr/gi, "nPr")
+    .replace(/ncr/gi, "nCr")
+    .replace(hexMode ? /$^/ : /(\d)[eE]([+-]?\d)/g, "$1ᴇ$2");
+const cleanCmp = (x) => String(x).replace(/[−–]/g, "-").replace(/\s+/g, "");
+const SPLIT = /\t|=>|\|/;
 
 function toDMS(v) {
   const sg = v < 0 ? "-" : "", a = Math.abs(v);
@@ -419,7 +565,7 @@ const Overlay = ({ title, onClose, children }) => (
 
 /* ------------------------------ extra modes ------------------------------- */
 
-const num = (t) => (String(t).trim() === "" ? 0 : ev(parse(lex(String(t))), { vars: {}, ans: 0, angle: "deg" }));
+const num = (t) => (String(t).trim() === "" ? 0 : N(ev(parse(lex(String(t))), { vars: {}, ans: 0, angle: "deg" })));
 const F = (v) => fmtNum(Number(v.toPrecision(12)), { type: "norm", n: 0 }).replace(/-/g, "−");
 const cxs = (re, im) => (Math.abs(im) < 1e-12 ? F(re) : `${F(re)} ${im < 0 ? "−" : "+"} ${F(Math.abs(im))}i`);
 const bt = "rounded-md border border-[#4b5a45]/50 bg-[#c6d4b6] px-3 py-1.5 text-sm font-bold hover:bg-[#b8c9a6]";
@@ -845,7 +991,7 @@ export default function ScientificCalculator() {
   const [alpha, setAlpha] = useState(false);
   const [hyp, setHyp] = useState(false);
   const [sto, setSto] = useState(false);
-  const [angle, setAngle] = useState("deg");
+  const [angle, setAngle] = useState(DEFAULT_ANGLE);
   const [fmt, setFmt] = useState({ type: "norm", n: 0 });
   const [mode, setMode] = useState("calc");
   const [base, setBase] = useState(10);
@@ -868,6 +1014,7 @@ export default function ScientificCalculator() {
   const [clrOpen, setClrOpen] = useState(false);
   const [ovr, setOvr] = useState(false);
   const [off, setOff] = useState(false);
+  const [batch, setBatch] = useState(null); /* pasted multi-line tests */
 
   /* layout: landscape is the desktop default, portrait the mobile default */
   const [wide, setWide] = useState(mq);
@@ -921,6 +1068,10 @@ export default function ScientificCalculator() {
     let v;
     try { v = ev(parse(lex(src, b)), { vars: vs, ans, angle }); }
     catch (e) { throw e.message === "Syntax" ? e : Err("Math"); }
+    if (isB(v)) {
+      if (b !== 10) throw Err("Math");
+      return norm(Number(v.m.toPrecision(15)), v.e);
+    }
     if (!Number.isFinite(v)) throw Err("Math");
     return Number(v.toPrecision(15));
   };
@@ -983,7 +1134,7 @@ export default function ScientificCalculator() {
     try { names = [...new Set(lex(s, b).filter((t) => t.k === "c" && VARS.includes(t.v)).map((t) => t.v))]; }
     catch (e) { showErr(e); return; }
     if (!names.length) { equals(); return; }
-    setPrompt({ names, vals: Object.fromEntries(names.map((n) => [n, String(vars[n] ?? 0)])) });
+    setPrompt({ names, vals: Object.fromEntries(names.map((n) => [n, vstr(vars[n] ?? 0)])) });
   };
   const runPrompt = () => {
     try {
@@ -999,13 +1150,13 @@ export default function ScientificCalculator() {
       const parts = s.split("=");
       if (parts.length !== 2) throw Err("Syntax");
       const L = parse(lex(parts[0])), R = parse(lex(parts[1]));
-      const g = (x) => { const E = { vars: { ...vars, X: x }, ans, angle }; return ev(L, E) - ev(R, E); };
+      const g = (x) => { const E = { vars: { ...vars, X: x }, ans, angle }; return N(ev(L, E)) - N(ev(R, E)); };
       const found = (x) => {
         x = Number(x.toPrecision(12));
         setVars((v) => ({ ...v, X: x })); setRes({ v: x, label: "X=" }); setAns(x); setFresh(true); setErr(""); resetView();
       };
       for (const x0 of [vars.X || 0, 1, -1, 2, -2, 5, -5, 10, -10, 0.5, -0.5, 100, -100]) {
-        let x = x0;
+        let x = N(x0);
         try {
           for (let i = 0; i < 60; i++) {
             const f = g(x);
@@ -1084,7 +1235,7 @@ export default function ScientificCalculator() {
       case "calc": if (shift) solve(); else calcKey(); break;
       case "ssd": if (res && mode === "calc") { setDms(false); setEng(null); setFrac((f) => !f); } break;
       case "dms":
-        if (shift) { if (res && mode === "calc") { setFrac(false); setEng(null); setDms((d) => !d); } }
+        if (shift) { if (res && mode === "calc" && !isB(res.v)) { setFrac(false); setEng(null); setDms((d) => !d); } }
         else {
           const before = fresh ? "" : s.slice(0, pos);
           insert(/′[\d.]*$/.test(before) ? "″" : /°[\d.]*$/.test(before) ? "′" : "°");
@@ -1092,7 +1243,8 @@ export default function ScientificCalculator() {
         break;
       case "eng":
         if (res && mode === "calc" && res.v !== 0) {
-          const e0 = Math.floor(Math.log10(Math.abs(res.v)) / 3) * 3;
+          const ex = isB(res.v) ? res.v.e : Math.floor(Math.log10(Math.abs(res.v)));
+          const e0 = Math.floor(ex / 3) * 3;
           setFrac(false); setDms(false);
           setEng(eng === null ? e0 : eng + (shift ? -3 : 3));
         }
@@ -1100,7 +1252,7 @@ export default function ScientificCalculator() {
       case "rcl": if (shift) setSto(true); else setAlpha(true); break;
       case "mplus":
         try {
-          const v = currentValue();
+          const v = N(currentValue());
           setVars((x) => ({ ...x, M: (x.M || 0) + (shift ? -v : v) }));
         } catch (e) { showErr(e); }
         break;
@@ -1127,7 +1279,7 @@ export default function ScientificCalculator() {
       clearMods();
       if (k.sact === "const") setConstOpen(true);
       if (k.sact === "clr") setClrOpen(true);
-      if (k.sact === "conv") { let v = "0"; try { v = String(currentValue()); } catch (e) { /* keep 0 */ } setConvVal(v); setConvOpen(true); }
+      if (k.sact === "conv") { let v = "0"; try { const cv = currentValue(); if (!isB(cv)) v = String(cv); } catch (e) { /* keep 0 */ } setConvVal(v); setConvOpen(true); }
       return;
     }
     const tp = alpha ? null : shift ? k.stpl : k.tpl;
@@ -1142,6 +1294,22 @@ export default function ScientificCalculator() {
     insert(txt, isNeg);
   };
 
+  /* evaluate one line of pasted text with the current angle / format / base */
+  const evalLine = (raw) => {
+    try {
+      const v = calc(normalizeInput(raw, mode === "base"));
+      return mode === "base" ? fmtBase(v, base) : fmtNum(v, fmt);
+    } catch (e) { return e.message === "Syntax" ? "Syntax ERROR" : "Math ERROR"; }
+  };
+
+  /* paste: one line goes onto the display; several lines (or "expr => expected") become a test table */
+  const pasteText = (text) => {
+    const lines = String(text).split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return;
+    if (lines.length === 1 && !SPLIT.test(lines[0])) { insert(normalizeInput(lines[0], mode === "base")); return; }
+    setBatch(lines.map((l) => { const [src, exp] = l.split(SPLIT); return { src: src.trim(), exp: exp === undefined ? undefined : exp.trim() }; }));
+  };
+
   const overlay = setup || menu || prompt || constOpen || convOpen || clrOpen;
   const isTool = !!TOOLS[mode];
 
@@ -1153,9 +1321,18 @@ export default function ScientificCalculator() {
       if (id) { e.preventDefault(); press(BY[id]); return; }
       if (TEXT[e.key]) insert(TEXT[e.key]);
     };
+    const onPaste = (e) => {
+      if (overlay || isTool || off) return;
+      const tg = e.target;
+      if (tg && /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)) return;
+      const t = e.clipboardData && e.clipboardData.getData("text");
+      if (!t) return;
+      e.preventDefault();
+      pasteText(t);
+    };
     const targets = [window, pip].filter(Boolean);
-    targets.forEach((t) => t.addEventListener("keydown", h));
-    return () => targets.forEach((t) => t.removeEventListener("keydown", h));
+    targets.forEach((t) => { t.addEventListener("keydown", h); t.addEventListener("paste", onPaste); });
+    return () => targets.forEach((t) => { t.removeEventListener("keydown", h); t.removeEventListener("paste", onPaste); });
   });
 
   /* display */
@@ -1163,10 +1340,11 @@ export default function ScientificCalculator() {
   let shown = "";
   if (res) {
     if (mode === "base") shown = fmtBase(res.v, base);
-    else if (dms) shown = toDMS(res.v);
+    else if (dms && !isB(res.v)) shown = toDMS(res.v);
     else if (eng !== null) shown = fmtEng(res.v, eng);
     else shown = fmtNum(res.v, fmt);
   }
+  const rows = batch ? batch.map((r) => { const got = evalLine(r.src); return { ...r, got, ok: r.exp === undefined ? null : cleanCmp(r.exp) === cleanCmp(got) }; }) : null;
   const angTag = { deg: "D", rad: "R", gra: "G" }[angle];
   const tags = [
     shift && "S", alpha && "A", sto && "STO", hyp && "hyp", vars.M && "M",
@@ -1174,18 +1352,18 @@ export default function ScientificCalculator() {
     mode === "calc" && fmt.type === "fix" && "Fix", mode === "calc" && fmt.type === "sci" && "Sci", ovr && "Ovr",
   ].filter(Boolean);
 
-  const key = (k, plain) => {
+  /* Every key always gets the same-height label row above it (even when it has
+     no SHIFT / ALPHA / BASE label), so all keys in a row line up perfectly. */
+  const key = (k) => {
     const on = (k.id === "shift" && shift) || (k.id === "alpha" && alpha) || (k.id === "hyp" && hyp) || (k.id === "rcl" && sto);
     const style = KS[k.c || "fn"];
     return (
       <div key={k.id} className="flex min-w-0 flex-col">
-        {!plain && (
-          <div className="flex h-3.5 min-w-0 items-end justify-between gap-0.5 px-0.5 text-[7px] font-bold leading-none sm:text-[8px]">
-            <span className="text-[#c08d1b]">{k.sl}</span>
-            {k.bl && <span className="text-[#1f7e8c]">{k.bl}</span>}
-            <span className="text-[#b83f46]">{k.al}</span>
-          </div>
-        )}
+        <div className="flex h-3.5 min-w-0 items-end justify-between gap-0.5 px-0.5 text-[7px] font-bold leading-none sm:text-[8px]">
+          <span className="text-[#c08d1b]">{k.sl}</span>
+          {k.bl && <span className="text-[#1f7e8c]">{k.bl}</span>}
+          <span className="text-[#b83f46]">{k.al}</span>
+        </div>
         <button
           onClick={() => press(k)}
           aria-label={k.l}
@@ -1230,6 +1408,7 @@ export default function ScientificCalculator() {
               {land ? "Portrait" : "Landscape"}
             </button>
           )}
+         
           {wide && !pip && (
             <button onClick={popOut} className={tbtn} title="Open the calculator in its own small window">
               <ExternalLink size={13} />Pop out
@@ -1271,8 +1450,8 @@ export default function ScientificCalculator() {
                 {ROWS.map((r, i) => <div key={i} className="grid grid-cols-6 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k))}</div>)}
               </div>
             </div>
-            <div className={`space-y-1.5 ${land ? "min-w-0 flex-[5]" : "mt-4"}`}>
-              {PAD.map((r, i) => <div key={i} className="grid grid-cols-5 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k, !k.sl && !k.al))}</div>)}
+            <div className={`space-y-1 ${land ? "min-w-0 flex-[5]" : "mt-1"}`}>
+              {PAD.map((r, i) => <div key={i} className="grid grid-cols-5 gap-x-1 sm:gap-x-1.5">{r.map((k) => key(k))}</div>)}
             </div>
           </div>
         </>
@@ -1325,16 +1504,16 @@ export default function ScientificCalculator() {
       {/* CONV */}
       {convOpen && (
         <ConvPanel value={convVal} onClose={() => setConvOpen(false)}
-          onUse={(v) => { setConvOpen(false); setS(String(v)); setPos(String(v).length); setRes({ v }); setAns(v); setFresh(true); setErr(""); resetView(); }} />
+          onUse={(v) => { setConvOpen(false); setS(vstr(v)); setPos(vstr(v).length); setRes({ v }); setAns(v); setFresh(true); setErr(""); resetView(); }} />
       )}
 
       {/* CLR */}
       {clrOpen && (
         <Overlay title="Clear (CLR)" onClose={() => setClrOpen(false)}>
           {[
-            ["1: Setup data", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); }],
+            ["1: Setup data", () => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); }],
             ["2: Memory", () => { setVars({}); setAns(0); setHist([]); setHi(-1); }],
-            ["3: All", () => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setAns(0); setHist([]); setHi(-1); setMode("calc"); setBase(10); }],
+            ["3: All", () => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); setVars({}); setAns(0); setHist([]); setHi(-1); setMode("calc"); setBase(10); }],
           ].map(([t, fn2]) => (
             <button key={t} onClick={() => { fn2(); act({ act: "ac" }); setClrOpen(false); }} className="mt-3 block w-full rounded-lg border border-[#aeb8c2] px-3 py-2.5 text-left font-semibold hover:bg-white">{t}</button>
           ))}
@@ -1361,7 +1540,7 @@ export default function ScientificCalculator() {
             </>
           )}
           <div className="mt-6 flex gap-2">
-            <button onClick={() => { setAngle("deg"); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-slate-600 px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
+            <button onClick={() => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-slate-600 px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
             <button onClick={() => setSetup(false)} className="rounded-md bg-amber-300 px-4 py-1.5 text-sm font-semibold text-black">Done</button>
           </div>
         </Overlay>
@@ -1389,12 +1568,42 @@ export default function ScientificCalculator() {
           </>
         ) : body}
 
+        {rows && (
+          <div className="mx-auto mt-5 max-w-[820px] rounded-2xl border border-slate-700 bg-slate-900/70 p-4 text-sm">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="font-bold text-slate-200">
+                Pasted tests{rows.some((r) => r.ok !== null) ? ` – ${rows.filter((r) => r.ok === true).length}/${rows.filter((r) => r.ok !== null).length} match` : ""}
+              </span>
+              <button onClick={() => setBatch(null)} className="rounded-md bg-amber-300 px-3 py-1 text-xs font-semibold text-black">Clear</button>
+            </div>
+            <div className="max-h-96 overflow-auto">
+              <table className="w-full text-left font-mono text-xs sm:text-sm">
+                <thead><tr className="text-slate-400"><th className="pr-3">Expression</th><th className="pr-3">Result</th><th className="pr-3">Expected</th><th /></tr></thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i} className={r.ok === false ? "text-red-300" : "text-slate-200"}>
+                      <td className="break-all pr-3">{r.src}</td>
+                      <td className="break-all pr-3">{r.got.replace(/-/g, "−")}</td>
+                      <td className="break-all pr-3">{r.exp ?? ""}</td>
+                      <td>{r.ok === true ? "✓" : r.ok === false ? "✗" : ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-[11px] text-slate-400">Results use the current angle unit and number format, so change SETUP and they update.</p>
+          </div>
+        )}
+
         <div className="mx-auto mt-5 max-w-[820px] space-y-2 px-1 text-xs text-slate-400 sm:mt-6 sm:space-y-1.5">
           <p><span className="font-semibold text-[#c08d1b]">SHIFT</span> then a key uses the yellow function. <span className="font-semibold text-[#b83f46]">ALPHA</span> then a key uses the red letter. <span className="font-semibold text-slate-200">SHIFT + MODE</span> opens SETUP, MODE opens the menu.</p>
+          <p>Angle unit: the little letter at the top of the screen shows it (R = radian, D = degree, G = gradian). Change it in SETUP. For sin(π/2) = 1 use Radian.</p>
           <p>Fractions: type the top number, press a⁄b, then the bottom number. Store a value: SHIFT + RCL (STO), then ALPHA and a letter. ▲ ▼ browse history.</p>
           <p>CALC asks for the variables in your expression. SOLVE: type an equation with ALPHA + CALC for "=", e.g. X² − 4 = 0, then SHIFT + CALC. ∫ and Σ use X, e.g. ∫(X², 0, 3).</p>
           <p>Templates: ▫⁄▫ and ∫ₐᵇ▫ draw natural fractions and integrals; fill each box and move between them with ◀ ▶. SHIFT + 7 CONST (constants), SHIFT + 8 CONV (unit conversion), SHIFT + 9 CLR, SHIFT + DEL INS (insert/overwrite), SHIFT + AC OFF (press ON to wake).</p>
+          <p>Very large or very small results (for example 171! or 10^400) are shown as mantissa × 10 to a power instead of an error.</p>
           <p>Layout: on desktop use the Portrait / Landscape button on the calculator. Pop out opens a small always-on-top window (Chrome / Edge) or a popup window (other browsers) in portrait, which you can also switch to landscape.</p>
+          <p>Paste works: Ctrl+V (or the Paste button) puts text like 2*3, sqrt(16), pi, asin(0.5) on the display. Paste several lines, or lines like "2^10 =&gt; 1024", to get a test table with ✓ / ✗.</p>
           <p>Keyboard works too: digits, + − * / ( ) ^, Enter, Backspace, Esc, arrows, and s c t l n r for sin cos tan log ln √.</p>
         </div>
       </main>
