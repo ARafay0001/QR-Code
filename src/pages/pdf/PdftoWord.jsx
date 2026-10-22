@@ -11,12 +11,16 @@ import Footer from "../../components/common/Footer";
 /*  100% in-browser: files never leave the device.                            */
 /*                                                                            */
 /*   - Text PDFs  : real text, fonts, bold/italic/underline/strike, sizes,    */
-/*                  alignment, indents, bullet/number lists, headings,        */
-/*                  tab-aligned lines, tables, 2-column pages, images at      */
-/*                  their exact position, horizontal rules, running headers / */
-/*                  page numbers.                                             */
+/*                  superscripts / subscripts (A², xₙ), alignment, indents,   */
+/*                  bullet/number lists, headings, tab-aligned lines, tables  */
+/*                  (borders only where the PDF has ruling lines), 2-column   */
+/*                  pages, images at their exact position, horizontal rules,  */
+/*                  running headers / page numbers.                           */
 /*   - Scanned PDFs: OCR (Tesseract) with paragraph + heading detection.      */
 /*   - Urdu / Arabic / Hebrew text is written right-to-left.                  */
+/*   - Fail-safe  : a page that can't be analysed falls back to plain text,   */
+/*                  and a failed build is retried in "safe mode" instead of   */
+/*                  aborting the whole conversion.                            */
 /* ========================================================================== */
 
 /* ========================================================================== */
@@ -26,6 +30,7 @@ import Footer from "../../components/common/Footer";
 const RTL_RE = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 const LIST_RE = /^\s*(?:[•●▪■◦○·‣⁃▫–—\-*»›]|(?:\d{1,3}|[a-z]|[ivx]{1,4})[.)]|[A-Z]\))\s+/;
 const BULLET_RE = /^\s*[•●▪■◦○·‣⁃▫–—\-*»›]\s+/;
+const NUMTOK = /^[-−–+]?\(?\d+(?:[.,/]\d+)?\)?%?$/;
 const NUM_RE = /^\s*((?:\d{1,3}|[a-z]|[ivx]{1,4})[.)]|[A-Z]\))\s+/;
 
 const median = (a) => {
@@ -39,6 +44,7 @@ const pctl = (a, p) => {
   return s[Math.min(s.length - 1, Math.floor(p * s.length))];
 };
 const clampN = (x, a, b) => Math.min(b, Math.max(a, x));
+const hex6 = (c) => (/^[0-9A-F]{6}$/i.test(c || "") ? c.toUpperCase() : "000000");
 /* 2D affine multiply (same convention as pdf.js Util.transform) */
 const mul = (m, n) => [
   m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
@@ -65,6 +71,30 @@ function wordFont(name, generic) {
 
 /* ---------------------------- items -> lines ------------------------------ */
 
+/*
+ * Small items that sit right after a bigger one, raised or lowered (A², xₙ, A^(k+1)), are marked
+ * sup / sub and pulled onto the base line. Without this they land on their own "line" and tear
+ * paragraphs and tables apart.
+ */
+function attachScripts(items) {
+  if (items.length < 3) return;
+  const med = median(items.map((i) => i.fs));
+  for (const s of items) {
+    if (s.s.trim().length > 6) continue;
+    let best = null, bd = Infinity;
+    for (const L of items) {
+      if (L === s || L.va || L.fs < s.fs * 1.18 || L.fs < med * 0.9) continue;
+      const gap = s.x - (L.x + L.w), dy = s.y - L.y;
+      if (gap < -L.fs * 0.5 || gap > L.fs * 1.6) continue;
+      const up = dy < -0.15 * L.fs && dy > -0.85 * L.fs, down = dy > 0.1 * L.fs && dy < 0.55 * L.fs;
+      if (!up && !down) continue;
+      const d = Math.abs(gap) + Math.abs(dy);
+      if (d < bd) { bd = d; best = { L, up }; }
+    }
+    if (best) { s.va = best.up ? "sup" : "sub"; s.y = best.L.y; }
+  }
+}
+
 function extractItems(tc, vt, fontOf) {
   const items = [], rot = [];
   for (const it of tc.items) {
@@ -76,6 +106,7 @@ function extractItems(tc, vt, fontOf) {
     const o = { s: it.str, x: t[4], y: t[5], fs, w: Math.abs(it.width), b: f.b, i: f.i, f: f.f };
     (Math.abs(t[1]) > Math.abs(t[0]) * 0.5 ? rot : items).push(o);
   }
+  attachScripts(items);
   return { items, rot };
 }
 
@@ -116,15 +147,17 @@ function buildLine(l) {
   let cur = null, prev = null;
   const addRun = (seg, it, text) => {
     const r = seg.runs[seg.runs.length - 1];
-    if (r && r.b === it.b && r.i === it.i && r.f === it.f && !r.u === !it.u && !r.s === !it.k && Math.abs(r.sz - it.fs) < 0.7) r.t += text;
-    else seg.runs.push({ t: text, b: it.b, i: it.i, sz: it.fs, f: it.f, u: !!it.u, s: !!it.k });
+    if (r && r.b === it.b && r.i === it.i && r.f === it.f && r.va === it.va && !r.u === !it.u && !r.s === !it.k && Math.abs(r.sz - it.fs) < 0.7) r.t += text;
+    else seg.runs.push({ t: text, b: it.b, i: it.i, sz: it.fs, f: it.f, va: it.va, u: !!it.u, s: !!it.k });
   };
   for (const it of its) {
     const x0 = it.x, x1 = it.x + it.w;
     if (!cur) { cur = { x: x0, xEnd: x1, runs: [] }; addRun(cur, it, it.s); prev = it; continue; }
     const gap = rtl ? prev.x - x1 : x0 - (prev.x + prev.w);
     const fs = (prev.fs + it.fs) / 2;
-    if (gap > Math.max(fs * 2.3, 18)) {
+    /* matrix / numeric grids: neighbouring numbers drawn as separate items are separate cells even with a narrow gap */
+    const numGrid = NUMTOK.test(prev.s.trim()) && NUMTOK.test(it.s.trim());
+    if (gap > (numGrid ? Math.max(fs * 1.05, 6) : Math.max(fs * 1.25, 9))) {
       segs.push(cur);
       cur = { x: x0, xEnd: x1, runs: [] };
       addRun(cur, it, it.s);
@@ -233,9 +266,7 @@ function columnsFrom(rows) {
   return cols.filter((c) => c.e - c.s >= 3);
 }
 
-function cellPara(seg, cols, c0, c1) {
-  const cs = cols[c0].s, ce = cols[c1].e, lg = seg.x - cs, rg = ce - seg.xEnd;
-  const align = rg < 3 && lg > 8 ? "r" : Math.abs(lg - rg) < 4 && lg > 8 ? "c" : "l";
+function cellPara(seg, align) {
   const runs = seg.runs.map((r) => ({ ...r }));
   if (runs.length) { runs[0].t = runs[0].t.replace(/^\s+/, ""); runs[runs.length - 1].t = runs[runs.length - 1].t.replace(/\s+$/, ""); }
   return { t: "p", runs, align, left: 0, first: 0, before: 0, line: null, rtl: RTL_RE.test(runs.map((r) => r.t).join("")), level: 0, bullet: false, tabs: null };
@@ -243,22 +274,50 @@ function cellPara(seg, cols, c0, c1) {
 
 function tableAt(lines, i, geo, pitch) {
   if (lines[i].segs.length < 2) return null;
-  const span = [], rows = [];
+  let span = [], rows = [];
   let j = i;
   while (j < lines.length) {
     const l = lines[j], prev = lines[j - 1];
     if (l.segs.length >= 2) {
       if (j > i && l.y - prev.y > Math.max(l.fs, prev.fs) * pitch * 2.6) break;
-      span.push({ l, row: true }); rows.push(l); j++; continue;
+      span.push({ l, row: true, idx: j }); rows.push(l); j++; continue;
     }
-    if (span.length && prev && l.y - prev.y <= Math.max(l.fs, prev.fs) * pitch * 1.35 && j + 1 < lines.length && lines[j + 1].segs.length >= 2) {
-      span.push({ l, row: false }); j++; continue;
+    /* a single piece of text between rows = wrapped / vertically-centred cell text. Rows with padding are
+       spaced wider than text lines, so allow up to the typical row step */
+    const steps = [];
+    for (let k = 1; k < rows.length; k++) steps.push(rows[k].y - rows[k - 1].y);
+    const lim = Math.max(Math.max(l.fs, prev.fs) * pitch * 1.35, steps.length ? median(steps) * 1.12 : 0);
+    if (span.length && prev && l.y - prev.y <= lim && j + 1 < lines.length && lines[j + 1].segs.length >= 2) {
+      span.push({ l, row: false, idx: j }); j++; continue;
     }
     break;
   }
-  if (rows.length < 2) return null;
-  const cols = columnsFrom(rows);
-  if (cols.length < 2) return null;
+  /* wrapped cell text that follows the last row */
+  while (j < lines.length && rows.length) {
+    const l = lines[j], prev = lines[j - 1];
+    if (l.y - prev.y <= Math.max(l.fs, prev.fs) * pitch * 1.3 && l.segs.length < 2 && !LIST_RE.test(l.text) && l.fs <= prev.fs + 0.5) { span.push({ l, row: false, idx: j }); j++; }
+    else break;
+  }
+
+  /* a single line only belongs to the table if it fits inside one column; a caption or label wider than
+     the column ("R2 + 3R1, R3 - 2R1") ends the table. Re-check after every cut because columns change. */
+  const fits = (l, cols) => l.segs.every((s) => {
+    const c = cols.find((q) => s.x >= q.s - 3 && s.x <= q.e + 3);
+    return c && s.xEnd <= c.e + Math.max(4, 0.3 * (c.e - c.s));
+  });
+  let cols = null;
+  for (let guard = 0; guard < 6; guard++) {
+    if (rows.length < 2) return null;
+    cols = columnsFrom(rows);
+    if (cols.length < 2) return null;
+    const bad = span.findIndex((e) => !e.row && !fits(e.l, cols));
+    if (bad < 0) break;
+    j = span[bad].idx;
+    span = span.slice(0, bad);
+    while (span.length && !span[span.length - 1].row) j = span.pop().idx;
+    rows = span.filter((e) => e.row).map((e) => e.l);
+  }
+  if (rows.length < 2 || !cols || cols.length < 2) return null;
   /* table of contents (title ...... page) is better as tab-stop paragraphs */
   if (cols.length === 2 && rows.every((r) => r.segs.length === 2 && /^[\divxlcIVXLC]{1,5}$/.test(r.segs[1].runs.map((x) => x.t).join("").trim()))) return null;
 
@@ -269,49 +328,86 @@ function tableAt(lines, i, geo, pitch) {
     cols.forEach((c, n) => { const d = Math.abs(x - (c.s + c.e) / 2); if (d < bd) { bd = d; k = n; } });
     return k;
   };
-  const trows = [];
-  const addLine = (l, asRow) => {
-    if (asRow) {
-      const cells = [];
-      let col = 0;
-      for (const s of l.segs) {
-        let c0 = colOf(s.x + 1), c1 = colOf(s.xEnd - 1);
-        if (c1 < c0) [c0, c1] = [c1, c0];
-        if (c0 < col) c0 = col;
-        if (c1 < c0) c1 = c0;
-        while (col < c0) { cells.push({ c0: col, c1: col, paras: [] }); col++; }
-        cells.push({ c0, c1, paras: [cellPara(s, cols, c0, c1)] });
-        col = c1 + 1;
-      }
-      while (col < cols.length) { cells.push({ c0: col, c1: col, paras: [] }); col++; }
-      trows.push({ cells });
-    } else if (trows.length) {
-      const row = trows[trows.length - 1];
-      for (const s of l.segs) {
-        const c = colOf(s.x + 1);
-        let cell = row.cells.find((q) => c >= q.c0 && c <= q.c1);
-        if (!cell) continue;
-        cell.paras.push(cellPara(s, cols, cell.c0, cell.c1));
-      }
+  const endCol = (s, c0) => { let c1 = c0; while (c1 + 1 < cols.length && cols[c1 + 1].s + 2 < s.xEnd - 1) c1++; return c1; };
+  /* alignment per column from how its entries line up (same left edge / right edge / centre) */
+  const spread = (a) => Math.max(...a) - Math.min(...a);
+  const colAlign = cols.map((_, k) => {
+    const xs = [], xe = [];
+    rows.forEach((r) => r.segs.forEach((s) => { if (colOf(s.x + 1) === k && endCol(s, k) === k) { xs.push(s.x); xe.push(s.xEnd); } }));
+    if (xs.length < 2) return "l";
+    if (spread(xs) <= 2.5) return "l";
+    if (spread(xe) <= 2.5) return "r";
+    if (spread(xs.map((x, i) => (x + xe[i]) / 2)) <= 3) return "c";
+    return "l";
+  });
+  const alignFor = (c0, c1, s) => {
+    if (c1 > c0) {
+      const lg = s.x - cols[c0].s, rg = cols[c1].e - s.xEnd;
+      if (Math.abs(lg - rg) < 4 && lg > 8) return "c";
+      if (rg < 3 && lg > 8) return "r";
     }
+    return colAlign[c0];
   };
-  span.forEach((e) => addLine(e.l, e.row));
-  /* wrapped cell text that follows the last row */
-  while (j < lines.length) {
-    const l = lines[j], prev = lines[j - 1];
-    const inside = l.segs.every((s) => s.x >= cols[0].s - 3 && cols.some((c) => s.x >= c.s - 3 && s.x <= c.e + 3));
-    if (l.y - prev.y <= Math.max(l.fs, prev.fs) * pitch * 1.3 && inside && l.segs.length < cols.length && !LIST_RE.test(l.text) && l.fs <= prev.fs + 0.5) { addLine(l, false); j++; }
-    else break;
+  const trows = [], rowLines = [];
+  const addRow = (l) => {
+    const cells = [];
+    let col = 0;
+    for (const s of l.segs) {
+      let c0 = colOf(s.x + 1), c1 = endCol(s, c0);
+      if (c0 < col) c0 = col;
+      if (c1 < c0) c1 = c0;
+      /* more pieces than columns: glue the extra piece onto the previous cell instead of crashing */
+      if (c0 >= cols.length) {
+        const last = cells[cells.length - 1], lp = last && last.paras[last.paras.length - 1];
+        if (lp) s.runs.forEach((r, k) => lp.runs.push({ ...r, t: (k ? "" : " ") + r.t }));
+        continue;
+      }
+      if (c1 >= cols.length) c1 = cols.length - 1;
+      while (col < c0) { cells.push({ c0: col, c1: col, paras: [] }); col++; }
+      cells.push({ c0, c1, paras: [cellPara(s, alignFor(c0, c1, s))] });
+      col = c1 + 1;
+    }
+    while (col < cols.length) { cells.push({ c0: col, c1: col, paras: [] }); col++; }
+    trows.push({ cells }); rowLines.push(l);
+  };
+  span.forEach((e) => { if (e.row) addRow(e.l); });
+  /* continuation lines go to the NEAREST row (text above a vertically-centred row belongs to it, not to the row above) */
+  span.forEach((e) => {
+    if (e.row) return;
+    let r = 0, bd = Infinity;
+    rowLines.forEach((rl, k) => { const d = Math.abs(rl.y - e.l.y); if (d < bd - 0.01) { bd = d; r = k; } });
+    const above = e.l.y < rowLines[r].y - 1;
+    for (const s of e.l.segs) {
+      const c = colOf(s.x + 1);
+      const cell = trows[r].cells.find((q) => c >= q.c0 && c <= q.c1);
+      if (!cell) continue;
+      const p = cellPara(s, alignFor(cell.c0, cell.c1, s));
+      if (above) cell.paras.splice(cell.above = (cell.above || 0), 0, p), cell.above++;
+      else cell.paras.push(p);
+    }
+  });
+  /* cell boxes: left-aligned columns keep the spare gutter on their right, right-aligned ones on their left,
+     centred ones stay symmetric, so text lands where it was in the PDF (cells have 4pt side margins) */
+  const nc = cols.length, bl = [], br = [];
+  for (let k = 0; k < nc; k++) {
+    const c = cols[k], cx = (c.s + c.e) / 2;
+    bl[k] = k === 0 ? c.s - 4 : br[k - 1];
+    let r;
+    if (k === nc - 1) r = c.e + 4;
+    else {
+      const nx = cols[k + 1].s - 4, mid = (c.e + cols[k + 1].s) / 2, A = colAlign[k], nA = colAlign[k + 1];
+      if (A === "l") r = nx;
+      else if (A === "r") r = nA === "l" ? mid : c.e + 4;
+      else r = clampN(2 * cx - bl[k], c.e + 4, nA === "l" ? nx : Math.max(c.e + 4, mid));
+    }
+    br[k] = Math.max(r, c.e + 4, bl[k] + 8);
   }
-  const edge = [cols[0].s - 4];
-  for (let k = 1; k < cols.length; k++) edge.push((cols[k - 1].e + cols[k].s) / 2);
-  edge.push(cols[cols.length - 1].e + 4);
-  const widths = cols.map((_, k) => edge[k + 1] - edge[k]);
+  const widths = bl.map((l, k) => br[k] - l);
   const first = rows[0];
   return {
     end: j,
     block: {
-      t: "table", cols: widths, x: Math.max(0, edge[0] - geo.left), rows: trows,
+      t: "table", cols: widths, x: Math.max(0, bl[0] - geo.left), rows: trows, ruled: false,
       y: first.y - first.fs, yEnd: lines[j - 1].y,
     },
   };
@@ -321,7 +417,7 @@ function tableAt(lines, i, geo, pitch) {
 
 const pushRun = (runs, r) => {
   const last = runs[runs.length - 1];
-  if (last && !last.tab && !last.br && !r.tab && !r.br && last.b === r.b && last.i === r.i && last.f === r.f && !last.u === !r.u && !last.s === !r.s && Math.abs(last.sz - r.sz) < 0.7) last.t += r.t;
+  if (last && !last.tab && !last.br && !r.tab && !r.br && last.b === r.b && last.i === r.i && last.f === r.f && last.va === r.va && !last.u === !r.u && !last.s === !r.s && Math.abs(last.sz - r.sz) < 0.7) last.t += r.t;
   else runs.push({ ...r });
 };
 
@@ -399,9 +495,11 @@ function finishPara(g, geo, body, pitch, prevY) {
   let align = g.length === 1 ? alignOf(first, geo) : "l";
   if (g.length >= 3) {
     const restL = Math.min(...g.slice(1).map((l) => l.x));
-    if (g.slice(0, -1).every((l) => Math.abs(l.x - restL) < 2.5 + (l === first ? 0 : 0) || l === first) && g.slice(0, -1).every((l) => Math.abs(l.xEnd - geo.right) < 4)) align = "j";
+    if (g.slice(0, -1).every((l) => Math.abs(l.x - restL) < 2.5 || l === first) && g.slice(0, -1).every((l) => Math.abs(l.xEnd - geo.right) < 4)) align = "j";
   }
-  const list = g.length === 1 && first.segs.length > 1 ? { bullet: false, numbered: false } : applyList(runs);
+  /* a big / bold numbered line ("1. Echelon form") is a heading, not a list item: keep its number as text */
+  const heading0 = headingLevel(domSize(runs) / body, g.length, fullText.length, fullText, textRuns.every((r) => r.b));
+  const list = (g.length === 1 && first.segs.length > 1) || heading0 ? { bullet: false, numbered: false } : applyList(runs);
   const isList = list.bullet || list.numbered;
 
   const restLeft = g.length > 1 ? Math.min(...g.slice(1).map((l) => l.x)) : first.x;
@@ -414,8 +512,7 @@ function finishPara(g, geo, body, pitch, prevY) {
   if (rtl) { left = 0; firstInd = 0; }
 
   const fs = domSize(runs);
-  const chars = fullText.length;
-  const level = isList ? 0 : headingLevel(fs / body, g.length, chars, fullText, textRuns.every((r) => r.b));
+  const level = isList ? 0 : heading0;
   const diffs = [];
   for (let k = 1; k < g.length; k++) diffs.push(g[k].y - g[k - 1].y);
   const step = g.length > 1 ? median(diffs) : pitch * fs;
@@ -498,8 +595,11 @@ function toBlocks(lines, geo, body, opts, extras = []) {
     const t = opts.tables ? tableAt(lines, i, geo, pitch) : null;
     if (t) {
       const b = t.block;
-      /* the table draws its own borders: drop rules that lie inside it */
-      ex = ex.filter((e, k) => k < ei || !(e.t === "rule" && e.y >= b.y - 6 && e.y <= b.yEnd + 8));
+      /* the table draws its own borders: drop rules that lie inside it. If the PDF had ruling lines
+         there, remember it so borders are only drawn for tables that really had them */
+      const inside = (e, k) => k >= ei && e.t === "rule" && e.y >= b.y - 6 && e.y <= b.yEnd + 8;
+      b.ruled = ex.filter(inside).length >= 2;
+      ex = ex.filter((e, k) => !inside(e, k));
       upTo(b.y); flush();
       blocks.push(b); prevY = b.yEnd; prevFs = 10; i = t.end;
     } else {
@@ -513,7 +613,7 @@ function toBlocks(lines, geo, body, opts, extras = []) {
 }
 
 function ruleBlocks(rules) {
-  return rules.map((r) => ({ t: "rule", x: r.x, w: r.w, th: r.th, color: r.color, dash: r.dash, y: r.y, yEnd: r.y, before: 0, left: 0, right: 0 }));
+  return rules.map((r) => ({ t: "rule", x: r.x, w: r.w, th: r.th, color: hex6(r.color), dash: r.dash, y: r.y, yEnd: r.y, before: 0, left: 0, right: 0 }));
 }
 
 function imgBlocks(imgs, geo, float) {
@@ -557,6 +657,16 @@ function detectHeaderFooter(raw) {
 }
 
 function hfPara(l, W) {
+  /* "left text ........ Page 4" : keep both parts, joined by a right-aligned tab */
+  if (l.segs.length > 1) {
+    const last = l.segs[l.segs.length - 1];
+    const m = /^\s*(page\s*)?(\d+)(\s*(?:of|\/)\s*\d+)?\s*$/i.exec(last.runs.map((r) => r.t).join(""));
+    return {
+      runs: l.segs.slice(0, -1).flatMap((s, k) => (k ? [{ t: "  ", b: false, i: false, sz: l.fs, f: "Arial" }] : []).concat(s.runs.map((r) => ({ ...r })))),
+      right: { runs: last.runs.map((r) => ({ ...r })), num: m ? (m[1] || "") : null },
+      align: "l", pageNum: false, sz: l.fs, rtl: l.rtl,
+    };
+  }
   const c = (l.x + l.xEnd) / 2;
   const align = c < W * 0.38 ? "l" : c > W * 0.62 ? "r" : "c";
   const runs = l.segs.flatMap((s) => s.runs).map((r) => ({ ...r }));
@@ -675,7 +785,7 @@ function buildTextPage(raw, body, opts) {
   /* rules that belong to the running header / footer become borders on those Word paragraphs
      (leaving them in the body forces huge gaps and pushes content onto the next page) */
   if (page.header || page.footer) {
-    const bd = (r) => ({ th: r.th, color: r.color, dash: r.dash });
+    const bd = (r) => ({ th: r.th, color: hex6(r.color), dash: r.dash });
     rules = rules.filter((r) => {
       if (page.header && r.y < H * 0.12) {
         const h0 = raw.header[0];
@@ -752,7 +862,22 @@ function buildTextPage(raw, body, opts) {
   return page;
 }
 
-function assembleModel(raw, opts) {
+/* last-resort page: every line becomes a plain paragraph (no tables, columns, rules or pictures) */
+function fallbackPage(raw) {
+  const blocks = (raw.lines || []).map((l) => {
+    const runs = [];
+    l.segs.forEach((s, k) => {
+      if (k) runs.push({ t: "  ", b: false, i: false, sz: l.fs, f: "Arial" });
+      s.runs.forEach((r) => runs.push({ ...r }));
+    });
+    return { t: "p", runs, align: "l", left: 0, first: 0, before: 0, line: null, rtl: !!l.rtl, level: 0, bullet: false, tabs: null, y: l.y, yEnd: l.y, fs: l.fs };
+  });
+  return { n: raw.n, w: raw.W, h: raw.H, kind: "text", head: null, blocks, cols: null, gutter: 0, m: { l: 54, r: 54, t: 54, b: 54 }, header: null, footer: null, simplified: true };
+}
+
+function assembleModel(rawIn, opts) {
+  /* work on copies: detectHeaderFooter rewrites p.lines, and a retry (safe mode) must see the original data */
+  const raw = rawIn.map((p) => (opts.safe && p.kind === "text" ? { ...p, images: [], rules: [], rot: p.rot || [] } : { ...p }));
   detectHeaderFooter(raw);
   const allLines = raw.filter((p) => p.kind === "text").flatMap((p) => p.lines);
   const body = allLines.length ? bodySize(allLines) : 11;
@@ -760,9 +885,10 @@ function assembleModel(raw, opts) {
     if (p.kind === "ocr") {
       return { n: p.n, w: p.W, h: p.H, kind: "ocr", head: null, blocks: p.blocks, cols: null, gutter: 0, m: p.m || { l: 54, r: 54, t: 54, b: 54 }, header: null, footer: null };
     }
-    return buildTextPage(p, body, opts);
+    try { return buildTextPage(p, body, opts); }
+    catch (e) { console.warn(`page ${p.n}: layout analysis failed, using plain text`, e); return fallbackPage(p); }
   });
-  const stats = { pages: pages.length, words: 0, tables: 0, images: 0, ocr: pages.filter((p) => p.kind === "ocr").length };
+  const stats = { pages: pages.length, words: 0, tables: 0, images: 0, ocr: pages.filter((p) => p.kind === "ocr").length, simplified: pages.filter((p) => p.simplified).length };
   pages.forEach((p) => allBlocks(p).forEach((b) => {
     if (b.t === "table") { stats.tables++; b.rows.forEach((r) => r.cells.forEach((c) => c.paras.forEach((q) => { stats.words += wordCount(q); }))); }
     else if (b.t === "img") stats.images++;
@@ -840,7 +966,7 @@ function collectGraphics(op, vt, OPS, W, H) {
   const add = (x, w, y, th, color) => {
     if (y < 0 || y > H || /^F.F.F.$/.test(color)) return;            // off-page or (almost) white
     const x0 = Math.max(0, x), x1 = Math.min(W, x + w);
-    if (x1 - x0 >= 18) rules.push({ x: x0, w: x1 - x0, y, th, color, dash: st.dash });
+    if (x1 - x0 >= 18) rules.push({ x: x0, w: x1 - x0, y, th, color: hex6(color), dash: st.dash });
   };
   const parseOld = (ops, c) => {
     const out = []; let cur = null, p = 0;
@@ -858,6 +984,7 @@ function collectGraphics(op, vt, OPS, W, H) {
   };
   const parseNew = (d) => {
     const out = []; let cur = null;
+    if (!d || !d.length) return out;
     for (let p = 0; p < d.length;) {
       const o = d[p++];
       if (o === 0) { cur = [[d[p], d[p + 1]]]; out.push(cur); p += 2; }
@@ -906,7 +1033,11 @@ function collectGraphics(op, vt, OPS, W, H) {
       else if (f === OPS.setFillRGBColor) st.fill = hexOf(a, st.fill);
       else if (f === OPS.setStrokeRGBColor) st.stroke = hexOf(a, st.stroke);
       else if (f === OPS.constructPath) {
-        if (typeof a[0] === "number") handle(parseNew(a[1] && typeof a[1][0] === "object" ? a[1][0] : a[1]), a[0]);
+        if (typeof a[0] === "number") {
+          /* newer pdf.js: [paintOp, [pathData], minMax]; pathData is null for a bare "n" (endPath) */
+          const d = Array.isArray(a[1]) && a[1].length && typeof a[1][0] !== "number" ? a[1][0] : a[1];
+          if (d && d.length) handle(parseNew(d), a[0]);
+        }
         else pending = pending.concat(parseOld(a[0], a[1]));
       } else if (PAINT.has(f)) { if (pending.length) handle(pending, f); pending = []; }
       else if (f === OPS.endPath) pending = [];
@@ -925,7 +1056,7 @@ function collectGraphics(op, vt, OPS, W, H) {
   } catch (e) { console.warn("graphics scan", e); }
 
   const uniq = rules.filter((r, i) => !rules.some((q, j) => j < i && Math.abs(q.y - r.y) < 0.8 && Math.abs(q.x - r.x) < 3 && Math.abs(q.w - r.w) < 4));
-  return { rects: rects.length > 20 ? [] : rects, rules: uniq.length > 60 ? [] : uniq };
+  return { rects: rects.length > 20 ? [] : rects, rules: uniq.length > 120 ? [] : uniq };
 }
 
 /*
@@ -995,11 +1126,12 @@ async function buildDocx(model, opts) {
 
   const runsOf = (runs, rtl) => runs.map((r) => {
     if (r.br) return new TextRun({ break: 1 });
-    if (r.tab) return new Tab ? new TextRun({ children: [new Tab()] }) : new TextRun({ text: "\t" });
+    if (r.tab) return typeof Tab === "function" ? new TextRun({ children: [new Tab()] }) : new TextRun({ text: "\t" });
     const size = Math.max(2, Math.round(r.sz * 2));
     return new TextRun({
       text: r.t, bold: !!r.b, italics: !!r.i, size, font: rtl ? "Arial" : r.f, color: "000000",
       underline: r.u ? { type: UnderlineType.SINGLE } : undefined, strike: r.s || undefined,
+      superScript: r.va === "sup" || undefined, subScript: r.va === "sub" || undefined,
       rightToLeft: rtl || undefined, boldComplexScript: !!r.b, sizeComplexScript: size,
     });
   });
@@ -1019,9 +1151,10 @@ async function buildDocx(model, opts) {
   const line = { style: BorderStyle.SINGLE, size: 4, color: "BFBFBF" };
   const bset = (b) => ({ top: b, bottom: b, left: b, right: b });
 
+  /* borders: "auto" = only tables that had ruling lines in the PDF, "on" = all, "off" = none */
   const table = (t) => {
     const total = t.cols.reduce((a, b) => a + b, 0);
-    const edge = opts.borders ? line : none;
+    const edge = opts.borders === "on" || (opts.borders === "auto" && t.ruled) ? line : none;
     return new Table({
       width: { size: tw(total), type: WidthType.DXA },
       columnWidths: t.cols.map(tw),
@@ -1032,7 +1165,7 @@ async function buildDocx(model, opts) {
         cantSplit: true,
         children: r.cells.map((c) => {
           let w = 0;
-          for (let k = c.c0; k <= c.c1; k++) w += t.cols[k];
+          for (let k = c.c0; k <= c.c1; k++) w += t.cols[k] || 0;
           return new TableCell({
             width: { size: tw(w), type: WidthType.DXA },
             columnSpan: c.c1 > c.c0 ? c.c1 - c.c0 + 1 : undefined,
@@ -1061,7 +1194,7 @@ async function buildDocx(model, opts) {
         children: [new TextRun({ text: "", size: 2 })],
         indent: { left: tw(b.left), right: tw(b.right) },
         spacing: { before: tw(b.before || 0), after: 0, line: 20, lineRule: LineRuleType.EXACT },
-        border: { bottom: { style: b.dash === "dot" ? BorderStyle.DOTTED : b.dash === "dash" ? BorderStyle.DASHED : BorderStyle.SINGLE, size: clampN(Math.round(b.th * 8), 2, 96), color: b.color, space: 0 } },
+        border: { bottom: { style: b.dash === "dot" ? BorderStyle.DOTTED : b.dash === "dash" ? BorderStyle.DASHED : BorderStyle.SINGLE, size: clampN(Math.round(b.th * 8), 2, 96), color: hex6(b.color), space: 0 } },
       })];
     }
     return [new Paragraph({
@@ -1087,19 +1220,29 @@ async function buildDocx(model, opts) {
     return out.length ? out : [new Paragraph({ children: [] })];
   };
 
-  const hfParas = (list, kind) => list.map((h) => {
+  const hfParas = (list, kind, cw) => list.map((h) => {
     const jc = h.align === "c" ? AlignmentType.CENTER : h.align === "r" ? AlignmentType.RIGHT : AlignmentType.LEFT;
     const size = Math.max(2, Math.round(h.sz * 2));
-    const bd = (b) => ({ style: b.dash === "dot" ? BorderStyle.DOTTED : b.dash === "dash" ? BorderStyle.DASHED : BorderStyle.SINGLE, size: clampN(Math.round(b.th * 8), 2, 96), color: b.color, space: 2 });
+    const bd = (b) => ({ style: b.dash === "dot" ? BorderStyle.DOTTED : b.dash === "dash" ? BorderStyle.DASHED : BorderStyle.SINGLE, size: clampN(Math.round(b.th * 8), 2, 96), color: hex6(b.color), space: 2 });
     const border = h.bTop || h.bBottom ? { ...(h.bTop ? { top: bd(h.bTop) } : {}), ...(h.bBottom ? { bottom: bd(h.bBottom) } : {}) } : undefined;
+    if (h.right) {
+      const rr = h.right;
+      return new Paragraph({
+        border, tabStops: [{ type: TabStopType.RIGHT, position: tw(Math.max(40, cw)) }],
+        children: [
+          ...runsOf(h.runs, h.rtl), new TextRun({ children: [new Tab()] }),
+          ...(rr.num !== null ? [new TextRun({ children: [...(rr.num ? [rr.num] : []), PageNumber.CURRENT], size: Math.max(2, Math.round(rr.runs[0].sz * 2)), font: "Arial", color: "000000" })] : runsOf(rr.runs, h.rtl)),
+        ],
+      });
+    }
     if (h.pageNum && kind === "footer") {
       return new Paragraph({ alignment: jc, border, children: [new TextRun({ children: [PageNumber.CURRENT], size, font: "Arial", color: "000000" })] });
     }
     return new Paragraph({ alignment: jc, border, children: runsOf(h.runs, h.rtl) });
   });
   const hf = (pg) => ({
-    headers: pg.header ? { default: new Header({ children: hfParas(pg.header, "header") }) } : undefined,
-    footers: pg.footer ? { default: new Footer({ children: hfParas(pg.footer, "footer") }) } : undefined,
+    headers: pg.header ? { default: new Header({ children: hfParas(pg.header, "header", pg.w - pg.m.l - pg.m.r) }) } : undefined,
+    footers: pg.footer ? { default: new Footer({ children: hfParas(pg.footer, "footer", pg.w - pg.m.l - pg.m.r) }) } : undefined,
   });
 
   const pageProps = (pg, type, extra = {}) => ({
@@ -1190,6 +1333,7 @@ function PrevPara({ p, k }) {
         ? <span key={i} style={{ display: "inline-block", width: 18 * k }} />
         : <span key={i} style={{
           fontWeight: r.b ? 700 : 400, fontStyle: r.i ? "italic" : "normal", fontSize: r.sz * k, fontFamily: `${r.f}, sans-serif`,
+          verticalAlign: r.va === "sup" ? "super" : r.va === "sub" ? "sub" : "baseline", lineHeight: 1,
           textDecoration: [r.u && "underline", r.s && "line-through"].filter(Boolean).join(" ") || "none",
         }}>{r.t}</span>))}
     </p>
@@ -1205,6 +1349,7 @@ function PrevBlock({ b, k, borders }) {
       borderBottom: `${Math.max(1, b.th * k)}px ${b.dash === "dot" ? "dotted" : b.dash === "dash" ? "dashed" : "solid"} #${b.color}`,
     }} />;
   }
+  const showB = borders === "on" || (borders === "auto" && b.ruled);
   return (
     <table style={{ borderCollapse: "collapse", tableLayout: "fixed", marginLeft: b.x * k, width: b.cols.reduce((a, c) => a + c, 0) * k, marginTop: 4 * k }}>
       <colgroup>{b.cols.map((w, i) => <col key={i} style={{ width: w * k }} />)}</colgroup>
@@ -1212,7 +1357,7 @@ function PrevBlock({ b, k, borders }) {
         {b.rows.map((r, i) => (
           <tr key={i}>
             {r.cells.map((c, j) => (
-              <td key={j} colSpan={c.c1 - c.c0 + 1} style={{ border: borders ? "1px solid #cbd5e1" : "none", padding: `${2 * k}px ${4 * k}px`, verticalAlign: "top" }}>
+              <td key={j} colSpan={c.c1 - c.c0 + 1} style={{ border: showB ? "1px solid #cbd5e1" : "none", padding: `${2 * k}px ${4 * k}px`, verticalAlign: "top" }}>
                 {c.paras.map((p, q) => <PrevPara key={q} p={p} k={k} />)}
               </td>
             ))}
@@ -1254,7 +1399,7 @@ export default function PdfToWord() {
   const [needPw, setNeedPw] = useState(false);
   const [rangeMode, setRangeMode] = useState("all");
   const [rangeText, setRangeText] = useState("");
-  const [opt, setOpt] = useState({ format: "docx", ocr: "auto", lang: "eng", keepBreaks: true, tables: true, images: true, rules: true, borders: true, name: "" });
+  const [opt, setOpt] = useState({ format: "docx", ocr: "auto", lang: "eng", keepBreaks: true, tables: true, images: true, rules: true, borders: "auto", name: "" });
   const [progress, setProgress] = useState({ pct: 0, msg: "" });
   const [result, setResult] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -1328,105 +1473,123 @@ export default function PdfToWord() {
     cancelRef.current = false;
     setErr(""); setStage("working"); setProgress({ pct: 1, msg: "Starting…" });
     let worker = null;
-    const raw = [];
+    const raw = [], notes = [];
     try {
       for (let k = 0; k < picked.length; k++) {
         if (cancelRef.current) throw new Error("cancelled");
         const n = picked[k], base = (k / picked.length) * 92;
         setProgress({ pct: base, msg: `Reading page ${n} (${k + 1} of ${picked.length})…` });
         await tick();
-        const page = await doc.getPage(n);
-        const vp = page.getViewport({ scale: 1 });
-        const W = vp.width, H = vp.height;
-        let op = null;
-        try { op = await page.getOperatorList(); } catch (e) { console.warn(e); }
-        const tc = await page.getTextContent();
-        const { items, rot } = extractItems(tc, vp.transform, makeFontOf(page, tc.styles));
-        const all = items.concat(rot).map((i) => i.s).join("").replace(/\s/g, "");
-        const garbled = all.length > 0 && (all.match(/[\uE000-\uF8FF\uFFFD]/g) || []).length > all.length * 0.3;
-        const needOcr = opt.ocr === "always" || (opt.ocr === "auto" && (all.length < 20 || garbled));
+        let W = 595, H = 842;
+        try {
+          const page = await doc.getPage(n);
+          const vp = page.getViewport({ scale: 1 });
+          W = vp.width; H = vp.height;
+          let op = null;
+          try { op = await page.getOperatorList(); } catch (e) { console.warn(e); }
+          const tc = await page.getTextContent();
+          const { items, rot } = extractItems(tc, vp.transform, makeFontOf(page, tc.styles));
+          const all = items.concat(rot).map((i) => i.s).join("").replace(/\s/g, "");
+          const garbled = all.length > 0 && (all.match(/[\uE000-\uF8FF\uFFFD]/g) || []).length > all.length * 0.3;
+          const needOcr = opt.ocr === "always" || (opt.ocr === "auto" && (all.length < 20 || garbled));
 
-        if (needOcr) {
-          if (!worker) {
-            setProgress({ pct: base, msg: "Loading text recognition (first time only)…" });
-            const { createWorker } = await import("tesseract.js");
-            const langs = opt.lang === "eng" ? "eng" : `${opt.lang}+eng`;
-            worker = await createWorker(langs, 1, {
-              logger: (m) => { if (m.status === "recognizing text") setProgress((p) => ({ ...p, msg: `Recognising text on page ${n}… ${Math.round(m.progress * 100)}%` })); },
-            });
-          }
-          const scale = clampN(2600 / Math.max(W, H), 1.5, 3.5);
-          const vps = page.getViewport({ scale });
-          const cv = document.createElement("canvas");
-          cv.width = Math.ceil(vps.width); cv.height = Math.ceil(vps.height);
-          const cx = cv.getContext("2d");
-          cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
-          await page.render({ canvasContext: cx, viewport: vps }).promise;
-          setProgress({ pct: base + 1, msg: `Recognising text on page ${n}…` });
-          const { data } = await worker.recognize(cv, {}, { blocks: true });
-          const { blocks, m } = ocrToBlocks(data, scale, W, H);
-          raw.push({ kind: "ocr", n, W, H, blocks, m });
-          cv.width = cv.height = 0;
-        } else {
-          /* one scan of the operator list gives us image boxes AND horizontal lines */
-          const gfx = op ? collectGraphics(op, vp.transform, pdfjs.OPS, W, H) : { rects: [], rules: [] };
-          /* lines under / through text -> underline / strikethrough (must run BEFORE makeLines);
-             whatever is left becomes a real horizontal rule */
-          const rules = opt.rules ? markDecorations(items, gfx.rules) : [];
-          const rp = { kind: "text", n, W, H, lines: makeLines(items), rot, images: [], rules };
-          if (opt.images && op) {
-            const rects = gfx.rects;
-            if (rects.length) {
-              const R = Math.min(2.2, 4200 / Math.max(W, H));
-              const vps = page.getViewport({ scale: R });
-              const cv = document.createElement("canvas");
-              cv.width = Math.ceil(vps.width); cv.height = Math.ceil(vps.height);
-              const cx = cv.getContext("2d");
-              cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
-              await page.render({ canvasContext: cx, viewport: vps }).promise;
-              for (const r of rects) {
-                const sx = Math.max(0, Math.floor(r.x * R)), sy = Math.max(0, Math.floor(r.y * R));
-                const sw = Math.min(cv.width - sx, Math.ceil(r.w * R)), sh = Math.min(cv.height - sy, Math.ceil(r.h * R));
-                if (sw < 4 || sh < 4) continue;
-                const c2 = document.createElement("canvas");
-                c2.width = sw; c2.height = sh;
-                c2.getContext("2d").drawImage(cv, sx, sy, sw, sh, 0, 0, sw, sh);
-                const blob = await new Promise((res) => c2.toBlob(res, "image/jpeg", 0.9));
-                rp.images.push({ ...r, data: new Uint8Array(await blob.arrayBuffer()) });
-                c2.width = c2.height = 0;
-              }
-              cv.width = cv.height = 0;
+          if (needOcr) {
+            if (!worker) {
+              setProgress({ pct: base, msg: "Loading text recognition (first time only)…" });
+              const { createWorker } = await import("tesseract.js");
+              const langs = opt.lang === "eng" ? "eng" : `${opt.lang}+eng`;
+              worker = await createWorker(langs, 1, {
+                logger: (m) => { if (m.status === "recognizing text") setProgress((p) => ({ ...p, msg: `Recognising text on page ${n}… ${Math.round(m.progress * 100)}%` })); },
+              });
             }
+            const scale = clampN(2600 / Math.max(W, H), 1.5, 3.5);
+            const vps = page.getViewport({ scale });
+            const cv = document.createElement("canvas");
+            cv.width = Math.ceil(vps.width); cv.height = Math.ceil(vps.height);
+            const cx = cv.getContext("2d");
+            cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
+            await page.render({ canvasContext: cx, viewport: vps }).promise;
+            setProgress({ pct: base + 1, msg: `Recognising text on page ${n}…` });
+            const { data } = await worker.recognize(cv, {}, { blocks: true });
+            const { blocks, m } = ocrToBlocks(data, scale, W, H);
+            raw.push({ kind: "ocr", n, W, H, blocks, m });
+            cv.width = cv.height = 0;
+          } else {
+            /* one scan of the operator list gives us image boxes AND horizontal lines */
+            const gfx = op ? collectGraphics(op, vp.transform, pdfjs.OPS, W, H) : { rects: [], rules: [] };
+            /* lines under / through text -> underline / strikethrough (must run BEFORE makeLines);
+               whatever is left becomes a real horizontal rule */
+            const rules = opt.rules ? markDecorations(items, gfx.rules) : [];
+            const rp = { kind: "text", n, W, H, lines: makeLines(items), rot, images: [], rules };
+            if (opt.images && op) {
+              try {
+                const rects = gfx.rects;
+                if (rects.length) {
+                  const R = Math.min(2.2, 4200 / Math.max(W, H));
+                  const vps = page.getViewport({ scale: R });
+                  const cv = document.createElement("canvas");
+                  cv.width = Math.ceil(vps.width); cv.height = Math.ceil(vps.height);
+                  const cx = cv.getContext("2d");
+                  cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
+                  await page.render({ canvasContext: cx, viewport: vps }).promise;
+                  for (const r of rects) {
+                    const sx = Math.max(0, Math.floor(r.x * R)), sy = Math.max(0, Math.floor(r.y * R));
+                    const sw = Math.min(cv.width - sx, Math.ceil(r.w * R)), sh = Math.min(cv.height - sy, Math.ceil(r.h * R));
+                    if (sw < 4 || sh < 4) continue;
+                    const c2 = document.createElement("canvas");
+                    c2.width = sw; c2.height = sh;
+                    c2.getContext("2d").drawImage(cv, sx, sy, sw, sh, 0, 0, sw, sh);
+                    const blob = await new Promise((res) => c2.toBlob(res, "image/jpeg", 0.9));
+                    rp.images.push({ ...r, data: new Uint8Array(await blob.arrayBuffer()) });
+                    c2.width = c2.height = 0;
+                  }
+                  cv.width = cv.height = 0;
+                }
+              } catch (ie) { console.warn(`page ${n}: pictures skipped`, ie); notes.push(`Pictures on page ${n} could not be extracted.`); }
+            }
+            raw.push(rp);
           }
-          raw.push(rp);
+          page.cleanup();
+        } catch (pe) {
+          if (pe && pe.message === "cancelled") throw pe;
+          /* one unreadable page must not sink the whole document */
+          console.warn(`page ${n}: could not be read`, pe);
+          notes.push(`Page ${n} could not be read and was left blank.`);
+          raw.push({ kind: "text", n, W, H, lines: [], rot: [], images: [], rules: [] });
         }
-        page.cleanup();
       }
       if (worker) { await worker.terminate(); worker = null; }
       if (cancelRef.current) throw new Error("cancelled");
 
       setProgress({ pct: 94, msg: "Building your document…" });
       await tick();
-      /* float = pictures pinned at their exact page position (only when page breaks are kept) */
-      const model = assembleModel(raw, { tables: opt.tables, columns: true, float: opt.keepBreaks && opt.format === "docx" });
       const name = (opt.name.trim() || "document").replace(/[\\/:*?"<>|]+/g, "_");
-      let blob, fname;
-      if (opt.format === "txt") {
-        blob = new Blob([modelToText(model)], { type: "text/plain;charset=utf-8" });
-        fname = `${name}.txt`;
-      } else {
-        blob = await buildDocx(model, { keepBreaks: opt.keepBreaks, borders: opt.borders, title: name });
-        fname = `${name}.docx`;
+      /* float = pictures pinned at their exact page position (only when page breaks are kept) */
+      const mopts = { tables: opt.tables, columns: true, float: opt.keepBreaks && opt.format === "docx" };
+      const make = async (o) => {
+        const model = assembleModel(raw, o);
+        if (opt.format === "txt") return { model, blob: new Blob([modelToText(model)], { type: "text/plain;charset=utf-8" }), fname: `${name}.txt` };
+        const blob = await buildDocx(model, { keepBreaks: opt.keepBreaks, borders: opt.borders, title: name });
+        return { model, blob, fname: `${name}.docx` };
+      };
+      let out;
+      try { out = await make(mopts); }
+      catch (e1) {
+        /* safe mode: plain text-only layout, no pictures / lines / columns / tables */
+        console.error("Full build failed, retrying in safe mode:", e1);
+        out = await make({ tables: false, columns: false, float: false, safe: true });
+        notes.push("The full layout couldn’t be built, so a simpler version (text only, no tables or pictures) was created.");
       }
-      setResult({ blob, name: fname, model });
+      if (out.model.stats.simplified) notes.push(`${out.model.stats.simplified} page${out.model.stats.simplified > 1 ? "s were" : " was"} simplified to plain text because the layout couldn’t be analysed.`);
+      setResult({ blob: out.blob, name: out.fname, model: out.model, notes });
       setProgress({ pct: 100, msg: "Done" });
       setStage("done");
-      download(blob, fname);
+      download(out.blob, out.fname);
     } catch (e) {
       if (worker) { try { await worker.terminate(); } catch { /* ignore */ } }
       if (e && e.message === "cancelled") { setStage("ready"); return; }
       console.error(e);
-      setErr("Something went wrong during conversion. Try turning off OCR or ‘Keep images’, or pick fewer pages.");
+      setErr(`Conversion failed: ${(e && e.message) || "unknown error"}. Try turning off OCR or ‘Keep pictures’, or pick fewer pages.`);
       setStage("ready");
     }
   };
@@ -1450,7 +1613,7 @@ export default function PdfToWord() {
           <div className="text-center">
             <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">PDF to Word</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Convert PDF to editable Word.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Keeps fonts, tables, lists, lines and images. Reads scanned pages with OCR. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">Keeps fonts, tables, lists, lines, images and math notation (A², xₙ). Reads scanned pages with OCR. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden type="file" accept="application/pdf,.pdf"
@@ -1483,7 +1646,7 @@ export default function PdfToWord() {
                   </div>
                 )}
                 <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
-                  {["Fonts & formatting", "Tables", "Bullet lists", "Lines & images", "Scanned PDFs (OCR)", "Urdu · Arabic · more"].map((t) => (
+                  {["Fonts & formatting", "Tables", "Bullet lists", "Superscripts", "Lines & images", "Scanned PDFs (OCR)", "Urdu · Arabic · more"].map((t) => (
                     <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
                   ))}
                 </div>
@@ -1554,10 +1717,19 @@ export default function PdfToWord() {
                     <div className="space-y-3 border-t border-slate-800 pt-5">
                       <p className={lbl}>Layout</p>
                       <Check2 on={opt.keepBreaks} onChange={(v) => setOpt({ ...opt, keepBreaks: v })} title="Keep original page size & page breaks" hint="Also places pictures at their exact position. Off = one flowing document that is easier to edit" />
-                      <Check2 on={opt.tables} onChange={(v) => setOpt({ ...opt, tables: v })} title="Detect tables" />
+                      <Check2 on={opt.tables} onChange={(v) => setOpt({ ...opt, tables: v })} title="Detect tables" hint="Matrices written as rows of numbers become borderless tables" />
                       <Check2 on={opt.rules} onChange={(v) => setOpt({ ...opt, rules: v })} title="Keep lines & underlines" hint="Horizontal rules, underlined and struck-through text" />
                       <Check2 on={opt.images} onChange={(v) => setOpt({ ...opt, images: v })} title="Keep pictures" hint="Slower on picture-heavy PDFs" />
-                      {opt.tables && <Check2 on={opt.borders} onChange={(v) => setOpt({ ...opt, borders: v })} title="Draw table borders" />}
+                      {opt.tables && (
+                        <div className="space-y-2 pt-1">
+                          <p className="text-sm text-slate-300">Table borders</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Chip on={opt.borders === "auto"} onClick={() => setOpt({ ...opt, borders: "auto" })}>Like the PDF</Chip>
+                            <Chip on={opt.borders === "on"} onClick={() => setOpt({ ...opt, borders: "on" })}>Always</Chip>
+                            <Chip on={opt.borders === "off"} onClick={() => setOpt({ ...opt, borders: "off" })}>Never</Chip>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1605,6 +1777,11 @@ export default function PdfToWord() {
                     <button onClick={() => { setStage("ready"); setShowPreview(false); }} className={btn}><RefreshCw size={15} />Change options</button>
                     <button onClick={reset} className={btn}>Convert another PDF</button>
                   </div>
+                  {result.notes.length > 0 && (
+                    <div className="space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-left text-sm text-amber-300">
+                      {result.notes.map((t, i) => <p key={i}>{t}</p>)}
+                    </div>
+                  )}
                   {result.model.stats.words < 5 && (
                     <p className="text-sm text-amber-400">Very little text was found. If this PDF is scanned, set OCR to “Always OCR” and pick the right language.</p>
                   )}
