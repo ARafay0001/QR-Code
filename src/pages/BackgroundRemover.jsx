@@ -8,8 +8,9 @@ import {
   Cpu,
   Zap,
   Eye,
+  Sparkles,
+  X,
 } from "lucide-react";
-import { removeBackground, preload } from "@imgly/background-removal";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -49,6 +50,73 @@ const CHECKER_STYLE = {
   backgroundSize: "24px 24px",
   backgroundPosition: "0 0,12px 12px",
 };
+
+/* ------------------------------------------------------------------ */
+/* Worker bridge (all AI work runs off the main thread)                */
+/* ------------------------------------------------------------------ */
+
+let worker = null;
+let nextMsgId = 1;
+const pending = new Map();
+
+function rejectAllPending(reason) {
+  for (const p of pending.values()) p.reject(new Error(reason));
+  pending.clear();
+}
+
+function getWorker() {
+  if (!worker) {
+    worker = new Worker(
+      new URL("../workers/bgRemover.worker.js", import.meta.url),
+      { type: "module" }
+    );
+
+    worker.onmessage = (e) => {
+      const { id, type, percent, blob, message } = e.data;
+      const p = pending.get(id);
+      if (!p) return;
+
+      if (type === "progress") {
+        p.onProgress?.(percent);
+      } else if (type === "error") {
+        pending.delete(id);
+        p.reject(new Error(message));
+      } else {
+        pending.delete(id);
+        p.resolve(blob ?? true);
+      }
+    };
+
+    worker.onerror = (e) => {
+      const msg = e?.message || "AI worker crashed";
+      killWorker(msg);
+    };
+  }
+  return worker;
+}
+
+function callWorker(msg, onProgress) {
+  return new Promise((resolve, reject) => {
+    const id = nextMsgId++;
+    pending.set(id, { resolve, reject, onProgress });
+    try {
+      getWorker().postMessage({ ...msg, id });
+    } catch (err) {
+      pending.delete(id);
+      reject(err);
+    }
+  });
+}
+
+// Stops inference immediately (used for cancel / change image / unmount).
+function killWorker(reason = "cancelled") {
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+  preloadCache.clear(); // a new worker has to load the model again
+  rejectAllPending(reason);
+}
 
 /* ------------------------------------------------------------------ */
 /* Device detection + AI engine helpers (module level, cached)         */
@@ -96,7 +164,14 @@ async function buildGpuProfile() {
     "isnet",
     "isnet_quint8",
   ]);
-  return { device: "gpu", model, publicPath, maxSide: 2048, label: "GPU accelerated" };
+  return {
+    device: "gpu",
+    quality: "high",
+    model,
+    publicPath,
+    maxSide: 2048,
+    label: "GPU accelerated",
+  };
 }
 
 async function buildCpuProfile(low) {
@@ -108,10 +183,29 @@ async function buildCpuProfile(low) {
   ]);
   return {
     device: "cpu",
+    quality: "standard",
     model,
     publicPath,
     maxSide: low ? 768 : 1024,
     label: low ? "Lite mode (CPU)" : "Balanced mode (CPU)",
+  };
+}
+
+// Used by the "Improve quality" button on CPU devices: bigger, more accurate
+// model + larger working size. Slower, but only runs when the user asks.
+async function buildHighQualityProfile() {
+  const { model, publicPath } = await pickModel([
+    "isnet_fp16",
+    "isnet",
+    "isnet_quint8",
+  ]);
+  return {
+    device: "cpu",
+    quality: "high",
+    model,
+    publicPath,
+    maxSide: 2048,
+    label: "High detail (CPU)",
   };
 }
 
@@ -138,38 +232,21 @@ function detectProfile() {
 
 const preloadCache = new Map();
 
-function buildConfig(profile, progress) {
+// Only plain data can be sent to the worker.
+function toWorkerConfig(profile) {
   return {
     model: profile.model,
     device: profile.device,
-    debug: false,
-    ...(profile.publicPath ? { publicPath: profile.publicPath } : {}),
-    progress,
-    output: { format: "image/png", quality: 1, type: "foreground" },
-  };
-}
-
-// Aggregates the library's per-file progress into one 0-99 percentage.
-function makeProgressTracker(onPercent) {
-  const parts = {};
-  return (key, current, total) => {
-    if (!total) return;
-    parts[key] = [current, total];
-    let c = 0;
-    let t = 0;
-    for (const k in parts) {
-      c += parts[k][0];
-      t += parts[k][1];
-    }
-    if (t) onPercent(Math.min(99, Math.round((c / t) * 100)));
+    publicPath: profile.publicPath,
   };
 }
 
 function preloadModel(profile, onPercent) {
   const id = `${profile.device}:${profile.model}`;
   if (!preloadCache.has(id)) {
-    const p = Promise.resolve(
-      preload(buildConfig(profile, makeProgressTracker(onPercent)))
+    const p = callWorker(
+      { type: "preload", config: toWorkerConfig(profile) },
+      onPercent
     ).catch((err) => {
       preloadCache.delete(id); // allow retry
       throw err;
@@ -179,36 +256,13 @@ function preloadModel(profile, onPercent) {
   return preloadCache.get(id);
 }
 
-// Shrinks big images before inference – the biggest speed win on CPUs.
-async function downscaleIfNeeded(file, maxSide) {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const { width, height } = bitmap;
-    const scale = Math.min(1, maxSide / Math.max(width, height));
-
-    if (scale === 1) {
-      bitmap.close?.();
-      return file;
-    }
-
-    const w = Math.round(width * scale);
-    const h = Math.round(height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(bitmap, 0, 0, w, h);
-    bitmap.close?.();
-
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/png")
-    );
-    canvas.width = canvas.height = 0;
-    return blob || file;
-  } catch {
-    return file;
-  }
+function runRemoval(file, profile) {
+  return callWorker({
+    type: "remove",
+    file,
+    maxSide: profile.maxSide,
+    config: toWorkerConfig(profile),
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -219,6 +273,7 @@ export default function BackgroundRemover() {
   const inputRef = useRef(null);
   const previewRef = useRef(null);
   const runIdRef = useRef(0);
+  const busyRef = useRef(false);
 
   const [profile, setProfile] = useState(null);
   const [modelProgress, setModelProgress] = useState(0);
@@ -228,9 +283,12 @@ export default function BackgroundRemover() {
   const [file, setFile] = useState(null);
   const [originalUrl, setOriginalUrl] = useState(null);
   const [resultUrl, setResultUrl] = useState(null);
+  const [resultQuality, setResultQuality] = useState(null); // "standard" | "high"
   const [showOriginal, setShowOriginal] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
+  const [enhanceProgress, setEnhanceProgress] = useState(null); // null = processing
   const [messageIndex, setMessageIndex] = useState(0);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
@@ -249,13 +307,15 @@ export default function BackgroundRemover() {
         setModelProgress(100);
         setModelReady(true);
       } catch (err) {
+        if (cancelled) return;
         console.error("AI failed to load", err);
-        if (!cancelled) setModelError(true);
+        setModelError(true);
       }
     })();
 
     return () => {
       cancelled = true;
+      killWorker("unmounted");
     };
   }, []);
 
@@ -286,24 +346,39 @@ export default function BackgroundRemover() {
     return () => clearInterval(id);
   }, [loading]);
 
-  /* ---- file handling ---- */
-  const handleFile = useCallback((f) => {
-    if (!f) return;
-    if (!VALID_TYPES.includes(f.type)) {
-      setError("Only PNG, JPG and WEBP images are supported.");
-      return;
+  /* ---- stop whatever is running (invalidates the run + kills worker) ---- */
+  const abortRun = useCallback(() => {
+    runIdRef.current++;
+    if (busyRef.current) {
+      busyRef.current = false;
+      killWorker("cancelled");
     }
-    if (f.size > MAX_FILE_BYTES) {
-      setError("Maximum file size is 20 MB.");
-      return;
-    }
-    runIdRef.current++; // invalidate any run in progress
-    setError("");
     setLoading(false);
-    setResultUrl(null);
-    setShowOriginal(false);
-    setFile(f);
+    setEnhancing(false);
+    setEnhanceProgress(null);
   }, []);
+
+  /* ---- file handling ---- */
+  const handleFile = useCallback(
+    (f) => {
+      if (!f) return;
+      if (!VALID_TYPES.includes(f.type)) {
+        setError("Only PNG, JPG and WEBP images are supported.");
+        return;
+      }
+      if (f.size > MAX_FILE_BYTES) {
+        setError("Maximum file size is 20 MB.");
+        return;
+      }
+      abortRun(); // invalidate any run in progress
+      setError("");
+      setResultUrl(null);
+      setResultQuality(null);
+      setShowOriginal(false);
+      setFile(f);
+    },
+    [abortRun]
+  );
 
   // Paste an image from the clipboard (Ctrl/Cmd + V)
   useEffect(() => {
@@ -318,10 +393,10 @@ export default function BackgroundRemover() {
   }, [handleFile]);
 
   const reset = () => {
-    runIdRef.current++;
+    abortRun();
     setFile(null);
     setResultUrl(null);
-    setLoading(false);
+    setResultQuality(null);
     setError("");
     setShowOriginal(false);
     if (inputRef.current) inputRef.current.value = "";
@@ -336,42 +411,90 @@ export default function BackgroundRemover() {
     }
 
     const runId = ++runIdRef.current;
+    busyRef.current = true;
     setError("");
     setLoading(true);
+    setEnhancing(false);
     setShowOriginal(false);
     previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-    const process = async (p) => {
-      const input = await downscaleIfNeeded(file, p.maxSide);
-      return removeBackground(input, buildConfig(p));
-    };
-
     try {
       let blob;
+      let used = profile;
       try {
-        blob = await process(profile);
+        blob = await runRemoval(file, profile);
       } catch (err) {
         // GPU can fail on some drivers – transparently retry on CPU.
-        if (profile.device !== "gpu") throw err;
+        if (profile.device !== "gpu" || runId !== runIdRef.current) throw err;
         console.warn("GPU failed, falling back to CPU", err);
         const cpu = await buildCpuProfile(false);
         setProfile(cpu);
-        blob = await process(cpu);
+        used = cpu;
+        blob = await runRemoval(file, cpu);
       }
 
       if (runId !== runIdRef.current) return; // user changed image meanwhile
       setResultUrl(URL.createObjectURL(blob));
+      setResultQuality(used.quality);
     } catch (err) {
+      if (runId !== runIdRef.current) return;
       console.error("Background removal error", err);
-      if (runId === runIdRef.current) {
-        setError(
-          err?.message
-            ? `Failed to remove background: ${err.message}`
-            : "Failed to remove background. Please try another image."
-        );
-      }
+      setError(
+        err?.message
+          ? `Failed to remove background: ${err.message}`
+          : "Failed to remove background. Please try another image."
+      );
     } finally {
-      if (runId === runIdRef.current) setLoading(false);
+      if (runId === runIdRef.current) {
+        busyRef.current = false;
+        setLoading(false);
+      }
+    }
+  };
+
+  /* ---- optional: re-run with the high-detail model (CPU devices) ---- */
+  const handleEnhance = async () => {
+    if (!file || loading || !resultUrl) return;
+
+    const runId = ++runIdRef.current;
+    busyRef.current = true;
+    setError("");
+    setLoading(true);
+    setEnhancing(true);
+    setEnhanceProgress(0);
+    setShowOriginal(false);
+    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    try {
+      const hq = await buildHighQualityProfile();
+
+      // 1) download / load the bigger model (cached after the first time)
+      await preloadModel(
+        hq,
+        (pct) => runId === runIdRef.current && setEnhanceProgress(pct)
+      );
+      if (runId !== runIdRef.current) return;
+      setEnhanceProgress(null); // now processing
+
+      // 2) run on the ORIGINAL file at the larger working size
+      const blob = await runRemoval(file, hq);
+      if (runId !== runIdRef.current) return;
+
+      setResultUrl(URL.createObjectURL(blob));
+      setResultQuality("high");
+    } catch (err) {
+      if (runId !== runIdRef.current) return;
+      console.error("Enhance error", err);
+      setError(
+        "Couldn't improve the quality on this device. Your previous result is still available."
+      );
+    } finally {
+      if (runId === runIdRef.current) {
+        busyRef.current = false;
+        setLoading(false);
+        setEnhancing(false);
+        setEnhanceProgress(null);
+      }
     }
   };
 
@@ -381,6 +504,13 @@ export default function BackgroundRemover() {
 
   const shownImage = showOriginal ? originalUrl : resultUrl || originalUrl;
   const canRun = !!file && !loading && modelReady;
+  const canEnhance = !!resultUrl && resultQuality === "standard" && !loading;
+
+  const overlayMessage = enhancing
+    ? enhanceProgress !== null
+      ? `📥 Downloading detail model… ${enhanceProgress}%`
+      : "🔬 Refining fine details..."
+    : LOADING_MESSAGES[messageIndex];
 
   /* ---------------------------------------------------------------- */
 
@@ -554,16 +684,28 @@ export default function BackgroundRemover() {
                         <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-blue-500" />
                       </div>
                       <h3 className="mt-6 text-center text-2xl font-bold">
-                        Removing Background
+                        {enhancing ? "Improving Quality" : "Removing Background"}
                       </h3>
                       <p className="mt-6 animate-pulse text-center text-lg font-medium text-blue-400">
-                        {LOADING_MESSAGES[messageIndex]}
+                        {overlayMessage}
                       </p>
                       <p className="mt-4 text-center text-xs text-slate-500">
-                        {profile?.device === "gpu"
+                        {enhancing
+                          ? "High-detail mode can take 30–90 seconds on this device. Your current result is kept if you cancel."
+                          : profile?.device === "gpu"
                           ? "Usually takes 2–5 seconds."
                           : "Usually takes 5–15 seconds."}
                       </p>
+
+                      {enhancing && (
+                        <button
+                          type="button"
+                          onClick={abortRun}
+                          className="mx-auto mt-5 flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+                        >
+                          <X size={16} /> Cancel
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -609,6 +751,16 @@ export default function BackgroundRemover() {
                   </button>
                 )}
 
+                {canEnhance && (
+                  <button
+                    type="button"
+                    onClick={handleEnhance}
+                    className="flex items-center gap-2 rounded-xl border border-violet-500/40 bg-violet-500/10 px-6 py-3 font-semibold text-violet-200 transition hover:bg-violet-500/20"
+                  >
+                    <Sparkles size={18} /> Improve quality
+                  </button>
+                )}
+
                 {file && (
                   <button
                     type="button"
@@ -617,6 +769,13 @@ export default function BackgroundRemover() {
                   >
                     <RotateCcw size={18} /> Start over
                   </button>
+                )}
+
+                {canEnhance && (
+                  <p className="w-full text-center text-xs text-slate-500">
+                    Edges not perfect? Re-run with the high-detail model. It is
+                    slower on this device and may download extra data once.
+                  </p>
                 )}
               </div>
             </div>
