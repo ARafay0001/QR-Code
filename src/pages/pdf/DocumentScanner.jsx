@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Upload, Camera, Crop, Sparkles, Type, Pencil, LayoutTemplate, RotateCw,
-  Trash2, Plus, Undo2, X, Loader2, ScanLine, Download, Check,
+  Trash2, Plus, Undo2, X, Loader2, ScanLine, Download, Check, Eye, ChevronDown,
 } from "lucide-react";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 
@@ -12,17 +12,14 @@ import Footer from "../../components/common/Footer";
 /*  npm i pdf-lib pdfjs-dist jszip tesseract.js                              */
 /*  100% in-browser, no OpenCV / no CDN.                                      */
 /*                                                                            */
-/*  What's new in this version                                                */
-/*   - Much stronger edge detection: 4 independent detectors (luminance both  */
-/*     polarities, colour-distance from background, edge-fill) -> convex     */
-/*     hull -> minimum-area enclosing quadrilateral -> best-scoring wins.    */
-/*   - True "flat" scans: the page's real aspect ratio is recovered from the  */
-/*     perspective (pinhole-camera model) and snapped to A4 / Letter.        */
-/*   - After capture/upload you land on the CROP screen with the detected     */
-/*     outline so you can verify it, page by page, before filtering.         */
-/*   - Filters & page layout apply to ALL pages at once. Switch to           */
-/*     "This page only" to customise one page, or reset it back.             */
-/*   - Magnifier loupe while dragging corners, auto-capture in the camera.   */
+/*  CamScanner-style flow                                                     */
+/*   1. Snap a photo (auto-capture when the page is steady) or upload.       */
+/*   2. Automatically: find edges -> flatten perspective -> un-bend waves/   */
+/*      curls (only if actually curved) -> remove shadows -> apply "Auto".   */
+/*      If no edges are found, the full image is used.                       */
+/*   3. You STAY on the Edges tool so you can fine-tune the corners.         */
+/*      Open Filters yourself (Auto is pre-selected) and pick a look from    */
+/*      the preset strip (light, dark, low-contrast and more), then Save.    */
 /* ========================================================================== */
 
 const FULL = [{ x: 0.06, y: 0.06 }, { x: 0.94, y: 0.06 }, { x: 0.94, y: 0.94 }, { x: 0.06, y: 0.94 }];
@@ -36,10 +33,41 @@ const FONTS = {
 };
 const INK = ["#111827", "#dc2626", "#2563eb", "#16a34a", "#f59e0b", "#ffffff"];
 const BGS = ["#ffffff", "#fef3c7", "#e5e7eb", "#0f172a"];
-const DEFAULT_FILTER = {
-  mode: "magic", brightness: 0, contrast: 0, saturation: 0, warmth: 0,
-  effect: 100, shadowAmt: 100, bwLevel: 0, preset: "none",
+
+const BASE_FILTER = {
+  look: "auto", mode: "magic", brightness: 0, contrast: 0, saturation: 0, warmth: 0,
+  effect: 100, shadowAmt: 100, bwLevel: 0, preset: "none", sharpen: 0,
 };
+/* one-tap looks (shown as live thumbnails) */
+const PRESETS = [
+  { id: "auto", label: "Auto", f: { mode: "magic", contrast: 10, sharpen: 40 } },
+
+  /* light & dark */
+  { id: "light", label: "Light", f: { mode: "magic", brightness: 18, contrast: -5, sharpen: 30 } },
+  { id: "bright", label: "Bright", f: { mode: "magic", brightness: 30, contrast: 12, sharpen: 40 } },
+  { id: "dark", label: "Dark", f: { mode: "magic", brightness: -18, contrast: 15, sharpen: 40 } },
+  { id: "deepdark", label: "Deep Dark", f: { mode: "magic", brightness: -32, contrast: 25, sharpen: 45 } },
+
+  /* low contrast / soft */
+  { id: "soft", label: "Soft", f: { mode: "magic", contrast: -20, saturation: -5, sharpen: 15, shadowAmt: 80 } },
+  { id: "lowcontrast", label: "Low Contrast", f: { mode: "original", brightness: 4, contrast: -30, shadowAmt: 60 } },
+  { id: "matte", label: "Matte Gray", f: { mode: "gray", brightness: 6, contrast: -25, sharpen: 10, shadowAmt: 70 } },
+  { id: "faded", label: "Faded", f: { mode: "original", brightness: 10, contrast: -35, saturation: -25, shadowAmt: 50 } },
+
+  /* original set */
+  { id: "original", label: "Original", f: { mode: "original", shadowAmt: 0 } },
+  { id: "vivid", label: "Vivid", f: { mode: "magic", saturation: 30, contrast: 22, sharpen: 60 } },
+  { id: "clean", label: "Clean Gray", f: { mode: "gray", brightness: 8, contrast: 35, sharpen: 55 } },
+  { id: "bw", label: "B&W", f: { mode: "bw", sharpen: 30 } },
+  { id: "ink", label: "Dark Ink", f: { mode: "bw", bwLevel: 22, sharpen: 40 } },
+  { id: "whiteboard", label: "Whiteboard", f: { mode: "magic", brightness: 8, contrast: 32, saturation: 45, sharpen: 55 } },
+  { id: "photo", label: "Photo", f: { mode: "original", shadowAmt: 35, contrast: 8, saturation: 12 } },
+  { id: "warm", label: "Warm", f: { mode: "magic", preset: "warm", effect: 100, sharpen: 25 } },
+  { id: "cool", label: "Cool", f: { mode: "magic", preset: "cool", effect: 100, sharpen: 25 } },
+  { id: "vintage", label: "Vintage", f: { mode: "original", preset: "vintage", effect: 100, shadowAmt: 60 } },
+];
+const presetFilter = (p) => ({ ...BASE_FILTER, ...p.f, look: p.id });
+const DEFAULT_FILTER = presetFilter(PRESETS[0]);
 const DEFAULT_LAYOUT = { aspect: "auto", margin: 0, border: 0, borderColor: "#0f172a", bg: "#ffffff" };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -159,6 +187,29 @@ function morph(src, w, h, grow, n) {
   }
   return cur;
 }
+
+/* fill holes (text, stamps) so the page becomes one solid blob */
+function fillHoles(mask, w, h) {
+  const outside = new Uint8Array(w * h), q = new Int32Array(w * h);
+  let head = 0, tail = 0;
+  const seed = (i) => { if (!mask[i] && !outside[i]) { outside[i] = 1; q[tail++] = i; } };
+  for (let x = 0; x < w; x++) { seed(x); seed((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { seed(y * w); seed(y * w + w - 1); }
+  while (head < tail) {
+    const i = q[head++], x = i % w, y = (i / w) | 0;
+    if (x > 0) seed(i - 1);
+    if (x < w - 1) seed(i + 1);
+    if (y > 0) seed(i - w);
+    if (y < h - 1) seed(i + w);
+  }
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) out[i] = outside[i] ? 0 : 1;
+  return out;
+}
+
+/* are the corners (almost) the whole image? then no perspective warp is needed */
+const nearFull = (c, t = 0.03) =>
+  !!c && c.length === 4 && c.every((p, i) => Math.abs(p.x - FULL_IMG[i].x) < t && Math.abs(p.y - FULL_IMG[i].y) < t);
 
 /* ---- geometry ---- */
 const cross2 = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
@@ -292,7 +343,7 @@ function evalMask(mask, w, h) {
     if (fq < 0.12 || fq > 0.97) continue;
     if (!quadIsSane(quad, Math.max(w, h) * 0.12)) continue;
     const tight = Math.min(1, ha / qa);
-    if (tight < 0.8) continue;
+    if (tight < 0.75) continue;
     const fill = Math.min(1, a / ha);
     const cx = quad.reduce((s, p) => s + p.x, 0) / 4 / w - 0.5, cy = quad.reduce((s, p) => s + p.y, 0) / 4 / h - 0.5;
     const score = tight * (0.55 + 0.45 * fill) * (0.6 + 0.4 * Math.sqrt(fq)) * (1 - 0.3 * Math.hypot(cx, cy));
@@ -321,7 +372,12 @@ function detectCorners(source, size = 420) {
   for (let i = 0; i < w * h; i++) gray[i] = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) | 0;
   const g = blur3(blur3(gray, w, h), w, h);
 
-  const clean = (m) => morph(morph(morph(morph(m, w, h, true, 2), w, h, false, 2), w, h, false, 2), w, h, true, 2);
+  /* close small gaps, fill holes (text/stamps), then remove thin noise */
+  const clean = (m) => {
+    const closed = morph(morph(m, w, h, true, 2), w, h, false, 2);
+    const solid = fillHoles(closed, w, h);
+    return morph(morph(solid, w, h, false, 2), w, h, true, 2);
+  };
   const masks = [];
 
   /* A — luminance, both polarities */
@@ -354,6 +410,29 @@ function detectCorners(source, size = 420) {
         masks.push(clean(m));
       }
     }
+  }
+
+  /* B2 — colour distance from the CENTRE colour (page is usually in the middle;
+         works when the page touches the photo border) */
+  {
+    const S = { r: [], g: [], b: [] };
+    for (let y = Math.round(h * 0.4); y < Math.round(h * 0.6); y += 2) {
+      for (let x = Math.round(w * 0.4); x < Math.round(w * 0.6); x += 2) {
+        const k = (y * w + x) * 4;
+        S.r.push(px[k]); S.g.push(px[k + 1]); S.b.push(px[k + 2]);
+      }
+    }
+    const med = (a) => a.sort((p, q) => p - q)[a.length >> 1];
+    const mr = med(S.r), mg = med(S.g), mb = med(S.b);
+    const dist = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      dist[i] = Math.min(255, ((Math.abs(px[i * 4] - mr) + Math.abs(px[i * 4 + 1] - mg) + Math.abs(px[i * 4 + 2] - mb)) / 3) * 1.6);
+    }
+    const ds = blur3(dist, w, h);
+    const dt = Math.max(18, otsu(ds));
+    const m = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) m[i] = ds[i] <= dt ? 1 : 0;
+    masks.push(clean(m));
   }
 
   /* C — edges, close the outline, fill from outside */
@@ -402,7 +481,7 @@ function detectCorners(source, size = 420) {
     const r = evalMask(m, w, h);
     if (r && (!best || r.score > best.score)) best = r;
   }
-  return best && best.score > 0.45 ? best.quad : null;
+  return best && best.score > 0.42 ? best.quad : null;
 }
 
 /* ========================================================================== */
@@ -431,8 +510,7 @@ function homography(dst, src) {
 }
 
 /*  Recover the real width/height of a rectangle seen in perspective
-    (Zhang & He, "Whiteboard scanning", assumes the principal point is the
-    image centre). Returns null if it can't be computed reliably.            */
+    (Zhang & He, "Whiteboard scanning"). Returns null if unreliable.         */
 function estimateAspect(p, W, H) {
   const u0 = W / 2, v0 = H / 2;
   const m1 = [p[0].x, p[0].y, 1], m2 = [p[1].x, p[1].y, 1], m3 = [p[3].x, p[3].y, 1], m4 = [p[2].x, p[2].y, 1];
@@ -444,7 +522,7 @@ function estimateAspect(p, W, H) {
   const n2 = [k2 * m2[0] - m1[0], k2 * m2[1] - m1[1], k2 * m2[2] - m1[2]];
   const n3 = [k3 * m3[0] - m1[0], k3 * m3[1] - m1[1], k3 * m3[2] - m1[2]];
   const den = n2[2] * n3[2];
-  if (Math.abs(den) < 1e-4) return null; // (almost) no perspective -> use plain edge lengths
+  if (Math.abs(den) < 1e-4) return null;
   const f2 = -((n2[0] * n3[0] - (n2[0] * n3[2] + n2[2] * n3[0]) * u0 + den * u0 * u0) +
     (n2[1] * n3[1] - (n2[1] * n3[2] + n2[2] * n3[1]) * v0 + den * v0 * v0)) / den;
   const f = Math.sqrt(f2);
@@ -532,12 +610,6 @@ async function warp(img, corners, maxOut = 2400) {
 
 /* ========================================================================== */
 /*        BENT-PAGE FLATTENING  (text-line based, pure JS, no OpenCV)         */
-/*                                                                            */
-/*  1. find text lines (adaptive ink mask -> horizontal smear -> blobs)       */
-/*  2. fit a smooth curve to every line                                       */
-/*  3. fit ONE smooth displacement surface that makes all lines straight      */
-/*     (+ a horizontal arc-length correction for squashed text near a spine) */
-/*  4. remap the page through that surface (strength is adjustable)           */
 /* ========================================================================== */
 
 function makeLS(n) {
@@ -629,7 +701,7 @@ function evalG(m, u) {
 }
 
 /*  Returns a correction model, or null when the page has no (usable) text
-    lines or is already flat.                                                */
+    lines or is already flat/straight.                                       */
 async function analyzeCurves(img) {
   const sw = img.naturalWidth, sh = img.naturalHeight;
   const sc = Math.min(1, 1000 / Math.max(sw, sh));
@@ -743,9 +815,23 @@ async function analyzeCurves(img) {
       sumY += y;
     }
     if (pts.length < 5 || bad > pts.length * 0.3) continue;
-    lines.push({ pts, mean: sumY / pts.length });
+
+    /* how far is this line from its own best straight line? */
+    const n = pts.length;
+    let sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (const p of pts) { sx += p.x; sy += p.y; sxx += p.x * p.x; sxy += p.x * p.y; }
+    const dn = n * sxx - sx * sx;
+    const k = dn ? (n * sxy - sx * sy) / dn : 0, b0 = (sy - k * sx) / n;
+    let dev = 0;
+    for (const p of pts) dev = Math.max(dev, Math.abs(p.y - (k * p.x + b0)));
+    lines.push({ pts, mean: sumY / pts.length, dev });
   }
   if (lines.length < 4) return null;
+
+  /* straight (even if slightly tilted) -> leave the page untouched */
+  const devs = lines.map((l) => l.dev).sort((a, b) => a - b);
+  const typical = devs[Math.floor((devs.length - 1) * 0.75)];
+  if (typical < Math.max(3, h * 0.004)) return null;
 
   /* one smooth displacement surface (+ horizontal stretch profile) */
   const lsD = makeLS(15), lsG = makeLS(5);
@@ -773,7 +859,6 @@ async function applyMesh(img, mesh, strength) {
   const W = img.naturalWidth, H = img.naturalHeight;
   const NX = 48, NY = 64;
 
-  /* vertical: per mesh column an inverse table  output-row -> source-row */
   const yTab = new Float32Array((NX + 1) * H);
   for (let j = 0; j <= NX; j++) {
     const u = (j / NX) * 2 - 1;
@@ -797,7 +882,6 @@ async function applyMesh(img, mesh, strength) {
     }
   }
 
-  /* horizontal: arc-length correction (expands squashed text near a spine) */
   const Xp = new Float64Array(W);
   for (let x = 1; x < W; x++) Xp[x] = Xp[x - 1] + 1 + s * evalG(mesh, ((x - 0.5) / (W - 1)) * 2 - 1);
   const scl = (W - 1) / Xp[W - 1];
@@ -857,6 +941,19 @@ async function buildPage(original, corners, flat) {
 
 /* ---------------------------- enhancement engine -------------------------- */
 
+/* 3x3 unsharp: crisper text */
+function sharpenData(d, w, h, amt) {
+  const k = (amt / 100) * 0.8, src = new Uint8ClampedArray(d), w4 = w * 4;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = (y * w + x) * 4;
+      for (let c = 0; c < 3; c++) {
+        d[i + c] = src[i + c] * (1 + 4 * k) - k * (src[i - 4 + c] + src[i + 4 + c] + src[i - w4 + c] + src[i + w4 + c]);
+      }
+    }
+  }
+}
+
 function applyFilters(canvas, f) {
   const w = canvas.width, h = canvas.height, ctx = canvas.getContext("2d", { willReadFrequently: true });
   const sAmt = f.shadowAmt / 100;
@@ -879,6 +976,7 @@ function applyFilters(canvas, f) {
     bg = bctx.getImageData(0, 0, w, h).data;
   }
   const img = ctx.getImageData(0, 0, w, h), d = img.data;
+  if (f.sharpen > 0) sharpenData(d, w, h, f.sharpen);
   const fc = (259 * (f.contrast + 255)) / (255 * (259 - f.contrast));
   const br = f.brightness * 2.55;
   const sat = 1 + f.saturation / 100;
@@ -976,6 +1074,23 @@ function getBase(page, maxDim, filter, layout) {
   return p;
 }
 
+/* small rotated source for the preset strip (filter applied per preset) */
+async function smallSource(page, maxDim = 150) {
+  const img = await loadImage(page.base);
+  const rot = page.rotation || 0, odd = rot % 180 !== 0;
+  const sw = odd ? img.naturalHeight : img.naturalWidth, sh = odd ? img.naturalWidth : img.naturalHeight;
+  const s = maxDim / Math.max(sw, sh);
+  const dw = Math.max(8, Math.round(sw * s)), dh = Math.max(8, Math.round(sh * s));
+  const c = document.createElement("canvas");
+  c.width = dw;
+  c.height = dh;
+  const x = c.getContext("2d");
+  x.translate(dw / 2, dh / 2);
+  x.rotate((rot * Math.PI) / 180);
+  x.drawImage(img, -(odd ? dh : dw) / 2, -(odd ? dw : dh) / 2, odd ? dh : dw, odd ? dw : dh);
+  return c;
+}
+
 const fontStr = (t, W) => `400 ${(t.size * W) / 800}px ${FONTS[t.font]}`;
 const textBox = (ctx, W, H, t) => {
   ctx.font = fontStr(t, W);
@@ -1013,9 +1128,9 @@ function drawAnnots(ctx, W, H, page, selectedId, live) {
 }
 
 /*  filter / layout = null  ->  page follows the "all pages" setting          */
-const newPage = (src) => ({
+const newPage = (src, busy = false) => ({
   id: uid(), original: src, base: src, baseVer: 0, rotation: 0, corners: FULL, detected: false, warped: null, mesh: null,
-  filter: null, layout: null, texts: [], strokes: [],
+  filter: null, layout: null, texts: [], strokes: [], busy,
 });
 
 const download = (blob, name) => {
@@ -1067,6 +1182,25 @@ const ToolBtn = ({ icon: Icon, text, active, onClick }) => (
   <button onClick={onClick} className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-semibold transition ${active ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}>
     <Icon size={20} />{text}
   </button>
+);
+
+/* horizontal strip of one-tap looks, each with a live thumbnail */
+const PresetStrip = ({ thumbs, current, onPick }) => (
+  <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+    {PRESETS.map((p) => {
+      const on = current === p.id;
+      return (
+        <button key={p.id} onClick={() => onPick(p)} className="group w-[76px] shrink-0 text-center">
+          <div className={`relative flex h-[100px] items-center justify-center overflow-hidden rounded-xl border-2 bg-slate-950 transition ${on ? "border-blue-500 shadow-[0_0_18px_rgba(59,130,246,.35)]" : "border-slate-800 group-hover:border-slate-600"}`}>
+            {thumbs[p.id] ? <img src={thumbs[p.id]} alt={p.label} draggable={false} className="max-h-full max-w-full object-contain" />
+              : <Loader2 size={16} className="animate-spin text-slate-600" />}
+            {on && <span className="absolute right-1 top-1 rounded-full bg-blue-600 p-0.5"><Check size={10} /></span>}
+          </div>
+          <span className={`mt-1.5 block truncate text-[11px] font-semibold ${on ? "text-white" : "text-slate-400"}`}>{p.label}</span>
+        </button>
+      );
+    })}
+  </div>
 );
 
 /* ------------------------------ crop editor ------------------------------- */
@@ -1126,9 +1260,9 @@ function CropEditor({ page, onChange, onCommit }) {
 function CameraModal({ onClose, onCapture }) {
   const videoRef = useRef(null), overlayRef = useRef(null);
   const cornersRef = useRef(null), rawRef = useRef(null), stable = useRef(0), miss = useRef(0), cooldown = useRef(0);
-  const autoRef = useRef(false), captureRef = useRef(() => {});
+  const autoRef = useRef(true), captureRef = useRef(() => {});
   const [err, setErr] = useState(""), [shots, setShots] = useState(0);
-  const [auto, setAuto] = useState(false), [found, setFound] = useState(false), [flash, setFlash] = useState(false);
+  const [auto, setAuto] = useState(true), [found, setFound] = useState(false), [flash, setFlash] = useState(false);
   autoRef.current = auto;
 
   useEffect(() => {
@@ -1209,7 +1343,7 @@ function CameraModal({ onClose, onCapture }) {
     <div className="fixed inset-0 z-[100] flex flex-col bg-black/90 p-4">
       <div className="flex items-center justify-between text-white">
         <span className="text-sm text-slate-300">
-          {found ? "Document found — hold steady" : "Place the document on a contrasting surface"}
+          {found ? (auto ? "Page found — hold steady, capturing automatically" : "Page found — tap the shutter") : "Place the page on a contrasting surface"}
         </span>
         <button onClick={onClose} className="rounded-full bg-white/10 p-2 hover:bg-white/20"><X size={18} /></button>
       </div>
@@ -1238,9 +1372,12 @@ export default function DocumentScanner() {
   const [activeId, setActiveId] = useState(null);
   const [panel, setPanel] = useState("filters"); // crop | filters | text | draw | page
   const [thumbs, setThumbs] = useState({});
+  const [presetThumbs, setPresetThumbs] = useState({});
   const [toast, setToast] = useState({ msg: "", busy: false });
   const [cameraOpen, setCameraOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [tuneOpen, setTuneOpen] = useState(false);
+  const [peek, setPeek] = useState(false);
   const [pen, setPen] = useState({ color: "#2563eb", width: 4 });
   const [selText, setSelText] = useState(null);
   const [exp, setExp] = useState({ name: "scan", format: "pdf", ocr: false });
@@ -1274,9 +1411,13 @@ export default function DocumentScanner() {
   const editScope = pages.length > 1 ? scope : "all";
   const curF = editScope === "all" ? gFilter : activeFilter;
   const curL = editScope === "all" ? gLayout : activeLayout;
+  const withLook = (v) => ("look" in v ? v : { ...v, look: "custom" });
   const setFilter = (v) => (editScope === "all"
-    ? setGFilter((f) => ({ ...f, ...v }))
-    : patch(active.id, { filter: { ...activeFilter, ...v } }));
+    ? setGFilter((f) => ({ ...f, ...withLook(v) }))
+    : patch(active.id, { filter: { ...activeFilter, ...withLook(v) } }));
+  const pickPreset = (p) => (editScope === "all"
+    ? setGFilter(presetFilter(p))
+    : patch(active.id, { filter: presetFilter(p) }));
   const setLayout = (v) => (editScope === "all"
     ? setGLayout((l) => ({ ...l, ...v }))
     : patch(active.id, { layout: { ...activeLayout, ...v } }));
@@ -1320,36 +1461,50 @@ export default function DocumentScanner() {
   };
 
   /* ----------------------------- import / add ----------------------------- */
+  /*  Fully automatic: detect edges -> perspective -> un-bend -> enhance.     */
+  /*  No edges found -> the full image is used.                               */
+  /*  The user STAYS on the Edges tool afterwards (no jump to Filters).       */
 
   const addPages = async (items) => {
     if (!items.length) return;
-    const created = items.map((it) => newPage(it.src));
+    const created = items.map((it) => newPage(it.src, !it.noAuto));
     setPages((ps) => [...ps, ...created]);
-    setActiveId(created[0].id);
-    const scanned = items.some((it) => !it.noAuto);
-    setPanel(scanned ? "crop" : "filters"); // show the detected outline so it can be verified
-    let missed = 0;
+    setActiveId((cur) => (cur && pagesRef.current.length ? cur : created[0].id));
+    if (!pagesRef.current.length) setActiveId(created[0].id);
+    /* camera / photo uploads -> Edges; PDF imports skip detection -> Filters */
+    setPanel(items.every((it) => it.noAuto) ? "filters" : "crop");
+
+    let noEdges = 0;
     for (let i = 0; i < created.length; i++) {
       if (items[i].noAuto) continue;
       try {
-        note("Finding the page edges…", true);
+        note(`Scanning page ${i + 1}: finding edges…`, true);
         await tick();
         const img = await loadImage(created[i].original);
-        const corners = detectCorners(img, 480) || items[i].hint || null;
+        let corners = detectCorners(img, 480) || items[i].hint || null;
+        if (nearFull(corners)) corners = null; // page fills the photo -> no warp needed
         if (corners) patch(created[i].id, { corners, detected: true });
-        else missed++;
-        note("Straightening the page…", true);
+        else { noEdges++; patch(created[i].id, { corners: FULL_IMG, detected: false }); }
+
+        note(`Scanning page ${i + 1}: flattening…`, true);
         await tick();
-        const r = await buildPage(created[i].original, corners, flatRef.current);
+        let r;
+        try {
+          r = await buildPage(created[i].original, corners, flatRef.current);
+        } catch (err) { // bad corners -> fall back to the full image
+          console.error(err);
+          patch(created[i].id, { corners: FULL_IMG, detected: false });
+          r = await buildPage(created[i].original, null, flatRef.current);
+        }
         patch(created[i].id, (x) => ({ warped: r.warped, mesh: r.mesh, base: r.base, baseVer: x.baseVer + 1 }));
       } catch (e) {
         console.error(e);
-        missed++;
+      } finally {
+        patch(created[i].id, { busy: false });
       }
     }
-    note(missed
-      ? "Couldn’t find every page edge — drag the corners onto the page."
-      : scanned ? "Edges detected — adjust if needed, then tap Done." : "");
+    if (noEdges) note("No page edges found — used the full image. Drag the corners to adjust.");
+    else note(items.some((it) => !it.noAuto) ? "Edges detected ✓ Adjust if needed, then open Filters." : "");
   };
 
   const handleFiles = async (files) => {
@@ -1395,7 +1550,8 @@ export default function DocumentScanner() {
     try {
       note("Updating…", true);
       await tick();
-      const r = await buildPage(pg.original, corners || pg.corners, flatRef.current);
+      const cs = corners || pg.corners;
+      const r = await buildPage(pg.original, nearFull(cs) ? null : cs, flatRef.current);
       if (token !== cropToken.current) return;
       patch(pg.id, (x) => ({ warped: r.warped, mesh: r.mesh, base: r.base, baseVer: x.baseVer + 1 }));
       note("");
@@ -1408,7 +1564,11 @@ export default function DocumentScanner() {
   const autoCrop = async () => {
     const c = detectCorners(await loadImage(active.original), 480);
     if (c) { patch(active.id, { corners: c, detected: true }); commitCrop(c); }
-    else note("Couldn’t detect the edges — drag the corners instead.");
+    else {
+      patch(active.id, { corners: FULL_IMG, detected: false });
+      commitCrop(FULL_IMG);
+      note("No edges found — using the full image. Drag the corners to adjust.");
+    }
   };
 
   const resetCrop = () => { patch(active.id, { corners: FULL_IMG, detected: false }); commitCrop(FULL_IMG); };
@@ -1450,6 +1610,25 @@ export default function DocumentScanner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.texts, active?.strokes, selText, panel]);
 
+  /* hold "Compare" -> show the un-enhanced (but straightened) page */
+  useEffect(() => {
+    const cv = canvasRef.current, pg = activeRef.current;
+    if (!cv || !pg || panel === "crop") return;
+    if (!peek) { paint(); return; }
+    let cancelled = false;
+    loadImage(pg.warped || pg.original).then((img) => {
+      if (cancelled || !baseRef.current) return;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      const s = Math.min(cv.width / img.naturalWidth, cv.height / img.naturalHeight);
+      const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+      ctx.drawImage(img, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peek]);
+
   /* bent-page flattening strength -> re-render every page that has a model */
   useEffect(() => {
     let cancelled = false;
@@ -1471,6 +1650,31 @@ export default function DocumentScanner() {
     return () => { cancelled = true; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flat]);
+
+  /* preset-strip thumbnails for the active page (live preview of every look) */
+  useEffect(() => {
+    if (!active || panel !== "filters") return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const src = await smallSource(active, 150);
+        const out = {};
+        for (const p of PRESETS) {
+          if (cancelled) return;
+          const c = document.createElement("canvas");
+          c.width = src.width;
+          c.height = src.height;
+          c.getContext("2d").drawImage(src, 0, 0);
+          applyFilters(c, presetFilter(p));
+          out[p.id] = c.toDataURL("image/jpeg", 0.7);
+          await tick();
+        }
+        if (!cancelled) setPresetThumbs(out);
+      } catch (e) { console.error(e); }
+    }, 200);
+    return () => { cancelled = true; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.id, active?.baseVer, active?.rotation, panel]);
 
   /* thumbnails for EVERY page (so a look applied to all pages shows everywhere) */
   useEffect(() => {
@@ -1614,14 +1818,14 @@ export default function DocumentScanner() {
     <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); handleFiles([...e.dataTransfer.files]); }}
       className="flex flex-col items-center rounded-3xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-6 py-16 text-center transition hover:border-blue-500">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400"><ScanLine size={30} /></div>
-      <h2 className="mt-6 text-2xl font-bold">Add a document</h2>
-      <p className="mt-2 text-slate-400">Take a photo or upload JPEG, PNG or PDF files.</p>
+      <h2 className="mt-6 text-2xl font-bold">Scan a document</h2>
+      <p className="mt-2 max-w-sm text-slate-400">Snap a photo or drop files here. We find the page, straighten it, flatten curls and clean it up — automatically.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button onClick={() => setCameraOpen(true)} className={btnPrimary}><Camera size={18} />Scan with camera</button>
         <button onClick={() => fileRef.current.click()} className={btn}><Upload size={18} />Upload files</button>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
-        {["Auto edge detection", "Perspective straightening", "One look for every page", "Searchable PDF"].map((t) => (
+        {["Auto edge detection", "Flattens curled pages", "Shadow removal", "19 one-tap looks", "Searchable PDF"].map((t) => (
           <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
         ))}
       </div>
@@ -1643,7 +1847,7 @@ export default function DocumentScanner() {
           <div className="text-center">
             <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">Document Scanner</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Scan &amp; Save as PDF.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Photograph a page, we straighten and clean it up. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">Photograph a page — we straighten, flatten and clean it up. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden multiple type="file" accept="image/jpeg,image/png,application/pdf"
@@ -1660,6 +1864,7 @@ export default function DocumentScanner() {
                         onClick={() => setActiveId(p.id)}
                         className={`relative h-20 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 bg-slate-950 transition ${p.id === active.id ? "border-blue-500" : "border-slate-800"}`}>
                         <img src={thumbs[p.id] || p.base} alt={`Page ${i + 1}`} className="h-full w-full object-cover" draggable={false} />
+                        {p.busy && <span className="absolute inset-0 flex items-center justify-center bg-slate-950/70"><Loader2 size={16} className="animate-spin text-blue-400" /></span>}
                         <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 text-[10px] font-semibold">{i + 1}</span>
                         {(p.filter || p.layout) && <span title="Custom look" className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-amber-400" />}
                         {pages.length > 1 && (
@@ -1696,18 +1901,41 @@ export default function DocumentScanner() {
                 )}
 
                 {/* Preview */}
-                <section className={`${card} flex min-h-[320px] items-center justify-center overflow-auto p-3 sm:p-6`}>
+                <section className={`${card} relative flex min-h-[320px] items-center justify-center overflow-auto p-3 sm:p-6`}>
                   {panel === "crop" ? (
                     <CropEditor page={active} onChange={(corners) => patch(active.id, { corners, detected: false })} onCommit={() => setTimeout(() => commitCrop(), 0)} />
                   ) : (
                     <canvas ref={canvasRef} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
                       className={`mx-auto h-auto max-h-[65vh] w-auto max-w-full touch-none rounded-lg bg-white shadow-2xl ${panel === "draw" ? "cursor-crosshair" : panel === "text" ? "cursor-move" : ""}`} />
                   )}
+
+                  {active.busy && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-950/75 backdrop-blur-sm">
+                      <div className="relative h-28 w-20 overflow-hidden rounded-lg border border-blue-500/50 bg-slate-900">
+                        <span className="absolute inset-x-0 h-1 animate-[scan_1.4s_ease-in-out_infinite] bg-blue-400 shadow-[0_0_16px_#60a5fa]" />
+                      </div>
+                      <p className="text-sm font-semibold text-slate-200">{toast.msg || "Scanning…"}</p>
+                      <style>{`@keyframes scan{0%,100%{top:0}50%{top:calc(100% - 4px)}}`}</style>
+                    </div>
+                  )}
+
+                  {panel !== "crop" && !active.busy && (
+                    <>
+                      {active.mesh && flat > 0 && (
+                        <span className="absolute left-3 top-3 rounded-full border border-sky-500/30 bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">Curves flattened</span>
+                      )}
+                      <button
+                        onPointerDown={() => setPeek(true)} onPointerUp={() => setPeek(false)} onPointerLeave={() => setPeek(false)} onPointerCancel={() => setPeek(false)}
+                        className="absolute bottom-3 right-3 inline-flex select-none items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur hover:border-slate-500">
+                        <Eye size={13} />Hold to compare
+                      </button>
+                    </>
+                  )}
                 </section>
 
                 {/* Toolbar */}
                 <div className={`${card} flex gap-1 p-1.5`}>
-                  <ToolBtn icon={Crop} text="Crop" active={panel === "crop"} onClick={() => setPanel("crop")} />
+                  <ToolBtn icon={Crop} text="Edges" active={panel === "crop"} onClick={() => setPanel("crop")} />
                   <ToolBtn icon={Sparkles} text="Filters" active={panel === "filters"} onClick={() => setPanel("filters")} />
                   <ToolBtn icon={Type} text="Text" active={panel === "text"} onClick={() => setPanel("text")} />
                   <ToolBtn icon={Pencil} text="Draw" active={panel === "draw"} onClick={() => setPanel("draw")} />
@@ -1722,10 +1950,9 @@ export default function DocumentScanner() {
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-sm text-slate-400">
                           {active.detected
-                            ? <span className="font-medium text-emerald-400">✓ Edges detected automatically. </span>
+                            ? <span className="font-medium text-emerald-400">✓ Edges found automatically. </span>
                             : <span className="font-medium text-amber-400">Drag the dots onto the page corners. </span>}
-                          {active.mesh && flat > 0 && <span className="font-medium text-sky-400">Bent text lines found and flattened. </span>}
-                          Fine-tune any corner — the scan straightens itself.
+                          Move any corner — the scan re-straightens itself.
                         </p>
                         <span className="shrink-0 text-xs tabular-nums text-slate-500">Page {activeIdx + 1} / {pages.length}</span>
                       </div>
@@ -1741,42 +1968,39 @@ export default function DocumentScanner() {
 
                   {panel === "filters" && (
                     <>
-                      <Row title="Straighten bent pages">
-                        <Slider text={active.mesh ? "Curved text lines found — flatten" : "No bent text lines found on this page"}
-                          min={0} max={100} value={flat} onChange={setFlat} />
-                        <p className="text-xs text-slate-500">Flattens curled paper and book spines using the text lines. Applies to every page.</p>
-                      </Row>
                       {scopeBar("filter")}
-                      <Row title="Scan style">
-                        <div className="flex flex-wrap gap-2">
-                          {[["magic", "Magic Color"], ["bw", "Black & White"], ["gray", "Grayscale"], ["original", "Original"]].map(([v, l]) => (
-                            <Chip key={v} on={curF.mode === v} onClick={() => setFilter({ mode: v, shadowAmt: v === "original" ? 0 : 100 })}>{l}</Chip>
-                          ))}
-                        </div>
+                      <Row title="Looks">
+                        <PresetStrip thumbs={presetThumbs} current={curF.look} onPick={pickPreset} />
                       </Row>
-                      <Row title="Colour effect">
-                        <div className="flex flex-wrap gap-2">
-                          {[["none", "None"], ["vintage", "Vintage"], ["vibrant", "Vibrant"], ["warm", "Warm"], ["cool", "Cool"]].map(([v, l]) => (
-                            <Chip key={v} on={curF.preset === v} onClick={() => setFilter({ preset: v })}>{l}</Chip>
-                          ))}
-                        </div>
-                        {curF.preset !== "none" && (
-                          <Slider text="Effect strength" min={0} max={100} value={curF.effect} onChange={(v) => setFilter({ effect: v })} />
-                        )}
+
+                      <Row title="Straighten curved pages">
+                        <Slider text={active.mesh ? "Curl & wave correction" : "No curved text lines found on this page"}
+                          min={0} max={100} value={flat} onChange={setFlat} />
                       </Row>
-                      <div className="space-y-4 border-t border-slate-800 pt-5">
-                        <div className="flex items-center justify-between">
-                          <p className={lbl}>Adjust</p>
-                          <button onClick={() => setFilter({ brightness: 0, contrast: 0, saturation: 0, warmth: 0, effect: 100, bwLevel: 0, shadowAmt: curF.mode === "original" ? 0 : 100 })}
-                            className="text-xs text-slate-400 hover:text-white">Reset adjustments</button>
-                        </div>
-                        <Slider text="Brightness" value={curF.brightness} onChange={(v) => setFilter({ brightness: v })} />
-                        <Slider text="Contrast" value={curF.contrast} onChange={(v) => setFilter({ contrast: v })} />
-                        <Slider text="Saturation" value={curF.saturation} onChange={(v) => setFilter({ saturation: v })} />
-                        <Slider text="Warmth (cool ↔ warm)" value={curF.warmth} onChange={(v) => setFilter({ warmth: v })} />
-                        <Slider text="Shadow removal" min={0} max={100} value={curF.shadowAmt} onChange={(v) => setFilter({ shadowAmt: v })} />
-                        {curF.mode === "bw" && (
-                          <Slider text="Black & White darkness" min={-60} max={60} value={curF.bwLevel} onChange={(v) => setFilter({ bwLevel: v })} />
+
+                      <div className="border-t border-slate-800 pt-4">
+                        <button onClick={() => setTuneOpen((o) => !o)} className="flex w-full items-center justify-between text-left">
+                          <span className={lbl}>Fine-tune{curF.look === "custom" ? " · custom" : ""}</span>
+                          <ChevronDown size={16} className={`text-slate-400 transition ${tuneOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {tuneOpen && (
+                          <div className="mt-4 space-y-4">
+                            <div className="flex justify-end">
+                              <button onClick={() => setFilter(presetFilter(PRESETS[0]))} className="text-xs text-slate-400 hover:text-white">Back to Auto</button>
+                            </div>
+                            <Slider text="Brightness" value={curF.brightness} onChange={(v) => setFilter({ brightness: v })} />
+                            <Slider text="Contrast" value={curF.contrast} onChange={(v) => setFilter({ contrast: v })} />
+                            <Slider text="Saturation" value={curF.saturation} onChange={(v) => setFilter({ saturation: v })} />
+                            <Slider text="Warmth (cool ↔ warm)" value={curF.warmth} onChange={(v) => setFilter({ warmth: v })} />
+                            <Slider text="Sharpness" min={0} max={100} value={curF.sharpen} onChange={(v) => setFilter({ sharpen: v })} />
+                            <Slider text="Shadow removal" min={0} max={100} value={curF.shadowAmt} onChange={(v) => setFilter({ shadowAmt: v })} />
+                            {curF.mode === "bw" && (
+                              <Slider text="Black & White darkness" min={-60} max={60} value={curF.bwLevel} onChange={(v) => setFilter({ bwLevel: v })} />
+                            )}
+                            {curF.preset !== "none" && (
+                              <Slider text="Colour effect strength" min={0} max={100} value={curF.effect} onChange={(v) => setFilter({ effect: v })} />
+                            )}
+                          </div>
                         )}
                       </div>
                     </>
@@ -1848,7 +2072,7 @@ export default function DocumentScanner() {
         <Footer />
       </div>
 
-      {toast.msg && (
+      {toast.msg && !(active?.busy) && (
         <div className="fixed bottom-5 left-1/2 z-[90] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-full border border-slate-700 bg-slate-900/95 px-5 py-3 text-sm shadow-2xl backdrop-blur">
           {toast.busy && <Loader2 size={16} className="shrink-0 animate-spin text-blue-400" />}
           {toast.msg}
