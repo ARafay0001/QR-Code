@@ -12,8 +12,8 @@ const isolationHeaders = {
 export default defineConfig({
   plugins: [react(),
     tailwindcss(), /* , your other plugins (tailwind, etc.) */],
-  server: { headers: isolationHeaders },   // npm run dev
-  preview: { headers: isolationHeaders },  // npm run preview
+  // server: { headers: isolationHeaders },   // npm run dev
+  // preview: { headers: isolationHeaders },  // npm run preview
   worker: { format: "es" },                // needed for the module worker in production builds
 });
 
