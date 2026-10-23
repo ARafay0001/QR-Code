@@ -110,6 +110,11 @@ const PAGE_METADATA = {
     description:
       "Use browser-based text tools to transform, clean, encode, and count text.",
   },
+  "/games": {
+    title: "Free Online Dice Roller & Spin Wheel | Qrvia",
+    description:
+      "Roll dice in multiple modes or spin a customizable wheel with your own options, colors, or numbers.",
+  },
 };
 
 function upsertMeta(attribute, key, content) {

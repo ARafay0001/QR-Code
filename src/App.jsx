@@ -22,6 +22,9 @@ const TypingTutor = lazy(() => import("./pages/Typingtutor"));
 const ScientificCalculator = lazy(() => import("./pages/ScientificCalculator"));
 const InputTester = lazy(() => import("./pages/InputTester"));
 const TextTool = lazy(() => import("./pages/Texttool"));
+const Games = lazy(() => import("./pages/Games"));
+const DiceRoller = lazy(() => import("./pages/games/DiceRoller"));
+const SpinWheel = lazy(() => import("./pages/games/SpinWheel"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -67,6 +70,12 @@ export default function App() {
           />
           <Route path="/input-tester" element={<InputTester />} />
           <Route path="/text-tool" element={<TextTool />} />
+
+          {/* Games */}
+          <Route path="/games" element={<Games />} />
+          <Route path="/games/dice-roller" element={<DiceRoller />} />
+          <Route path="/games/spin-wheel" element={<SpinWheel />} />
+
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />

@@ -16,6 +16,7 @@ import {
   Keyboard,
   Type,
   Wrench,
+  Gamepad2,
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
 /* -------------------------------------------------------------------------- */
@@ -118,6 +119,14 @@ const TOOLS = [
     href: "/input-tester",
     accent: "text-teal-400",
     accentBg: "bg-teal-500/10",
+  },
+  {
+    title: "Games",
+    description: "Roll dice or spin a customizable wheel",
+    icon: Gamepad2,
+    href: "/games",
+    accent: "text-violet-400",
+    accentBg: "bg-violet-500/10",
   },
 ];
 

@@ -386,6 +386,12 @@ function tableAt(lines, i, geo, pitch) {
       else cell.paras.push(p);
     }
   });
+  /* row heights = distance between row baselines in the PDF, so tables are no taller in Word than in the PDF */
+  trows.forEach((r, k) => {
+    const dys = [];
+    for (let q = 1; q < rowLines.length; q++) dys.push(rowLines[q].y - rowLines[q - 1].y);
+    r.h = clampN(k < rowLines.length - 1 ? rowLines[k + 1].y - rowLines[k].y : dys.length ? median(dys) : pitch * rowLines[k].fs, 6, 200);
+  });
   /* cell boxes: left-aligned columns keep the spare gutter on their right, right-aligned ones on their left,
      centred ones stay symmetric, so text lands where it was in the PDF (cells have 4pt side margins) */
   const nc = cols.length, bl = [], br = [];
@@ -443,13 +449,13 @@ function stripLead(runs, n) {
 function applyList(runs) {
   const text = runs.filter((r) => !r.tab && !r.br).map((r) => r.t).join("");
   let m = BULLET_RE.exec(text);
-  if (m) { stripLead(runs, m[0].length); return { bullet: true, numbered: false }; }
+  if (m) { stripLead(runs, m[0].length); return { bullet: true, numbered: false, lead: m[0].length }; }
   m = NUM_RE.exec(text);
   if (m && runs.length) {
     const st = runs[0], marker = m[1];
     stripLead(runs, m[0].length);
     runs.unshift({ ...st, t: marker }, { tab: true, sz: st.sz });
-    return { bullet: false, numbered: true };
+    return { bullet: false, numbered: true, lead: m[0].length };
   }
   return { bullet: false, numbered: false };
 }
@@ -501,12 +507,20 @@ function finishPara(g, geo, body, pitch, prevY) {
   const heading0 = headingLevel(domSize(runs) / body, g.length, fullText.length, fullText, textRuns.every((r) => r.b));
   const list = (g.length === 1 && first.segs.length > 1) || heading0 ? { bullet: false, numbered: false } : applyList(runs);
   const isList = list.bullet || list.numbered;
+  /* hanging indent = real distance from the bullet to the text in the PDF (a fixed 18pt pushed the text right
+     and made every full-width bullet wrap in Word, which is what spilled lines onto extra pages) */
+  let hang = 18;
+  if (isList && first.items.length) {
+    const i0 = first.items[0], L = list.lead || 2;
+    const tx = i0.s.trim().length <= L && first.items[1] ? first.items[1].x : i0.x + i0.w * Math.min(1, L / Math.max(1, i0.s.length));
+    hang = clampN(tx - first.x, 12, 40);
+  }
 
   const restLeft = g.length > 1 ? Math.min(...g.slice(1).map((l) => l.x)) : first.x;
   let left = Math.max(0, restLeft - geo.left), firstInd = first.x - restLeft;
   if (align === "c" || align === "r") { left = 0; firstInd = 0; }
-  if (isList && g.length === 1) { left = Math.max(0, first.x - geo.left) + 18; firstInd = -18; }
-  if (isList && g.length > 1 && firstInd >= -2) { firstInd = -18; left = Math.max(left, 18); }
+  if (isList && g.length === 1) { left = Math.max(0, first.x - geo.left) + hang; firstInd = -hang; }
+  if (isList && g.length > 1 && firstInd >= -2) { firstInd = -hang; left = Math.max(0, restLeft - geo.left) + hang; }
   if (Math.abs(firstInd) < 3) firstInd = 0;
   if (left < 3) left = 0;
   if (rtl) { left = 0; firstInd = 0; }
@@ -521,9 +535,9 @@ function finishPara(g, geo, body, pitch, prevY) {
   if (level) runs.forEach((r) => { if (!r.tab && !r.br && fs / body >= 1.2) r.b = r.b || level < 3; });
 
   return {
-    t: "p", runs, align, left, first: firstInd, before, line: g.length > 1 ? Math.round(step * 2) / 2 : null,
+    t: "p", runs, align, left, first: firstInd, before, line: Math.round(Math.max(step, fs * 1.1) * 2) / 2,
     rtl, level, bullet: list.bullet, tabs: tabs.length ? tabs : null,
-    y: first.y - first.fs, yEnd: last.y, fs,
+    y: first.y - first.fs, yEnd: last.y, fs, nl: g.length,
   };
 }
 
@@ -774,6 +788,25 @@ function ocrToBlocks(data, scale, W, H) {
 
 /* ----------------------------- model assembly ---------------------------- */
 
+/*
+ * Estimates how tall a page will be in Word (line heights are exact, table rows have fixed heights) and, if it would
+ * overflow, squeezes the gaps between blocks just enough to fit. Without this, a page that is full to the bottom
+ * in the PDF spills a line or two onto an extra Word page, and the next PDF page then starts after a big gap.
+ */
+function fitBlocks(blocks, avail) {
+  let fixed = 0, flex = 0;
+  for (const b of blocks) {
+    if (b.t === "p") { fixed += (b.line || (b.fs || 11) * 1.2) * (b.nl || 1); flex += b.before || 0; }
+    else if (b.t === "table") fixed += b.rows.reduce((a, r) => a + (r.h || 12), 0) + 1;
+    else if (b.t === "rule") { fixed += 1 + (b.th || 0.5); flex += b.before || 0; }
+    else if (b.t === "img" && !b.float) { fixed += b.h || 0; flex += b.before || 0; }
+  }
+  const limit = avail * 0.985;
+  if (flex <= 0 || fixed + flex <= limit) return;
+  const f = clampN((limit - fixed) / flex, 0, 1);
+  blocks.forEach((b) => { if (b.before) b.before = Math.round(b.before * f * 2) / 2; });
+}
+
 function buildTextPage(raw, body, opts) {
   const { W, H } = raw;
   const page = { n: raw.n, w: W, h: H, kind: "text", head: null, blocks: [], cols: null, gutter: 0, m: null, header: null, footer: null };
@@ -844,7 +877,8 @@ function buildTextPage(raw, body, opts) {
     } else {
       const geo = computeGeo(lines, { x0, x1 });
       page.blocks = toBlocks(lines, geo, body, opts, [...imgBlocks(imgs, geo, opts.float), ...ruleBlocks(rules)]);
-      page.m = { l: clampM(geo.left), r: clampM(W - Math.max(geo.right, x1 > geo.right ? geo.right : x1)), t: clampM(firstY), b: clampM(H - lastY - 4) };
+      const extra = clampN(0.02 * (geo.right - geo.left), 3, 12);
+      page.m = { l: clampM(geo.left), r: clampN(W - geo.right - extra, 10, 200), t: clampM(firstY), b: clampM(H - lastY - 4) };
     }
   }
   if (!page.m) page.m = { l: 54, r: 54, t: 54, b: 54 };
@@ -852,7 +886,13 @@ function buildTextPage(raw, body, opts) {
      section, so without slack a few lines spill onto an extra page and push everything after it down a page.
      (never go below what the Word footer itself needs) */
   const footNeed = page.footer ? 18 + page.footer.reduce((n, h) => n + h.sz * 1.3, 0) + 4 : 18;
-  page.m.b = clampM(Math.max(page.m.b - 40, Math.min(page.m.b, footNeed)));
+  /* when every PDF page is its own Word page, free blank space at the bottom is harmless, so give the page ALL of it:
+     whatever Word adds in height (tables, line spacing) then can't spill a few lines onto an extra page */
+  page.m.b = opts.float ? clampM(footNeed) : clampM(Math.max(page.m.b - 40, Math.min(page.m.b, footNeed)));
+  if (opts.float && !page.cols) {
+    const hdr = page.header ? page.header.reduce((n, h) => n + h.sz * 1.3, 0) + 18 : 0;
+    fitBlocks(page.blocks, H - Math.max(page.m.t, hdr) - page.m.b);
+  }
   (raw.rot || []).forEach((it) => {
     page.blocks.push({
       t: "p", runs: [{ t: it.s, b: it.b, i: it.i, sz: it.fs, f: it.f }], align: "l", left: 0, first: 0, before: 0, line: null,
@@ -1120,7 +1160,7 @@ async function buildDocx(model, opts) {
   const D = await import("docx");
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun, AlignmentType, WidthType, HeadingLevel,
     BorderStyle, LineRuleType, SectionType, Header, Footer, PageNumber, TabStopType, Tab, ColumnBreak, TableLayoutType,
-    UnderlineType, HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType } = D;
+    UnderlineType, HeightRule, HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType } = D;
   const tw = (pt) => Math.round(pt * 20);
   const HEAD = [undefined, HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3];
 
@@ -1142,7 +1182,7 @@ async function buildDocx(model, opts) {
     bidirectional: p.rtl || undefined,
     heading: p.level ? HEAD[p.level] : undefined,
     bullet: p.bullet ? { level: 0 } : undefined,
-    spacing: { before: tw(p.before || 0), after: 0, line: p.line ? tw(p.line) : undefined, lineRule: p.line ? LineRuleType.AT_LEAST : undefined },
+    spacing: { before: tw(p.before || 0), after: 0, line: p.line ? tw(p.line) : undefined, lineRule: p.line ? LineRuleType.EXACT : undefined },
     indent: !inCell && (p.left || p.first) ? { left: tw(p.left), ...(p.first < 0 ? { hanging: tw(-p.first) } : p.first > 0 ? { firstLine: tw(p.first) } : {}) } : undefined,
     tabStops: p.tabs ? p.tabs.map((t) => ({ type: t.right ? TabStopType.RIGHT : TabStopType.LEFT, position: tw(t.pos) })) : undefined,
   });
@@ -1163,13 +1203,14 @@ async function buildDocx(model, opts) {
       borders: { ...bset(edge), insideHorizontal: edge, insideVertical: edge },
       rows: t.rows.map((r) => new TableRow({
         cantSplit: true,
+        height: r.h ? { value: tw(r.h), rule: HeightRule.ATLEAST } : undefined,
         children: r.cells.map((c) => {
           let w = 0;
           for (let k = c.c0; k <= c.c1; k++) w += t.cols[k] || 0;
           return new TableCell({
             width: { size: tw(w), type: WidthType.DXA },
             columnSpan: c.c1 > c.c0 ? c.c1 - c.c0 + 1 : undefined,
-            margins: { top: 40, bottom: 40, left: 80, right: 80 },
+            margins: { top: 0, bottom: 0, left: 80, right: 80 },
             children: c.paras.length ? c.paras.map((p) => para(p, true)) : [new Paragraph({ children: [] })],
           });
         }),
@@ -1188,7 +1229,7 @@ async function buildDocx(model, opts) {
 
   const blockToDocx = (b) => {
     if (b.t === "p") return [para(b)];
-    if (b.t === "table") return [table(b), new Paragraph({ children: [], spacing: { before: 0, after: 0, line: 120, lineRule: LineRuleType.EXACT } })];
+    if (b.t === "table") return [table(b), new Paragraph({ children: [], spacing: { before: 0, after: 0, line: 20, lineRule: LineRuleType.EXACT } })];
     if (b.t === "rule") {
       return [new Paragraph({
         children: [new TextRun({ text: "", size: 2 })],
@@ -1371,11 +1412,12 @@ function PrevBlock({ b, k, borders }) {
 function PrevPage({ pg, borders }) {
   const k = Math.min(1, 640 / pg.w);
   const wrap = {
-    width: pg.w * k, maxWidth: "100%", boxSizing: "border-box", position: "relative", isolation: "isolate",
+    width: pg.w * k, maxWidth: "100%", boxSizing: "border-box", position: "relative", isolation: "isolate", minHeight: pg.h * k,
+    contentVisibility: "auto", containIntrinsicSize: `auto ${pg.h * k}px`,
     padding: `${Math.min(pg.m.t, 60) * k}px ${pg.m.r * k}px ${Math.min(pg.m.b, 60) * k}px ${pg.m.l * k}px`,
   };
   return (
-    <div className="mx-auto mb-4 overflow-x-auto bg-white text-black shadow-xl" style={wrap}>
+    <div className="mx-auto mb-6 overflow-x-auto bg-white text-black shadow-xl" style={wrap}>
       {(pg.head || []).map((b, i) => <PrevBlock key={`h${i}`} b={b} k={k} borders={borders} />)}
       {pg.cols && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: Math.max(14, pg.gutter) * k }}>
@@ -1495,11 +1537,11 @@ export default function PdfToWord() {
 
           if (needOcr) {
             if (!worker) {
-              setProgress({ pct: base, msg: "Loading text recognition (first time only)…" });
+              setProgress({ pct: base, msg: "Preparing to read scanned text (first time only)…" });
               const { createWorker } = await import("tesseract.js");
               const langs = opt.lang === "eng" ? "eng" : `${opt.lang}+eng`;
               worker = await createWorker(langs, 1, {
-                logger: (m) => { if (m.status === "recognizing text") setProgress((p) => ({ ...p, msg: `Recognising text on page ${n}… ${Math.round(m.progress * 100)}%` })); },
+                logger: (m) => { if (m.status === "recognizing text") setProgress((p) => ({ ...p, msg: `Reading text from the image on page ${n}… ${Math.round(m.progress * 100)}%` })); },
               });
             }
             const scale = clampN(2600 / Math.max(W, H), 1.5, 3.5);
@@ -1509,7 +1551,7 @@ export default function PdfToWord() {
             const cx = cv.getContext("2d");
             cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
             await page.render({ canvasContext: cx, viewport: vps }).promise;
-            setProgress({ pct: base + 1, msg: `Recognising text on page ${n}…` });
+            setProgress({ pct: base + 1, msg: `Reading text from the image on page ${n}…` });
             const { data } = await worker.recognize(cv, {}, { blocks: true });
             const { blocks, m } = ocrToBlocks(data, scale, W, H);
             raw.push({ kind: "ocr", n, W, H, blocks, m });
@@ -1589,7 +1631,7 @@ export default function PdfToWord() {
       if (worker) { try { await worker.terminate(); } catch { /* ignore */ } }
       if (e && e.message === "cancelled") { setStage("ready"); return; }
       console.error(e);
-      setErr(`Conversion failed: ${(e && e.message) || "unknown error"}. Try turning off OCR or ‘Keep pictures’, or pick fewer pages.`);
+      setErr(`Conversion failed: ${(e && e.message) || "unknown error"}. Try “No, it has normal text”, turn off “Keep pictures”, or choose fewer pages.`);
       setStage("ready");
     }
   };
@@ -1613,7 +1655,7 @@ export default function PdfToWord() {
           <div className="text-center">
             <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">PDF to Word</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Convert PDF to editable Word.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Keeps fonts, tables, lists, lines, images and math notation (A², xₙ). Reads scanned pages with OCR. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">Keeps fonts, tables, lists, lines, images and math notation (A², xₙ). Reads scanned pages too. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden type="file" accept="application/pdf,.pdf"
@@ -1646,7 +1688,7 @@ export default function PdfToWord() {
                   </div>
                 )}
                 <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
-                  {["Fonts & formatting", "Tables", "Bullet lists", "Superscripts", "Lines & images", "Scanned PDFs (OCR)", "Urdu · Arabic · more"].map((t) => (
+                  {["Fonts & formatting", "Tables", "Bullet lists", "Superscripts", "Lines & images", "Scanned PDFs", "Urdu · Arabic · more"].map((t) => (
                     <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
                   ))}
                 </div>
@@ -1683,59 +1725,69 @@ export default function PdfToWord() {
                 <div className={`${card} space-y-5 p-4 sm:p-5`}>
                   <Row title="Convert to">
                     <div className="flex flex-wrap gap-2">
-                      <Chip on={opt.format === "docx"} onClick={() => setOpt({ ...opt, format: "docx" })}>Word (.docx)</Chip>
+                      <Chip on={opt.format === "docx"} onClick={() => setOpt({ ...opt, format: "docx" })}>Word document (.docx)</Chip>
                       <Chip on={opt.format === "txt"} onClick={() => setOpt({ ...opt, format: "txt" })}>Plain text (.txt)</Chip>
                     </div>
                   </Row>
 
-                  <Row title="Pages">
+                  <Row title="Which pages?">
                     <div className="flex flex-wrap items-center gap-2">
                       <Chip on={rangeMode === "all"} onClick={() => setRangeMode("all")}>All pages</Chip>
-                      <Chip on={rangeMode === "custom"} onClick={() => setRangeMode("custom")}>Custom range</Chip>
+                      <Chip on={rangeMode === "custom"} onClick={() => setRangeMode("custom")}>Choose pages</Chip>
                       {rangeMode === "custom" && (
                         <input value={rangeText} onChange={(e) => setRangeText(e.target.value)} placeholder="e.g. 1-3, 5, 8-10"
                           className={`${inputCls} !w-52 ${rangeBad && rangeText ? "!border-red-500/60" : ""}`} />
                       )}
                     </div>
+                    {rangeMode === "custom" && (
+                      <p className={`text-xs ${rangeBad && rangeText ? "text-red-400" : "text-slate-500"}`}>
+                        {rangeBad && rangeText ? `Please check the page numbers — this PDF has ${numPages} page${numPages > 1 ? "s" : ""}.` : "Type page numbers or ranges separated by commas, for example 1-3, 5, 8-10."}
+                      </p>
+                    )}
                   </Row>
 
-                  <Row title="Scanned pages (OCR)">
+                  <Row title="Is this PDF a scan or a photo?">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Chip on={opt.ocr === "auto"} onClick={() => setOpt({ ...opt, ocr: "auto" })}>Auto-detect</Chip>
-                      <Chip on={opt.ocr === "always"} onClick={() => setOpt({ ...opt, ocr: "always" })}>Always OCR</Chip>
-                      <Chip on={opt.ocr === "never"} onClick={() => setOpt({ ...opt, ocr: "never" })}>Off</Chip>
-                      {opt.ocr !== "never" && (
-                        <select value={opt.lang} onChange={(e) => setOpt({ ...opt, lang: e.target.value })} className={`${inputCls} !w-auto`}>
+                      <Chip on={opt.ocr === "auto"} onClick={() => setOpt({ ...opt, ocr: "auto" })}>Detect automatically</Chip>
+                      <Chip on={opt.ocr === "always"} onClick={() => setOpt({ ...opt, ocr: "always" })}>Yes, read text from images</Chip>
+                      <Chip on={opt.ocr === "never"} onClick={() => setOpt({ ...opt, ocr: "never" })}>No, it has normal text</Chip>
+                    </div>
+                    {opt.ocr !== "never" && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <label htmlFor="doc-lang" className="text-sm text-slate-300">Language of the document</label>
+                        <select id="doc-lang" value={opt.lang} onChange={(e) => setOpt({ ...opt, lang: e.target.value })} className={`${inputCls} !w-auto`}>
                           {LANGS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </select>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500">Auto-detect only runs OCR on pages without selectable text. The language pack downloads the first time it’s used.</p>
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-500">A scan is just a picture of text, so the words have to be read from the image. “Detect automatically” only does this for pages that need it. It can take a little longer, and the language data downloads the first time.</p>
                   </Row>
 
                   {!textOnly && (
                     <div className="space-y-3 border-t border-slate-800 pt-5">
-                      <p className={lbl}>Layout</p>
-                      <Check2 on={opt.keepBreaks} onChange={(v) => setOpt({ ...opt, keepBreaks: v })} title="Keep original page size & page breaks" hint="Also places pictures at their exact position. Off = one flowing document that is easier to edit" />
-                      <Check2 on={opt.tables} onChange={(v) => setOpt({ ...opt, tables: v })} title="Detect tables" hint="Matrices written as rows of numbers become borderless tables" />
-                      <Check2 on={opt.rules} onChange={(v) => setOpt({ ...opt, rules: v })} title="Keep lines & underlines" hint="Horizontal rules, underlined and struck-through text" />
-                      <Check2 on={opt.images} onChange={(v) => setOpt({ ...opt, images: v })} title="Keep pictures" hint="Slower on picture-heavy PDFs" />
+                      <p className={lbl}>Formatting</p>
+                      <Check2 on={opt.keepBreaks} onChange={(v) => setOpt({ ...opt, keepBreaks: v })} title="Keep the same pages as the PDF" hint="Every PDF page stays one Word page, with pictures in the same place. Turn off for one continuous document that is easier to edit." />
+                      <Check2 on={opt.tables} onChange={(v) => setOpt({ ...opt, tables: v })} title="Recognise tables" hint="Turns rows and columns (and number grids like matrices) into real Word tables." />
+                      <Check2 on={opt.rules} onChange={(v) => setOpt({ ...opt, rules: v })} title="Keep lines and underlines" hint="Horizontal lines, underlined text and crossed-out text." />
+                      <Check2 on={opt.images} onChange={(v) => setOpt({ ...opt, images: v })} title="Keep pictures" hint="Slower for PDFs with many pictures." />
                       {opt.tables && (
                         <div className="space-y-2 pt-1">
-                          <p className="text-sm text-slate-300">Table borders</p>
+                          <p className="text-sm text-slate-300">Table borders <span className="text-xs text-slate-500">(lines around table cells)</span></p>
                           <div className="flex flex-wrap gap-2">
                             <Chip on={opt.borders === "auto"} onClick={() => setOpt({ ...opt, borders: "auto" })}>Like the PDF</Chip>
-                            <Chip on={opt.borders === "on"} onClick={() => setOpt({ ...opt, borders: "on" })}>Always</Chip>
-                            <Chip on={opt.borders === "off"} onClick={() => setOpt({ ...opt, borders: "off" })}>Never</Chip>
+                            <Chip on={opt.borders === "on"} onClick={() => setOpt({ ...opt, borders: "on" })}>Always show</Chip>
+                            <Chip on={opt.borders === "off"} onClick={() => setOpt({ ...opt, borders: "off" })}>Never show</Chip>
                           </div>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <input value={opt.name} onChange={(e) => setOpt({ ...opt, name: e.target.value })} placeholder="File name" className={inputCls} />
+                  <Row title="Save as">
+                    <input value={opt.name} onChange={(e) => setOpt({ ...opt, name: e.target.value })} placeholder="File name" className={inputCls} />
+                  </Row>
                   <button onClick={convert} disabled={rangeBad || !picked} className={btnPrimary + " w-full"}>
-                    <ScanLine size={16} />Convert {picked ? picked.length : 0} page{picked && picked.length > 1 ? "s" : ""}
+                    <ScanLine size={16} />Convert {picked ? picked.length : 0} page{picked && picked.length > 1 ? "s" : ""} to {textOnly ? "text" : "Word"}
                   </button>
                 </div>
               </>
@@ -1768,7 +1820,7 @@ export default function PdfToWord() {
                     {[`${result.model.stats.pages} page${result.model.stats.pages > 1 ? "s" : ""}`, `${result.model.stats.words.toLocaleString()} words`,
                       result.model.stats.tables ? `${result.model.stats.tables} table${result.model.stats.tables > 1 ? "s" : ""}` : null,
                       result.model.stats.images ? `${result.model.stats.images} picture${result.model.stats.images > 1 ? "s" : ""}` : null,
-                      result.model.stats.ocr ? `${result.model.stats.ocr} page${result.model.stats.ocr > 1 ? "s" : ""} read with OCR` : null]
+                      result.model.stats.ocr ? `${result.model.stats.ocr} page${result.model.stats.ocr > 1 ? "s" : ""} read from images` : null]
                       .filter(Boolean).map((t) => <span key={t} className="rounded-full border border-slate-700 px-3 py-1">{t}</span>)}
                   </div>
                   <div className="flex flex-wrap justify-center gap-3">
@@ -1783,14 +1835,24 @@ export default function PdfToWord() {
                     </div>
                   )}
                   {result.model.stats.words < 5 && (
-                    <p className="text-sm text-amber-400">Very little text was found. If this PDF is scanned, set OCR to “Always OCR” and pick the right language.</p>
+                    <p className="text-sm text-amber-400">Very little text was found. If this PDF is scanned, choose “Yes, read text from images” in the options and pick the document’s language.</p>
                   )}
                 </div>
 
                 {showPreview && (
-                  <div className={`${card} p-3 sm:p-5`}>
-                    <p className="mb-3 text-xs text-slate-500">Preview of the first {Math.min(4, result.model.pages.length)} page(s) — Word may wrap lines slightly differently.</p>
-                    {result.model.pages.slice(0, 4).map((pg) => <PrevPage key={pg.n} pg={pg} borders={opt.borders} />)}
+                  <div className={`${card} overflow-hidden`}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
+                      <p className="text-sm font-semibold">Preview · {result.model.pages.length} page{result.model.pages.length > 1 ? "s" : ""}</p>
+                      <p className="text-xs text-slate-500">Scroll down to see every page. Word may wrap a few lines slightly differently.</p>
+                    </div>
+                    <div className="max-h-[75vh] overflow-y-auto bg-slate-950/70 px-3 py-4 sm:px-5 [scrollbar-color:#475569_transparent] [scrollbar-width:thin]">
+                      {result.model.pages.map((pg, i) => (
+                        <div key={pg.n}>
+                          <p className="mb-1.5 text-center text-[11px] font-medium text-slate-500">Page {pg.n}{result.model.pages.length > 1 ? ` · ${i + 1} of ${result.model.pages.length}` : ""}</p>
+                          <PrevPage pg={pg} borders={opt.borders} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </>

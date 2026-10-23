@@ -19,6 +19,7 @@ import {
   Calculator,
   Globe,
   ChevronRight,
+  Gamepad2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -165,6 +166,16 @@ const products = [
     href: "/text-tool",
     category: "Utilities",
     features: ["Convert", "Clean", "Encode", "Count"],
+  },
+  {
+    title: "Games",
+    description:
+      "Make quick decisions with a dice roller or a customizable spin wheel.",
+    icon: Gamepad2,
+    status: "live",
+    href: "/games",
+    category: "Utilities",
+    features: ["Dice Roller", "Spin the Wheel", "Custom Options"],
   },
   {
     title: "QR Generator",
