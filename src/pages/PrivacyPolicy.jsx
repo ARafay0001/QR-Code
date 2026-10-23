@@ -279,11 +279,11 @@ export default function PrivacyPolicy() {
               </p>
 
               <a
-                href="mailto:YOUR_EMAIL@example.com"
+                href="mailto:toolitedbusiness@gmail.com"
                 className="mt-4 inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-blue-600 transition hover:bg-gray-50 dark:border-gray-700 dark:text-blue-400 dark:hover:bg-gray-800"
               >
                 <Mail size={18} />
-                YOUR_EMAIL@example.com
+                toolitedbusiness@gmail.com
               </a>
 
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
