@@ -97,6 +97,14 @@ const TOOLS = [
     accentBg: "bg-orange-500/10",
   },
   {
+  title: "All Calculators",
+  description: "Explore calculators for math, finance, health, and everyday needs",
+  icon: Calculator,
+  href: "/all-calculators",
+  accent: "text-violet-400",
+  accentBg: "bg-violet-500/10",
+},
+  {
     title: "Typing Tutor",
     description: "Practice typing and track your progress",
     icon: Keyboard,
@@ -205,13 +213,13 @@ export default function Navbar() {
         }`}
       >
         {/* Logo */}
-        <Link to="/" aria-label="Qrvia home" className="group flex items-center gap-2.5 pl-1">
+        <Link to="/" aria-label="Toolited home" className="group flex items-center  pl-1">
           <div>
-            <img src={logo} alt="" className="h-6 w-6" />
+            <img src={logo} alt="" className=" w-26" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-            Qrvia
-          </span>
+          {/* <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+            Toolited
+          </span> */}
         </Link>
 
         {/* Desktop links */}

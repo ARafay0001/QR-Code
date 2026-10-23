@@ -11,8 +11,8 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Link to="/" className="flex items-center gap-3">
-              <img src={logo} alt="" className="h-10 w-10" />
-              <span className="text-2xl font-bold text-white">Qrvia</span>
+              <img src={logo} alt="" className=" w-26" />
+              {/* <span className="text-2xl font-bold text-white">Toolited</span> */}
             </Link>
             <p className="mt-4 max-w-sm leading-7 text-slate-400">
               Free online tools for creators, students, developers, and
@@ -35,7 +35,7 @@ export default function Footer() {
             <h2 className="mb-4 text-lg font-semibold text-white">Explore</h2>
             <ul className="space-y-3 text-slate-400">
               <li><Link to="/#faq" className="transition hover:text-white">Frequently asked questions</Link></li>
-              <li><Link to="/about" className="transition hover:text-white">About Qrvia</Link></li>
+              <li><Link to="/about" className="transition hover:text-white">About Toolited</Link></li>
               <li><Link to="/contact" className="transition hover:text-white">Contact</Link></li>
             </ul>
           </div>
@@ -43,7 +43,7 @@ export default function Footer() {
           <div>
             <h2 className="mb-4 text-lg font-semibold text-white">Contact</h2>
             <a
-              href="mailto:hello@qrvia.com"
+              href="mailto:toolitedbusiness@gmail.com"
               className="inline-flex items-center gap-3 rounded-xl bg-slate-800 px-4 py-3 transition hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
             >
               <Mail size={20} aria-hidden="true" />
@@ -57,7 +57,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-3 border-t border-slate-800 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-500">
-            © {currentYear} Qrvia. All rights reserved.
+            © {currentYear} Toolited. All rights reserved.
           </p>
           <p className="text-sm text-slate-500">
             Built for speed. Designed for everyone.

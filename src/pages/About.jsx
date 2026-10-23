@@ -8,13 +8,13 @@ export default function About() {
       <Navbar />
       <main className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24">
         <p className="text-sm font-semibold uppercase tracking-widest text-blue-400">
-          About Qrvia
+          About Toolited
         </p>
         <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
           Useful tools, without the extra steps.
         </h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-          Qrvia is a growing collection of free online tools for common
+          Toolited is a growing collection of free online tools for common
           creative, document, and everyday tasks. The platform brings QR code
           creation, image and video utilities, PDF tools, and other browser
           tools together in one place.

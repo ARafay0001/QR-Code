@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://freeqrify.vercel.app/sitemap.xml
+Sitemap: https://toolited.com/sitemap.xml

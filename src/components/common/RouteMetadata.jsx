@@ -1,117 +1,117 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const SITE_ORIGIN = "https://freeqrify.vercel.app";
+const SITE_ORIGIN = "https://toolited.com";
 const SOCIAL_IMAGE = `${SITE_ORIGIN}/preview.png.jpg`;
 
 const PAGE_METADATA = {
   "/": {
-    title: "Qrvia | Free Online Tools for QR Codes, Images & More",
+    title: "Toolited | Free Online Tools for Everyday Tasks",
     description:
-      "Use free online tools for everyday tasks: create QR codes, remove image backgrounds with AI, compress images and videos, convert files, and more.",
+      "Use free online tools for everyday tasks: create QR codes, remove image backgrounds with AI, compress files, convert documents, and more.",
   },
   "/about": {
-    title: "About Qrvia | Free Online Tools",
+    title: "About Toolited | Free Online Tools",
     description:
-      "Learn about Qrvia, a growing collection of free online tools for QR codes, images, documents, and everyday tasks.",
+      "Learn about Toolited, a growing collection of free online tools for QR codes, images, documents, and everyday tasks.",
   },
   "/contact": {
-    title: "Contact Qrvia | Support & Feedback",
+    title: "Contact Toolited | Support & Feedback",
     description:
-      "Contact Qrvia with feedback, questions, or suggestions for useful free online tools.",
+      "Contact Toolited with feedback, questions, or suggestions for useful free online tools.",
   },
   "/qr-generator": {
-    title: "Free QR Code Generator Online | Qrvia",
+    title: "Free QR Code Generator Online | Toolited",
     description:
       "Create custom QR codes for websites, text, email, phone, SMS, WhatsApp, Wi-Fi, and locations. Adjust the style and download your QR code.",
   },
   "/image-compressor": {
-    title: "Free Online Image Compressor | Qrvia",
+    title: "Free Online Image Compressor | Toolited",
     description:
       "Compress JPEG, PNG, and WebP images in your browser. Adjust quality and size, process multiple images, and download the results.",
   },
   "/unit-converter": {
-    title: "Free Online Unit Converter | Qrvia",
+    title: "Free Online Unit Converter | Toolited",
     description:
       "Convert measurements across length, weight, temperature, volume, area, speed, time, data, and other unit categories.",
   },
   "/video-compressor": {
-    title: "Free Online Video Compressor | Qrvia",
+    title: "Free Online Video Compressor | Toolited",
     description:
       "Compress MP4, MOV, AVI, WebM, and MKV videos in your browser, choose a target file size, and export an MP4.",
   },
   "/background-remover": {
-    title: "Free AI Background Remover Online | Qrvia",
+    title: "Free AI Background Remover Online | Toolited",
     description:
       "Remove an image background with AI in your browser and download the result as a transparent PNG.",
   },
   "/pdf-tools": {
-    title: "Free Online PDF Tools | Qrvia",
+    title: "Free Online PDF Tools | Toolited",
     description:
       "Explore PDF tools to compress, edit, organize, and convert PDF documents and images.",
   },
   "/pdf-tools/compress": {
-    title: "Compress PDF Online | Qrvia",
+    title: "Compress PDF Online | Toolited",
     description:
       "Reduce PDF file size in your browser with adjustable compression settings and download the compressed document.",
   },
   "/image-video-compressor": {
-    title: "Online Image & Video Compressor Tools | Qrvia",
+    title: "Online Image & Video Compressor Tools | Toolited",
     description:
       "Choose a free online image compressor or video compressor to reduce media file sizes in your browser.",
   },
   "/pdf-tools/pdf-editor": {
-    title: "Edit PDF Online | Qrvia",
+    title: "Edit PDF Online | Toolited",
     description:
       "Open the PDF editor to organize and edit PDF documents using the available browser-based tools.",
   },
   "/pdf-tools/image-to-pdf": {
-    title: "Convert Images to PDF Online | Qrvia",
+    title: "Convert Images to PDF Online | Toolited",
     description:
       "Combine images into a PDF document with the browser-based image-to-PDF tool.",
   },
   "/pdf-tools/pdf-to-word": {
-    title: "Convert PDF to Word Online | Qrvia",
+    title: "Convert PDF to Word Online | Toolited",
     description:
       "Convert PDF documents to editable Word files with the available PDF conversion tool.",
   },
   "/pdf-tools/pdf-to-excel": {
-    title: "Convert PDF to Excel Online | Qrvia",
+    title: "Convert PDF to Excel Online | Toolited",
     description:
       "Convert PDF tables into Excel spreadsheets with the available PDF conversion tool.",
   },
   "/webp-to-image": {
-    title: "Convert WebP to JPG or PNG Online | Qrvia",
+    title: "Convert WebP to JPG or PNG Online | Toolited",
     description:
       "Convert WebP images to JPG or PNG format with the free browser-based image converter.",
   },
   "/image-to-vector": {
-    title: "Convert Images to SVG Online | Qrvia",
+    title: "Convert Images to SVG Online | Toolited",
     description:
       "Trace an image into a scalable SVG vector graphic in your browser and adjust the result before downloading.",
   },
   "/typing-tutor": {
-    title: "Free Online Typing Tutor | Qrvia",
+    title: "Free Online Typing Tutor | Toolited",
     description:
       "Practice typing with an interactive online typing tutor and track your typing performance.",
   },
   "/scientific-calculator": {
-    title: "Free Online Scientific Calculator | Qrvia",
+    title: "Free Online Scientific Calculator | Toolited",
     description:
       "Use an online scientific calculator for common, advanced, and scientific math calculations.",
   },
   "/input-tester": {
-    title: "Keyboard, Mouse & Gamepad Tester | Qrvia",
+    title: "Keyboard, Mouse & Gamepad Tester | Toolited",
     description:
       "Test keyboard, mouse, and supported controller inputs with an interactive online input tester.",
   },
   "/text-tool": {
-    title: "Free Online Text Tools | Qrvia",
+    title: "Free Online Text Tools | Toolited",
     description:
       "Use browser-based text tools to transform, clean, encode, and count text.",
   },
   "/games": {
-    title: "Free Online Dice Roller & Spin Wheel | Qrvia",
+    title: "Free Online Dice Roller & Spin Wheel | Toolited",
     description:
       "Roll dice in multiple modes or spin a customizable wheel with your own options, colors, or numbers.",
   },
@@ -134,7 +134,7 @@ export default function RouteMetadata() {
     const normalizedPath =
       pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
     const page = PAGE_METADATA[normalizedPath];
-    const title = page?.title || "Page not found | Qrvia";
+    const title = page?.title || "Page not found | Toolited";
     const description =
       page?.description || "The page you requested could not be found.";
     const canonicalUrl = `${SITE_ORIGIN}${normalizedPath}`;
@@ -145,7 +145,7 @@ export default function RouteMetadata() {
     upsertMeta("property", "og:type", "website");
     upsertMeta("property", "og:title", title);
     upsertMeta("property", "og:description", description);
-    upsertMeta("property", "og:site_name", "Qrvia");
+    upsertMeta("property", "og:site_name", "Toolited");
     upsertMeta("property", "og:image", SOCIAL_IMAGE);
     upsertMeta("name", "twitter:card", "summary_large_image");
     upsertMeta("name", "twitter:title", title);
@@ -176,7 +176,7 @@ export default function RouteMetadata() {
       structuredData.textContent = JSON.stringify({
         "@context": "https://schema.org",
         "@type": "WebSite",
-        name: "Qrvia",
+        name: "Toolited",
         url: `${SITE_ORIGIN}/`,
         description,
       });

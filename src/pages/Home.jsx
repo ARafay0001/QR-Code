@@ -264,18 +264,18 @@ const features = [
 
 const faqs = [
   {
-    question: "Is Qrvia free to use?",
+    question: "Is Toolited free to use?",
     answer:
       "Yes. Our core tools are completely free to use with no sign-up required.",
   },
   {
     question: "Do I need to create an account?",
-    answer: "No. Most Qrvia tools work instantly without requiring an account.",
+    answer: "No. Most Toolited tools work instantly without requiring an account.",
   },
   {
     question: "Can I use generated QR codes commercially?",
     answer:
-      "Absolutely. QR codes generated with Qrvia can be used for both personal and commercial projects.",
+      "Absolutely. QR codes generated with Toolited can be used for both personal and commercial projects.",
   },
   {
     question: "Are my files stored on your servers?",
@@ -398,7 +398,7 @@ function Hero() {
 
 function Stats() {
   const stats = [
-    { value: `${products.length}`, label: "Tools live today" },
+    { value: `${products.length}+`, label: "Tools live today" },
     { value: "$0", label: "Free, forever" },
     { value: "0", label: "Sign-ups required" },
   ];
@@ -450,7 +450,7 @@ function Products() {
     <section id="tools" className={`${container} scroll-mt-24 py-20 sm:py-28`}>
       <SectionHeader
         title="Everything you need in one platform."
-        subtitle="Qrvia is a growing suite of fast, privacy-focused online tools."
+        subtitle="Toolited is a growing suite of fast, privacy-focused online tools."
       >
         <div className="flex w-full items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 md:w-80">
           <Search size={18} className="shrink-0 text-slate-500" />
@@ -526,7 +526,7 @@ function WhyChoose() {
     <section className={`${container} py-20 sm:py-28`}>
       <SectionHeader
         title="Built for speed. Designed for everyone."
-        subtitle="Every Qrvia tool is crafted with performance, simplicity, and privacy in mind."
+        subtitle="Every Toolited tool is crafted with performance, simplicity, and privacy in mind."
       />
 
       <div className="mt-12 grid gap-4 sm:gap-6 md:grid-cols-3">
@@ -568,7 +568,7 @@ function HowItWorks() {
     <section className={`${container} py-20 sm:py-28`}>
       <SectionHeader
         title="Three simple steps."
-        subtitle="Every Qrvia tool follows the same workflow, so you get results in seconds."
+        subtitle="Every Toolited tool follows the same workflow, so you get results in seconds."
       />
 
       <ol className="mt-12 grid overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 lg:grid-cols-3">
@@ -618,7 +618,7 @@ function FAQ() {
             Frequently asked questions
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
-            Everything you need to know before using Qrvia.
+            Everything you need to know before using Toolited.
           </p>
         </div>
 
