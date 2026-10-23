@@ -29,7 +29,7 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AllCalculators = lazy(() => import("./pages/Allcalculators"));
-
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 function PageLoading() {
   return (
     <div
@@ -66,6 +66,7 @@ export default function App() {
           <Route path="/image-to-vector" element={<ImageToVector />} />
           <Route path="/typing-tutor" element={<TypingTutor />} />
           <Route path="/all-calculators" element={<AllCalculators />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route
             path="/scientific-calculator"
             element={<ScientificCalculator />}
