@@ -11,6 +11,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { removeBackground, preload } from "@imgly/background-removal";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -50,73 +51,6 @@ const CHECKER_STYLE = {
   backgroundSize: "24px 24px",
   backgroundPosition: "0 0,12px 12px",
 };
-
-/* ------------------------------------------------------------------ */
-/* Worker bridge (all AI work runs off the main thread)                */
-/* ------------------------------------------------------------------ */
-
-let worker = null;
-let nextMsgId = 1;
-const pending = new Map();
-
-function rejectAllPending(reason) {
-  for (const p of pending.values()) p.reject(new Error(reason));
-  pending.clear();
-}
-
-function getWorker() {
-  if (!worker) {
-    worker = new Worker(
-      new URL("../workers/bgRemover.worker.js", import.meta.url),
-      { type: "module" }
-    );
-
-    worker.onmessage = (e) => {
-      const { id, type, percent, blob, message } = e.data;
-      const p = pending.get(id);
-      if (!p) return;
-
-      if (type === "progress") {
-        p.onProgress?.(percent);
-      } else if (type === "error") {
-        pending.delete(id);
-        p.reject(new Error(message));
-      } else {
-        pending.delete(id);
-        p.resolve(blob ?? true);
-      }
-    };
-
-    worker.onerror = (e) => {
-      const msg = e?.message || "AI worker crashed";
-      killWorker(msg);
-    };
-  }
-  return worker;
-}
-
-function callWorker(msg, onProgress) {
-  return new Promise((resolve, reject) => {
-    const id = nextMsgId++;
-    pending.set(id, { resolve, reject, onProgress });
-    try {
-      getWorker().postMessage({ ...msg, id });
-    } catch (err) {
-      pending.delete(id);
-      reject(err);
-    }
-  });
-}
-
-// Stops inference immediately (used for cancel / change image / unmount).
-function killWorker(reason = "cancelled") {
-  if (worker) {
-    worker.terminate();
-    worker = null;
-  }
-  preloadCache.clear(); // a new worker has to load the model again
-  rejectAllPending(reason);
-}
 
 /* ------------------------------------------------------------------ */
 /* Device detection + AI engine helpers (module level, cached)         */
@@ -216,8 +150,11 @@ function detectProfile() {
     profilePromise = (async () => {
       const cores = navigator.hardwareConcurrency || 4;
       const memory = navigator.deviceMemory || 4;
+      // add this line:
+      const forceCpu = new URLSearchParams(window.location.search).get("cpu") === "1";
       try {
-        if (navigator.gpu) {
+        // change this line to include !forceCpu:
+        if (!forceCpu && navigator.gpu) {
           const adapter = await navigator.gpu.requestAdapter();
           if (adapter && !adapter.isFallbackAdapter) return buildGpuProfile();
         }
@@ -232,21 +169,38 @@ function detectProfile() {
 
 const preloadCache = new Map();
 
-// Only plain data can be sent to the worker.
-function toWorkerConfig(profile) {
+function buildConfig(profile, progress) {
   return {
     model: profile.model,
     device: profile.device,
-    publicPath: profile.publicPath,
+    debug: false,
+    ...(profile.publicPath ? { publicPath: profile.publicPath } : {}),
+    progress,
+    output: { format: "image/png", quality: 1, type: "foreground" },
+  };
+}
+
+// Aggregates the library's per-file progress into one 0-99 percentage.
+function makeProgressTracker(onPercent) {
+  const parts = {};
+  return (key, current, total) => {
+    if (!total) return;
+    parts[key] = [current, total];
+    let c = 0;
+    let t = 0;
+    for (const k in parts) {
+      c += parts[k][0];
+      t += parts[k][1];
+    }
+    if (t) onPercent(Math.min(99, Math.round((c / t) * 100)));
   };
 }
 
 function preloadModel(profile, onPercent) {
   const id = `${profile.device}:${profile.model}`;
   if (!preloadCache.has(id)) {
-    const p = callWorker(
-      { type: "preload", config: toWorkerConfig(profile) },
-      onPercent
+    const p = Promise.resolve(
+      preload(buildConfig(profile, makeProgressTracker(onPercent)))
     ).catch((err) => {
       preloadCache.delete(id); // allow retry
       throw err;
@@ -256,13 +210,36 @@ function preloadModel(profile, onPercent) {
   return preloadCache.get(id);
 }
 
-function runRemoval(file, profile) {
-  return callWorker({
-    type: "remove",
-    file,
-    maxSide: profile.maxSide,
-    config: toWorkerConfig(profile),
-  });
+// Shrinks big images before inference – the biggest speed win on CPUs.
+async function downscaleIfNeeded(file, maxSide) {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+    const scale = Math.min(1, maxSide / Math.max(width, height));
+
+    if (scale === 1) {
+      bitmap.close?.();
+      return file;
+    }
+
+    const w = Math.round(width * scale);
+    const h = Math.round(height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/png")
+    );
+    canvas.width = canvas.height = 0;
+    return blob || file;
+  } catch {
+    return file;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -273,7 +250,6 @@ export default function BackgroundRemover() {
   const inputRef = useRef(null);
   const previewRef = useRef(null);
   const runIdRef = useRef(0);
-  const busyRef = useRef(false);
 
   const [profile, setProfile] = useState(null);
   const [modelProgress, setModelProgress] = useState(0);
@@ -307,15 +283,13 @@ export default function BackgroundRemover() {
         setModelProgress(100);
         setModelReady(true);
       } catch (err) {
-        if (cancelled) return;
         console.error("AI failed to load", err);
-        setModelError(true);
+        if (!cancelled) setModelError(true);
       }
     })();
 
     return () => {
       cancelled = true;
-      killWorker("unmounted");
     };
   }, []);
 
@@ -346,39 +320,27 @@ export default function BackgroundRemover() {
     return () => clearInterval(id);
   }, [loading]);
 
-  /* ---- stop whatever is running (invalidates the run + kills worker) ---- */
-  const abortRun = useCallback(() => {
-    runIdRef.current++;
-    if (busyRef.current) {
-      busyRef.current = false;
-      killWorker("cancelled");
+  /* ---- file handling ---- */
+  const handleFile = useCallback((f) => {
+    if (!f) return;
+    if (!VALID_TYPES.includes(f.type)) {
+      setError("Only PNG, JPG and WEBP images are supported.");
+      return;
     }
+    if (f.size > MAX_FILE_BYTES) {
+      setError("Maximum file size is 20 MB.");
+      return;
+    }
+    runIdRef.current++; // invalidate any run in progress
+    setError("");
     setLoading(false);
     setEnhancing(false);
     setEnhanceProgress(null);
+    setResultUrl(null);
+    setResultQuality(null);
+    setShowOriginal(false);
+    setFile(f);
   }, []);
-
-  /* ---- file handling ---- */
-  const handleFile = useCallback(
-    (f) => {
-      if (!f) return;
-      if (!VALID_TYPES.includes(f.type)) {
-        setError("Only PNG, JPG and WEBP images are supported.");
-        return;
-      }
-      if (f.size > MAX_FILE_BYTES) {
-        setError("Maximum file size is 20 MB.");
-        return;
-      }
-      abortRun(); // invalidate any run in progress
-      setError("");
-      setResultUrl(null);
-      setResultQuality(null);
-      setShowOriginal(false);
-      setFile(f);
-    },
-    [abortRun]
-  );
 
   // Paste an image from the clipboard (Ctrl/Cmd + V)
   useEffect(() => {
@@ -393,13 +355,25 @@ export default function BackgroundRemover() {
   }, [handleFile]);
 
   const reset = () => {
-    abortRun();
+    runIdRef.current++;
     setFile(null);
     setResultUrl(null);
     setResultQuality(null);
+    setLoading(false);
+    setEnhancing(false);
+    setEnhanceProgress(null);
     setError("");
     setShowOriginal(false);
     if (inputRef.current) inputRef.current.value = "";
+  };
+
+  // Cancel the quality upgrade. On the main thread the engine can't be
+  // interrupted mid-run, so we simply ignore its result and keep the old one.
+  const cancelEnhance = () => {
+    runIdRef.current++;
+    setLoading(false);
+    setEnhancing(false);
+    setEnhanceProgress(null);
   };
 
   /* ---- main action ---- */
@@ -411,44 +385,46 @@ export default function BackgroundRemover() {
     }
 
     const runId = ++runIdRef.current;
-    busyRef.current = true;
     setError("");
     setLoading(true);
     setEnhancing(false);
     setShowOriginal(false);
     previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
+    const process = async (p) => {
+      const input = await downscaleIfNeeded(file, p.maxSide);
+      return removeBackground(input, buildConfig(p));
+    };
+
     try {
       let blob;
       let used = profile;
       try {
-        blob = await runRemoval(file, profile);
+        blob = await process(profile);
       } catch (err) {
         // GPU can fail on some drivers – transparently retry on CPU.
-        if (profile.device !== "gpu" || runId !== runIdRef.current) throw err;
+        if (profile.device !== "gpu") throw err;
         console.warn("GPU failed, falling back to CPU", err);
         const cpu = await buildCpuProfile(false);
         setProfile(cpu);
         used = cpu;
-        blob = await runRemoval(file, cpu);
+        blob = await process(cpu);
       }
 
       if (runId !== runIdRef.current) return; // user changed image meanwhile
       setResultUrl(URL.createObjectURL(blob));
       setResultQuality(used.quality);
     } catch (err) {
-      if (runId !== runIdRef.current) return;
       console.error("Background removal error", err);
-      setError(
-        err?.message
-          ? `Failed to remove background: ${err.message}`
-          : "Failed to remove background. Please try another image."
-      );
-    } finally {
       if (runId === runIdRef.current) {
-        busyRef.current = false;
-        setLoading(false);
+        setError(
+          err?.message
+            ? `Failed to remove background: ${err.message}`
+            : "Failed to remove background. Please try another image."
+        );
       }
+    } finally {
+      if (runId === runIdRef.current) setLoading(false);
     }
   };
 
@@ -457,7 +433,6 @@ export default function BackgroundRemover() {
     if (!file || loading || !resultUrl) return;
 
     const runId = ++runIdRef.current;
-    busyRef.current = true;
     setError("");
     setLoading(true);
     setEnhancing(true);
@@ -477,20 +452,21 @@ export default function BackgroundRemover() {
       setEnhanceProgress(null); // now processing
 
       // 2) run on the ORIGINAL file at the larger working size
-      const blob = await runRemoval(file, hq);
+      const input = await downscaleIfNeeded(file, hq.maxSide);
+      const blob = await removeBackground(input, buildConfig(hq));
       if (runId !== runIdRef.current) return;
 
       setResultUrl(URL.createObjectURL(blob));
       setResultQuality("high");
     } catch (err) {
-      if (runId !== runIdRef.current) return;
       console.error("Enhance error", err);
-      setError(
-        "Couldn't improve the quality on this device. Your previous result is still available."
-      );
+      if (runId === runIdRef.current) {
+        setError(
+          "Couldn't improve the quality on this device. Your previous result is still available."
+        );
+      }
     } finally {
       if (runId === runIdRef.current) {
-        busyRef.current = false;
         setLoading(false);
         setEnhancing(false);
         setEnhanceProgress(null);
@@ -700,7 +676,7 @@ export default function BackgroundRemover() {
                       {enhancing && (
                         <button
                           type="button"
-                          onClick={abortRun}
+                          onClick={cancelEnhance}
                           className="mx-auto mt-5 flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
                         >
                           <X size={16} /> Cancel
