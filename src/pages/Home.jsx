@@ -100,6 +100,21 @@ const products = [
     features: ["Advanced Functions", "Scientific Notation", "Graphing Capabilities"],
   },
   {
+    title: "All Calculator",
+    description:
+      "Perform advanced mathematical, financial and other calculations.",
+    icon: Calculator,
+    status: "live",
+    href: "/all-calculators",
+    category: "Utilities",
+    features: [
+  "Financial Calculators",
+  "Fitness & Health Calculators",
+  "Math Calculators",
+  "Other Calculators",
+],
+  },
+  {
     title: "Image to SVG & Vector",
     description: "Convert images to scalable vector graphics with ease.",
     icon: Image,

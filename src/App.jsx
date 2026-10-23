@@ -28,6 +28,7 @@ const SpinWheel = lazy(() => import("./pages/games/SpinWheel"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AllCalculators = lazy(() => import("./pages/Allcalculators"));
 
 function PageLoading() {
   return (
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/webp-to-image" element={<WebpToImage />} />
           <Route path="/image-to-vector" element={<ImageToVector />} />
           <Route path="/typing-tutor" element={<TypingTutor />} />
+          <Route path="/all-calculators" element={<AllCalculators />} />
           <Route
             path="/scientific-calculator"
             element={<ScientificCalculator />}
