@@ -375,12 +375,12 @@ function Hero() {
               </Button>
             </a>
 
-            <Link to="/background-remover" className="w-full sm:w-auto">
+            <Link to="/pdf-tools" className="w-full sm:w-auto">
               <Button
                 variant="secondary"
                 className="w-full justify-center sm:w-auto"
               >
-                Try AI Background Remover
+                Try PDF Tools
               </Button>
             </Link>
           </div>

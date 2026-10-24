@@ -6,9 +6,9 @@ const SOCIAL_IMAGE = `${SITE_ORIGIN}/preview.png.jpg`;
 
 const PAGE_METADATA = {
   "/": {
-    title: "Toolited | Free Online Tools for Everyday Tasks",
+    title: "Toolited | PDF, Calculator & Image Tools",
     description:
-      "Use free online tools for everyday tasks: create QR codes, remove image backgrounds with AI, compress files, convert documents, and more.",
+      "Use free browser-based PDF tools, scientific and everyday calculators, WebP and SVG image converters, typing practice, and input testers.",
   },
   "/about": {
     title: "About Toolited | Free Online Tools",
@@ -46,12 +46,12 @@ const PAGE_METADATA = {
       "Remove an image background with AI in your browser and download the result as a transparent PNG.",
   },
   "/pdf-tools": {
-    title: "Free Online PDF Tools | Toolited",
+    title: "Free Online PDF Tools: Edit, Compress & Convert | Toolited",
     description:
-      "Explore PDF tools to compress, edit, organize, and convert PDF documents and images.",
+      "Edit and organize PDFs, compress documents, convert images to PDF, or export PDF content to Word and Excel with free online PDF tools.",
   },
   "/pdf-tools/compress": {
-    title: "Compress PDF Online | Toolited",
+    title: "Compress PDF Online Free | Toolited",
     description:
       "Reduce PDF file size in your browser with adjustable compression settings and download the compressed document.",
   },
@@ -61,49 +61,49 @@ const PAGE_METADATA = {
       "Choose a free online image compressor or video compressor to reduce media file sizes in your browser.",
   },
   "/pdf-tools/pdf-editor": {
-    title: "Edit PDF Online | Toolited",
+    title: "Edit, Organize & Annotate PDF Online | Toolited",
     description:
-      "Open the PDF editor to organize and edit PDF documents using the available browser-based tools.",
+      "Edit and organize PDF pages in your browser. Add annotations, reorder or rotate pages, and download the updated PDF.",
   },
   "/pdf-tools/image-to-pdf": {
-    title: "Convert Images to PDF Online | Toolited",
+    title: "Image to PDF Converter Online | Toolited",
     description:
       "Combine images into a PDF document with the browser-based image-to-PDF tool.",
   },
   "/pdf-tools/pdf-to-word": {
-    title: "Convert PDF to Word Online | Toolited",
+    title: "PDF to Word Converter Online | Toolited",
     description:
       "Convert PDF documents to editable Word files with the available PDF conversion tool.",
   },
   "/pdf-tools/pdf-to-excel": {
-    title: "Convert PDF to Excel Online | Toolited",
+    title: "PDF to Excel Converter Online | Toolited",
     description:
-      "Convert PDF tables into Excel spreadsheets with the available PDF conversion tool.",
+      "Extract tables from text or scanned PDFs and export them to Excel or CSV. Configure table detection and spreadsheet output in your browser.",
   },
   "/webp-to-image": {
-    title: "Convert WebP to JPG or PNG Online | Toolited",
+    title: "WebP to JPG or PNG Converter Online | Toolited",
     description:
-      "Convert WebP images to JPG or PNG format with the free browser-based image converter.",
+      "Convert WebP images in batches to JPG or PNG in your browser. Choose image quality, size, and background for JPG exports.",
   },
   "/image-to-vector": {
-    title: "Convert Images to SVG Online | Toolited",
+    title: "Image to SVG Vector Converter Online | Toolited",
     description:
-      "Trace an image into a scalable SVG vector graphic in your browser and adjust the result before downloading.",
+      "Trace raster images into scalable SVG artwork in your browser. Adjust vector settings, preview the result, and download the SVG.",
   },
   "/typing-tutor": {
-    title: "Free Online Typing Tutor | Toolited",
+    title: "Free Online Typing Practice & Tutor | Toolited",
     description:
-      "Practice typing with an interactive online typing tutor and track your typing performance.",
+      "Practice touch typing with interactive lessons and typing tests. Build speed and accuracy with the free browser-based typing tutor.",
   },
   "/scientific-calculator": {
-    title: "Free Online Scientific Calculator | Toolited",
+    title: "Free Scientific Calculator Online | Toolited",
     description:
-      "Use an online scientific calculator for common, advanced, and scientific math calculations.",
+      "Calculate with trigonometry, logarithms, fractions, scientific notation, constants, and advanced math functions in a free online calculator.",
   },
   "/input-tester": {
-    title: "Keyboard, Mouse & Gamepad Tester | Toolited",
+    title: "Keyboard, Mouse & Gamepad Input Tester | Toolited",
     description:
-      "Test keyboard, mouse, and supported controller inputs with an interactive online input tester.",
+      "Check keyboard keys, mouse buttons and movement, and supported gamepad controls with this interactive browser-based input tester.",
   },
   "/text-tool": {
     title: "Free Online Text Tools | Toolited",
@@ -126,9 +126,14 @@ const PAGE_METADATA = {
       "Create a custom spin wheel with your own choices, then spin it to make a fun and fair random selection.",
   },
   "/all-calculators": {
-    title: "Free Online Calculators | Toolited",
+    title: "Free Online Calculators for Everyday Use | Toolited",
     description:
-      "Browse practical financial, fitness, math, and everyday calculators, with each tool ready to use in your browser.",
+      "Use free financial, health, math, date, and everyday calculators in your browser, including percentage, loan, BMI, and unit calculations.",
+  },
+  "/privacy-policy": {
+    title: "Privacy Policy | Toolited",
+    description:
+      "Read how Toolited handles information, browser-based file processing, analytics, and privacy when you use our online tools.",
   },
 };
 
@@ -162,10 +167,12 @@ export default function RouteMetadata() {
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:site_name", "Toolited");
     upsertMeta("property", "og:image", SOCIAL_IMAGE);
+    upsertMeta("property", "og:image:alt", "Toolited online tools");
     upsertMeta("name", "twitter:card", "summary_large_image");
     upsertMeta("name", "twitter:title", title);
     upsertMeta("name", "twitter:description", description);
     upsertMeta("name", "twitter:image", SOCIAL_IMAGE);
+    upsertMeta("name", "twitter:image:alt", "Toolited online tools");
 
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (page) {
