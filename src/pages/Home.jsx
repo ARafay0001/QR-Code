@@ -69,16 +69,7 @@ const products = [
     category: "Documents",
     features: ["Edit PDF", "Merge & Split", "Compress PDF", "Image to PDF"],
   },
-  {
-    title: "Background Remover",
-    description:
-      "Remove image backgrounds in seconds with high-quality AI results.",
-    icon: Image,
-    status: "live",
-    href: "/background-remover",
-    category: "Images",
-    features: ["HD Quality", "One Click"],
-  },
+  
   {
     title: "Unit Converter",
     description:
@@ -113,6 +104,17 @@ const products = [
   "Math Calculators",
   "Other Calculators",
 ],
+
+  },
+  {
+    title: "Background Remover",
+    description:
+      "Remove image backgrounds in seconds with high-quality AI results.",
+    icon: Image,
+    status: "live",
+    href: "/background-remover",
+    category: "Images",
+    features: ["HD Quality", "One Click"],
   },
   {
     title: "Image to SVG & Vector",
