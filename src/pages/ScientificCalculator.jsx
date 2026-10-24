@@ -1,9 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Smartphone, Monitor, ExternalLink, ClipboardPaste } from "lucide-react";
+import { X, Smartphone, Monitor, ExternalLink } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
+
+const FAQ = [
+  {
+    question: "Can I switch between degrees and radians?",
+    answer:
+      "Yes. Open Setup on the calculator and select the angle unit you need. The indicator on the display shows whether calculations currently use radians, degrees, or gradians.",
+  },
+  {
+    question: "Does the calculator support fractions and advanced functions?",
+    answer:
+      "Yes. Use the calculator's fraction templates, trigonometric and logarithmic functions, combinations, permutations, constants, integrals, summations, and equation-solving tools.",
+  },
+  {
+    question: "Can I use my keyboard to enter calculations?",
+    answer:
+      "Yes. Type digits and common operators, use Enter to evaluate, and use Backspace or the arrow keys to edit. The on-screen guide lists supported keyboard shortcuts.",
+  },
+];
 
 /* ========================================================================== */
 /*  Scientific calculator (Casio fx-991CW style)                              */
@@ -1606,6 +1625,10 @@ export default function ScientificCalculator() {
           <p>Paste works: Ctrl+V (or the Paste button) puts text like 2*3, sqrt(16), pi, asin(0.5) on the display. Paste several lines, or lines like "2^10 =&gt; 1024", to get a test table with ✓ / ✗.</p>
           <p>Keyboard works too: digits, + − * / ( ) ^, Enter, Backspace, Esc, arrows, and s c t l n r for sin cos tan log ln √.</p>
         </div>
+        <ToolFAQ
+          faqs={FAQ}
+          description="Get quick guidance on angle modes, advanced functions, and keyboard input for scientific calculations."
+        />
       </main>
 
       <Footer />

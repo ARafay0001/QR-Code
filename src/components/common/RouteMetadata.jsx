@@ -115,6 +115,21 @@ const PAGE_METADATA = {
     description:
       "Roll dice in multiple modes or spin a customizable wheel with your own options, colors, or numbers.",
   },
+  "/games/dice-roller": {
+    title: "Free Online Dice Roller | Toolited",
+    description:
+      "Roll virtual dice for board games, classroom activities, and quick random choices with Toolited's free dice roller.",
+  },
+  "/games/spin-wheel": {
+    title: "Free Customizable Spin Wheel | Toolited",
+    description:
+      "Create a custom spin wheel with your own choices, then spin it to make a fun and fair random selection.",
+  },
+  "/all-calculators": {
+    title: "Free Online Calculators | Toolited",
+    description:
+      "Browse practical financial, fitness, math, and everyday calculators, with each tool ready to use in your browser.",
+  },
 };
 
 function upsertMeta(attribute, key, content) {

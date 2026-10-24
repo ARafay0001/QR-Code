@@ -28,6 +28,8 @@ export default function Footer() {
               <li><Link to="/image-compressor" className="transition hover:text-white">Online image compressor</Link></li>
               <li><Link to="/video-compressor" className="transition hover:text-white">Online video compressor</Link></li>
               <li><Link to="/pdf-tools" className="transition hover:text-white">PDF tools</Link></li>
+              <li><Link to="/webp-to-image" className="transition hover:text-white">WebP image converter</Link></li>
+              <li><Link to="/unit-converter" className="transition hover:text-white">Unit converter</Link></li>
             </ul>
           </div>
 
@@ -37,7 +39,12 @@ export default function Footer() {
               <li><Link to="/#faq" className="transition hover:text-white">Frequently asked questions</Link></li>
               <li><Link to="/about" className="transition hover:text-white">About Toolited</Link></li>
               <li><Link to="/contact" className="transition hover:text-white">Contact</Link></li>
-            </ul>
+              <li>
+                <Link to="/privacy-policy" className="transition hover:text-white">
+                  Privacy Policy
+                </Link>
+              </li>
+           </ul>
           </div>
 
           <div>

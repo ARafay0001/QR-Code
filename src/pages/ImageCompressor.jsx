@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import imageCompression from "browser-image-compression";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Constants                                  */
@@ -805,24 +806,10 @@ export default function ImageCompressor() {
             </div>
           </section>
 
-          {/* SEO content */}
-          <section className="mx-auto mt-24 max-w-3xl">
-            <h2 className="text-center text-3xl font-black">Frequently Asked Questions</h2>
-            <div className="mt-8 space-y-3">
-              {FAQ.map(({ q, a }) => (
-                <details
-                  key={q}
-                  className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl open:border-blue-500/30"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
-                    {q}
-                    <span className="ml-4 text-slate-400 transition group-open:rotate-45">＋</span>
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{a}</p>
-                </details>
-              ))}
-            </div>
-          </section>
+          <ToolFAQ
+            faqs={FAQ}
+            description="Understand supported image formats, compression settings, and how to reach a target file size."
+          />
         </main>
 
         <Toast toast={toast} onClose={() => setToast(null)} />

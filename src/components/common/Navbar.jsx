@@ -19,6 +19,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
+import Breadcrumbs from "./Breadcrumbs";
 /* -------------------------------------------------------------------------- */
 /*  Tools                                                                    */
 /* -------------------------------------------------------------------------- */
@@ -203,6 +204,7 @@ export default function Navbar() {
     }`;
 
   return (
+    <>
     <header className="sticky top-0 z-50 px-3 py-3 sm:px-5 sm:py-5">
       <nav
         aria-label="Primary navigation"
@@ -423,5 +425,7 @@ export default function Navbar() {
         </nav>
       )}
     </header>
+    <Breadcrumbs />
+    </>
   );
 }

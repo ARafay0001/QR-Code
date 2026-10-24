@@ -15,6 +15,7 @@ import { removeBackground, preload } from "@imgly/background-removal";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -766,23 +767,10 @@ export default function BackgroundRemover() {
             </p>
           )}
 
-          {/* SEO content */}
-          <section className="mx-auto mt-24 max-w-3xl" aria-labelledby="faq-title">
-            <h2 id="faq-title" className="text-center text-3xl font-bold">
-              Frequently asked questions
-            </h2>
-            <div className="mt-8 space-y-4">
-              {FAQ.map((f) => (
-                <details
-                  key={f.q}
-                  className="group rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
-                >
-                  <summary className="cursor-pointer font-semibold">{f.q}</summary>
-                  <p className="mt-3 text-slate-400">{f.a}</p>
-                </details>
-              ))}
-            </div>
-          </section>
+          <ToolFAQ
+            faqs={FAQ}
+            description="Learn what the browser-based background remover supports and how AI processing works on your device."
+          />
         </main>
 
         <Footer />

@@ -1,10 +1,29 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
-  Upload, Download, Trash2, X, Loader2, Check, AlertTriangle, Zap, FileImage, Archive, Plus,
+  Upload, Download, Trash2, X, Loader2, AlertTriangle, FileImage, Archive, Plus,
 } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
+
+const FAQ = [
+  {
+    question: "Can I convert multiple WebP images at once?",
+    answer:
+      "Yes. Add several WebP files, choose JPG or PNG, and download the converted images individually or together as a ZIP.",
+  },
+  {
+    question: "What happens to transparent areas when converting to JPG?",
+    answer:
+      "JPG does not support transparency, so transparent pixels are filled with the background color you choose. PNG keeps transparency.",
+  },
+  {
+    question: "Are my images uploaded?",
+    answer:
+      "No. Conversion runs in your browser, so your WebP files stay on your device.",
+  },
+];
 
 /* ========================================================================== */
 /*  Performance design                                                        */
@@ -424,6 +443,10 @@ export default function WebPToImage() {
               <FileImage size={14} />Animated WebP files convert to a single still frame. Nothing is uploaded — all processing stays on your device.
             </p>
           </div>
+          <ToolFAQ
+            faqs={FAQ}
+            description="Learn about batch conversion, transparency, and output formats before converting your WebP images."
+          />
         </main>
 
         <Footer />

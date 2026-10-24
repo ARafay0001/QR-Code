@@ -1,16 +1,31 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
 import { Link } from "react-router-dom";
 import {
-  FilePlus2,
-  Scissors,
   Shrink,
   FileText,
   Image,
-  RotateCw,
-  Trash2,
   ArrowRight,
 } from "lucide-react";
+
+const FAQ = [
+  {
+    question: "Which PDF tasks can I do here?",
+    answer:
+      "Open the PDF editor, compress a document, convert images to PDF, or convert a PDF to Word or Excel. Choose a tool above to get started.",
+  },
+  {
+    question: "Are my documents uploaded?",
+    answer:
+      "PDF processing runs in your browser for the tools on this page. Your files remain on your device while you work with them.",
+  },
+  {
+    question: "Can I use these PDF tools on a phone?",
+    answer:
+      "Yes. The tool pages adapt to smaller screens, though editing or arranging many pages is usually easier on a larger display.",
+  },
+];
 
 const tools = [
   
@@ -108,6 +123,10 @@ export default function PDFTools() {
 
           </div>
 
+          <ToolFAQ
+            faqs={FAQ}
+            description="Find the right PDF workflow, from reducing file size to editing and converting documents."
+          />
         </div>
       </div>
 

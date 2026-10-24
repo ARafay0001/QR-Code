@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
 import {
   loadFFmpeg,
   compressVideo as compressWithFFmpeg,
@@ -642,24 +643,10 @@ export default function VideoCompressor() {
             </div>
           </section>
 
-          {/* SEO content */}
-          <section className="mx-auto mt-24 max-w-3xl">
-            <h2 className="text-center text-3xl font-black">Frequently Asked Questions</h2>
-            <div className="mt-8 space-y-3">
-              {FAQ.map(({ q, a }) => (
-                <details
-                  key={q}
-                  className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl open:border-blue-500/30"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
-                    {q}
-                    <span className="ml-4 text-slate-400 transition group-open:rotate-45">＋</span>
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{a}</p>
-                </details>
-              ))}
-            </div>
-          </section>
+          <ToolFAQ
+            faqs={FAQ}
+            description="Get practical details on video formats, target sizes, and browser-based encoding before you compress."
+          />
         </main>
 
         <Toast toast={toast} onClose={() => setToast(null)} />

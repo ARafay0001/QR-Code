@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, Mail, LockKeyhole } from "lucide-react";
+import Breadcrumbs from "../components/common/Breadcrumbs";
 
 const sections = [
   { id: "introduction", title: "1. Introduction" },
@@ -23,6 +24,7 @@ export default function PrivacyPolicy() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-950 dark:text-gray-200">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <Breadcrumbs bare light />
         <Link
           to="/"
           className="mb-8 inline-flex items-center gap-2 text-sm text-gray-600 transition hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
@@ -160,22 +162,32 @@ export default function PrivacyPolicy() {
               </p>
             </section>
 
-            <section id="analytics" className="scroll-mt-8">
-              <h2 className="policy-heading">5. Analytics</h2>
-              <p className="policy-text">
-                Analytics services may be used to understand website traffic,
-                identify popular tools, and improve the user experience.
-                If Google Analytics or another analytics service is enabled
-                on Toolited, it may process technical and usage information
-                according to its configuration and applicable privacy policy.
-              </p>
-              <p className="policy-text">
-                Analytics configured on a different website or deployment
-                does not automatically apply to Toolited. This policy should
-                be updated to reflect the actual analytics services enabled
-                on this domain.
-              </p>
-            </section>
+          
+<section id="analytics" className="scroll-mt-8">
+  <h2 className="policy-heading">5. Analytics</h2>
+  <p className="policy-text">
+    Toolited uses Google Analytics to understand website traffic,
+    measure how visitors interact with our pages, identify popular
+    tools, and improve the user experience. Google Analytics may
+    collect information such as page views, interactions, browser
+    and device information, approximate geographic information,
+    and referral sources, depending on its configuration.
+  </p>
+  <p className="policy-text">
+    Google processes information in accordance with its own privacy
+    policies and applicable settings. For more information, visit
+    the Google Privacy Policy at{" "}
+    <a
+      href="https://policies.google.com/privacy"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 hover:underline dark:text-blue-400"
+    >
+      Google's Privacy Policy
+    </a>.
+  </p>
+</section>
+
 
             <section id="advertising" className="scroll-mt-8">
               <h2 className="policy-heading">
@@ -286,10 +298,10 @@ export default function PrivacyPolicy() {
                 toolitedbusiness@gmail.com
               </a>
 
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              {/* <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                 Replace this placeholder with your official contact email
                 before publishing.
-              </p>
+              </p> */}
             </section>
 
             <div className="mt-10 border-t border-gray-200 pt-6 dark:border-gray-800">

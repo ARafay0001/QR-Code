@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   Check,
   Copy,
-  Download,
   Eye,
   EyeOff,
   FileCode,
@@ -26,6 +25,30 @@ import {
 } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolFAQ from "../components/common/ToolFAQ";
+
+const FAQ = [
+  {
+    question: "What can I put in a QR code?",
+    answer:
+      "Create QR codes for websites, plain text, email, phone numbers, SMS, WhatsApp, Wi-Fi networks, and map locations.",
+  },
+  {
+    question: "How do I download and use my QR code?",
+    answer:
+      "Enter the content, customize the design if you like, then choose PNG, JPEG, SVG, or PDF. Scan the exported code with your phone before printing or sharing it.",
+  },
+  {
+    question: "Can I add a logo and change the colors?",
+    answer:
+      "Yes. Customize the foreground and background colors, choose a dot style, and add a logo. Keep strong contrast and test the result so phones can scan it reliably.",
+  },
+  {
+    question: "Does a generated QR code expire?",
+    answer:
+      "The code stores the information you enter, so it does not expire. A website QR code will only work while its destination URL remains available.",
+  },
+];
 
 /* -------------------------------------------------------------------------- */
 /*                                  Constants                                 */
@@ -1171,6 +1194,10 @@ export default function QRGenerator() {
             </div>
           </div>
         </section>
+        <ToolFAQ
+          faqs={FAQ}
+          description="Learn how to choose a QR type, customize its design, and export a code that scans reliably."
+        />
       </main>
 
       <Footer />
