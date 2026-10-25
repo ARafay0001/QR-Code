@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Link to="/" className="flex items-center gap-3">
-              <img src={logo} alt="" className=" w-26" />
+              <img src={logo} alt="Toolited home" className=" w-26" />
               {/* <span className="text-2xl font-bold text-white">Toolited</span> */}
             </Link>
             <p className="mt-4 max-w-sm leading-7 text-slate-400">
@@ -56,17 +56,17 @@ export default function Footer() {
               <Mail size={20} aria-hidden="true" />
               <span>Email us</span>
             </a>
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-slate-400">
               Have feedback or a tool request? We’d love to hear from you.
             </p>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-slate-800 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             © {currentYear} Toolited. All rights reserved.
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Built for speed. Designed for everyone.
           </p>
         </div>
