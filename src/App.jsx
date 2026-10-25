@@ -1,10 +1,10 @@
 import { lazy, Suspense } from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import RouteMetadata from "./components/common/RouteMetadata";
 import ScrollToTop from "./components/common/ScrollToTop";
 import "./App.css";
-
 const Home = lazy(() => import("./pages/Home"));
 const QRGenerator = lazy(() => import("./pages/QRGenerator"));
 const ImageCompressor = lazy(() => import("./pages/ImageCompressor"));
@@ -32,7 +32,9 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AllCalculators = lazy(() => import("./pages/Allcalculators"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+
 function PageLoading() {
+  
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
       <div className="w-full max-w-sm" role="status" aria-live="polite" aria-busy="true">
@@ -52,6 +54,7 @@ function PageLoading() {
 }
 
 export default function App() {
+
   return (
     <BrowserRouter>
       <RouteMetadata />
