@@ -11,7 +11,13 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Link to="/" className="flex items-center gap-3">
-              <img src={logo} alt="Toolited home" className=" w-26" />
+              <img
+                src={logo}
+                alt="Toolited home"
+                width="1000"
+                height="500"
+                className=" w-26"
+              />
               {/* <span className="text-2xl font-bold text-white">Toolited</span> */}
             </Link>
             <p className="mt-4 max-w-sm leading-7 text-slate-400">

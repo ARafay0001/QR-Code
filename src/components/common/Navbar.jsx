@@ -217,7 +217,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" aria-label="Toolited home" className="group flex items-center  pl-1">
           <div>
-            <img src={logo} alt="" className=" w-26" />
+            <img src={logo} alt="" width="1000" height="500" className=" w-26" />
           </div>
           {/* <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">
             Toolited
