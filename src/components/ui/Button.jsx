@@ -9,7 +9,7 @@ export default function Button({
 
   const variants = {
     primary:
-      "bg-brand text-text hover:bg-accent hover:shadow-[0_0_25px_color-mix(in_srgb,var(--theme-brand)_45%,transparent)]",
+      "bg-brand text-on-brand hover:bg-accent hover:shadow-[0_0_25px_color-mix(in_srgb,var(--theme-brand)_45%,transparent)]",
 
     secondary:
       "border border-border bg-surface/60 text-text hover:border-accent",

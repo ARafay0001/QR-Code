@@ -9,6 +9,7 @@
   --theme-muted: #94a3b8;
   --theme-brand: #3b82f6;
   --theme-accent: #60a5fa;
+  --theme-on-brand: #020617;
   --theme-success: #10b981;
   --theme-warning: #f59e0b;
   --theme-danger: #ef4444;
@@ -26,6 +27,7 @@
   --color-muted: var(--theme-muted);
   --color-brand: var(--theme-brand);
   --color-accent: var(--theme-accent);
+  --color-on-brand: var(--theme-on-brand);
   --color-success: var(--theme-success);
   --color-warning: var(--theme-warning);
   --color-danger: var(--theme-danger);
