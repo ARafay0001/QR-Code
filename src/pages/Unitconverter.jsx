@@ -83,10 +83,10 @@ const CATEGORIES = [
     label: "Typography & Screen",
     icon: Type,
     type: "typography",
-    accent: "text-purple-400",
-    accentBg: "bg-purple-500/10",
-    accentBorder: "border-purple-500/40",
-    glow: "rgba(192,132,252,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "px", label: "Pixel", symbol: "px" },
       { id: "pt", label: "Point", symbol: "pt" },
@@ -105,10 +105,10 @@ const CATEGORIES = [
     label: "Length",
     icon: Ruler,
     type: "linear",
-    accent: "text-blue-400",
-    accentBg: "bg-blue-500/10",
-    accentBorder: "border-blue-500/40",
-    glow: "rgba(37,99,235,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "nm", label: "Nanometer", symbol: "nm", factor: 1e-9 },
       { id: "mm", label: "Millimeter", symbol: "mm", factor: 0.001 },
@@ -128,10 +128,10 @@ const CATEGORIES = [
     label: "Weight & Mass",
     icon: Weight,
     type: "linear",
-    accent: "text-violet-400",
-    accentBg: "bg-violet-500/10",
-    accentBorder: "border-violet-500/40",
-    glow: "rgba(139,92,246,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "mg", label: "Milligram", symbol: "mg", factor: 1e-6 },
       { id: "g", label: "Gram", symbol: "g", factor: 0.001 },
@@ -149,10 +149,10 @@ const CATEGORIES = [
     label: "Temperature",
     icon: Thermometer,
     type: "temperature",
-    accent: "text-orange-400",
-    accentBg: "bg-orange-500/10",
-    accentBorder: "border-orange-500/40",
-    glow: "rgba(251,146,60,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "c", label: "Celsius", symbol: "°C" },
       { id: "f", label: "Fahrenheit", symbol: "°F" },
@@ -165,10 +165,10 @@ const CATEGORIES = [
     label: "Volume",
     icon: Beaker,
     type: "linear",
-    accent: "text-cyan-400",
-    accentBg: "bg-cyan-500/10",
-    accentBorder: "border-cyan-500/40",
-    glow: "rgba(34,211,238,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "ml", label: "Milliliter", symbol: "ml", factor: 0.001 },
       { id: "l", label: "Liter", symbol: "l", factor: 1 },
@@ -189,10 +189,10 @@ const CATEGORIES = [
     label: "Area",
     icon: Square,
     type: "linear",
-    accent: "text-emerald-400",
-    accentBg: "bg-emerald-500/10",
-    accentBorder: "border-emerald-500/40",
-    glow: "rgba(16,185,129,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "mm2", label: "Square Millimeter", symbol: "mm²", factor: 1e-6 },
       { id: "cm2", label: "Square Centimeter", symbol: "cm²", factor: 0.0001 },
@@ -212,10 +212,10 @@ const CATEGORIES = [
     label: "Speed",
     icon: Gauge,
     type: "linear",
-    accent: "text-sky-400",
-    accentBg: "bg-sky-500/10",
-    accentBorder: "border-sky-500/40",
-    glow: "rgba(56,189,248,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "mps", label: "Meter/second", symbol: "m/s", factor: 1 },
       { id: "kph", label: "Kilometer/hour", symbol: "km/h", factor: 0.277778 },
@@ -231,10 +231,10 @@ const CATEGORIES = [
     label: "Time",
     icon: Clock,
     type: "linear",
-    accent: "text-pink-400",
-    accentBg: "bg-pink-500/10",
-    accentBorder: "border-pink-500/40",
-    glow: "rgba(244,114,182,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "ms", label: "Millisecond", symbol: "ms", factor: 0.001 },
       { id: "s", label: "Second", symbol: "s", factor: 1 },
@@ -252,10 +252,10 @@ const CATEGORIES = [
     label: "Data Storage",
     icon: HardDrive,
     type: "linear",
-    accent: "text-indigo-400",
-    accentBg: "bg-indigo-500/10",
-    accentBorder: "border-indigo-500/40",
-    glow: "rgba(129,140,248,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "bit", label: "Bit", symbol: "bit", factor: 0.125 },
       { id: "b", label: "Byte", symbol: "B", factor: 1 },
@@ -272,10 +272,10 @@ const CATEGORIES = [
     label: "Data Transfer",
     icon: Wifi,
     type: "linear",
-    accent: "text-blue-400",
-    accentBg: "bg-blue-500/10",
-    accentBorder: "border-blue-500/40",
-    glow: "rgba(37,99,235,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "bps", label: "Bit/second", symbol: "bps", factor: 1 },
       { id: "kbps", label: "Kilobit/second", symbol: "Kbps", factor: 1000 },
@@ -293,10 +293,10 @@ const CATEGORIES = [
     label: "Pressure",
     icon: Wind,
     type: "linear",
-    accent: "text-teal-400",
-    accentBg: "bg-teal-500/10",
-    accentBorder: "border-teal-500/40",
-    glow: "rgba(45,212,191,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "pa", label: "Pascal", symbol: "Pa", factor: 1 },
       { id: "kpa", label: "Kilopascal", symbol: "kPa", factor: 1000 },
@@ -312,10 +312,10 @@ const CATEGORIES = [
     label: "Energy",
     icon: Zap,
     type: "linear",
-    accent: "text-yellow-400",
-    accentBg: "bg-yellow-500/10",
-    accentBorder: "border-yellow-500/40",
-    glow: "rgba(250,204,21,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "j", label: "Joule", symbol: "J", factor: 1 },
       { id: "kj", label: "Kilojoule", symbol: "kJ", factor: 1000 },
@@ -333,10 +333,10 @@ const CATEGORIES = [
     label: "Power",
     icon: Flame,
     type: "linear",
-    accent: "text-red-400",
-    accentBg: "bg-red-500/10",
-    accentBorder: "border-red-500/40",
-    glow: "rgba(248,113,113,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "w", label: "Watt", symbol: "W", factor: 1 },
       { id: "kw", label: "Kilowatt", symbol: "kW", factor: 1000 },
@@ -351,10 +351,10 @@ const CATEGORIES = [
     label: "Torque",
     icon: Wrench,
     type: "linear",
-    accent: "text-orange-400",
-    accentBg: "bg-orange-500/10",
-    accentBorder: "border-orange-500/40",
-    glow: "rgba(251,146,60,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "nm", label: "Newton-meter", symbol: "N·m", factor: 1 },
       { id: "kgfm", label: "Kilogram-force meter", symbol: "kgf·m", factor: 9.80665 },
@@ -368,10 +368,10 @@ const CATEGORIES = [
     label: "Density",
     icon: Box,
     type: "linear",
-    accent: "text-cyan-400",
-    accentBg: "bg-cyan-500/10",
-    accentBorder: "border-cyan-500/40",
-    glow: "rgba(34,211,238,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "kgm3", label: "Kilogram/m³", symbol: "kg/m³", factor: 1 },
       { id: "gcm3", label: "Gram/cm³", symbol: "g/cm³", factor: 1000 },
@@ -386,10 +386,10 @@ const CATEGORIES = [
     label: "Angle",
     icon: Compass,
     type: "linear",
-    accent: "text-lime-400",
-    accentBg: "bg-lime-500/10",
-    accentBorder: "border-lime-500/40",
-    glow: "rgba(163,230,53,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "deg", label: "Degree", symbol: "°", factor: 1 },
       { id: "rad", label: "Radian", symbol: "rad", factor: 57.29578 },
@@ -404,10 +404,10 @@ const CATEGORIES = [
     label: "Frequency",
     icon: Radio,
     type: "linear",
-    accent: "text-fuchsia-400",
-    accentBg: "bg-fuchsia-500/10",
-    accentBorder: "border-fuchsia-500/40",
-    glow: "rgba(232,121,249,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "hz", label: "Hertz", symbol: "Hz", factor: 1 },
       { id: "khz", label: "Kilohertz", symbol: "kHz", factor: 1000 },
@@ -421,10 +421,10 @@ const CATEGORIES = [
     label: "Force",
     icon: Magnet,
     type: "linear",
-    accent: "text-rose-400",
-    accentBg: "bg-rose-500/10",
-    accentBorder: "border-rose-500/40",
-    glow: "rgba(251,113,133,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "n", label: "Newton", symbol: "N", factor: 1 },
       { id: "kn", label: "Kilonewton", symbol: "kN", factor: 1000 },
@@ -439,10 +439,10 @@ const CATEGORIES = [
     label: "Fuel Economy",
     icon: Fuel,
     type: "fuel",
-    accent: "text-green-400",
-    accentBg: "bg-green-500/10",
-    accentBorder: "border-green-500/40",
-    glow: "rgba(74,222,128,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "l100km", label: "Liters/100km", symbol: "L/100km", toBase: (v) => v, fromBase: (b) => b },
       { id: "kml", label: "Kilometers/Liter", symbol: "km/L", toBase: (v) => 100 / v, fromBase: (b) => 100 / b },
@@ -456,10 +456,10 @@ const CATEGORIES = [
     label: "Typography & Screen",
     icon: Type,
     type: "typography",
-    accent: "text-purple-400",
-    accentBg: "bg-purple-500/10",
-    accentBorder: "border-purple-500/40",
-    glow: "rgba(192,132,252,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "px", label: "Pixel", symbol: "px" },
       { id: "pt", label: "Point", symbol: "pt" },
@@ -478,10 +478,10 @@ const CATEGORIES = [
     label: "Cooking & Baking",
     icon: ChefHat,
     type: "cooking",
-    accent: "text-amber-400",
-    accentBg: "bg-amber-500/10",
-    accentBorder: "border-amber-500/40",
-    glow: "rgba(251,191,36,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [
       { id: "ml", label: "Milliliter", symbol: "ml", kind: "volume", factor: 0.001 },
       { id: "tsp", label: "Teaspoon", symbol: "tsp", kind: "volume", factor: 0.00492892 },
@@ -501,10 +501,10 @@ const CATEGORIES = [
     label: "Number Systems",
     icon: Binary,
     type: "numberbase",
-    accent: "text-sky-400",
-    accentBg: "bg-sky-500/10",
-    accentBorder: "border-sky-500/40",
-    glow: "rgba(56,189,248,.18)",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+    accentBorder: "border-brand/40",
+    glow: "color-mix(in srgb, var(--theme-brand) 18%, transparent)",
     units: [],
     defaults: [],
   },
@@ -637,17 +637,17 @@ function formatNumber(num) {
 function CategorySidebar({ categories, activeId, onSelect, query, setQuery }) {
   return (
     <aside className="lg:sticky lg:top-24 lg:h-fit">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-5">
+      <div className="rounded-2xl border border-border bg-surface/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-5">
         <div className="relative">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search categories…"
-            className="w-full rounded-xl border border-slate-800 bg-slate-950/60 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500/50"
+            className="w-full rounded-xl border border-border bg-page/60 py-2.5 pl-9 pr-3 text-sm text-text placeholder:text-muted outline-none transition-colors focus:border-brand/50"
           />
         </div>
 
@@ -661,20 +661,20 @@ function CategorySidebar({ categories, activeId, onSelect, query, setQuery }) {
                 onClick={() => onSelect(cat.id)}
                 className={`group flex shrink-0 items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left text-sm font-medium transition-all lg:w-full ${
                   active
-                    ? `${cat.accentBorder} ${cat.accentBg} text-white`
-                    : "border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-800/60 hover:text-white"
+                    ? `${cat.accentBorder} ${cat.accentBg} text-text`
+                    : "border-transparent text-muted hover:border-border hover:bg-surface/60 hover:text-text"
                 }`}
               >
                 <Icon
                   size={17}
-                  className={active ? cat.accent : "text-slate-500 group-hover:text-slate-300"}
+                  className={active ? cat.accent : "text-muted group-hover:text-text"}
                 />
                 <span className="whitespace-nowrap lg:whitespace-normal">{cat.label}</span>
               </button>
             );
           })}
           {categories.length === 0 && (
-            <p className="px-1 py-2 text-sm text-slate-500">No categories match “{query}”.</p>
+            <p className="px-1 py-2 text-sm text-muted">No categories match “{query}”.</p>
           )}
         </div>
       </div>
@@ -694,10 +694,10 @@ function UnitSelect({ units, value, onChange }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-sm font-semibold text-white outline-none transition-colors focus:border-blue-500/50 sm:text-base"
+        className="w-full appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none transition-colors focus:border-brand/50 sm:text-base"
       >
         {units.map((u) => (
-          <option key={u.id} value={u.id} className="bg-slate-900">
+          <option key={u.id} value={u.id} className="bg-surface">
             {u.label} ({u.symbol})
           </option>
         ))}
@@ -712,18 +712,18 @@ function UnitSelect({ units, value, onChange }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full appearance-none rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-sm font-semibold text-white outline-none transition-colors focus:border-blue-500/50 sm:text-base"
+      className="w-full appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none transition-colors focus:border-brand/50 sm:text-base"
     >
-      <optgroup label="Volume" className="bg-slate-900">
+      <optgroup label="Volume" className="bg-surface">
         {volumeUnits.map((u) => (
-          <option key={u.id} value={u.id} className="bg-slate-900">
+          <option key={u.id} value={u.id} className="bg-surface">
             {u.label} ({u.symbol})
           </option>
         ))}
       </optgroup>
-      <optgroup label="Weight" className="bg-slate-900">
+      <optgroup label="Weight" className="bg-surface">
         {weightUnits.map((u) => (
-          <option key={u.id} value={u.id} className="bg-slate-900">
+          <option key={u.id} value={u.id} className="bg-surface">
             {u.label} ({u.symbol})
           </option>
         ))}
@@ -778,16 +778,16 @@ function NumberBaseConverter({ category }) {
           <Icon size={24} className="sm:size-7" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white sm:text-2xl">{category.label} Converter</h2>
-          <p className="text-sm text-slate-400">Binary · Octal · Decimal · Hexadecimal</p>
+          <h2 className="text-xl font-bold text-text sm:text-2xl">{category.label} Converter</h2>
+          <p className="text-sm text-muted">Binary · Octal · Decimal · Hexadecimal</p>
         </div>
       </div>
 
       <div
-        className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+        className="rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
         style={{ boxShadow: `0 0 60px ${category.glow}` }}
       >
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted">
           Input base
         </label>
         <div className="mt-2.5 flex flex-wrap gap-2">
@@ -797,8 +797,8 @@ function NumberBaseConverter({ category }) {
               onClick={() => setFromId(b.id)}
               className={`rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors ${
                 fromId === b.id
-                  ? `${category.accentBorder} ${category.accentBg} text-white`
-                  : "border-slate-800 text-slate-400 hover:border-slate-700"
+                  ? `${category.accentBorder} ${category.accentBg} text-text`
+                  : "border-border text-muted hover:border-border"
               }`}
             >
               {b.label}
@@ -810,29 +810,29 @@ function NumberBaseConverter({ category }) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={`Enter a ${fromBase.label.toLowerCase()} number`}
-          className={`mt-4 w-full rounded-xl border bg-slate-950/60 px-4 py-3 font-mono text-lg font-bold text-white outline-none transition-colors sm:text-xl ${
-            valid ? "border-slate-800 focus:border-blue-500/50" : "border-red-500/60"
+          className={`mt-4 w-full rounded-xl border bg-page/60 px-4 py-3 font-mono text-lg font-bold text-text outline-none transition-colors sm:text-xl ${
+            valid ? "border-border focus:border-brand/50" : "border-brand/60"
           }`}
         />
         {!valid && (
-          <p className="mt-2 text-sm text-red-400">
+          <p className="mt-2 text-sm text-brand">
             That's not a valid {fromBase.label.toLowerCase()} number.
           </p>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Converts to
         </h3>
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
           {BASES.filter((b) => b.id !== fromId).map((b) => (
             <div
               key={b.id}
-              className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 px-4 py-3 text-sm"
+              className="flex items-center justify-between rounded-xl border border-border bg-page/40 px-4 py-3 text-sm"
             >
-              <span className="text-slate-400">{b.label}</span>
-              <span className="font-mono font-semibold text-white">
+              <span className="text-muted">{b.label}</span>
+              <span className="font-mono font-semibold text-text">
                 {results ? results[b.id] : "—"}
               </span>
             </div>
@@ -916,8 +916,8 @@ function ConverterPanel({ category }) {
           <Icon size={24} className="sm:size-7" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white sm:text-2xl">{category.label} Converter</h2>
-          <p className="text-sm text-slate-400">
+          <h2 className="text-xl font-bold text-text sm:text-2xl">{category.label} Converter</h2>
+          <p className="text-sm text-muted">
             {category.units.length} units supported · updates as you type
           </p>
         </div>
@@ -925,9 +925,9 @@ function ConverterPanel({ category }) {
 
       {/* Typography controls */}
       {category.type === "typography" && (
-        <div className="grid gap-5 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:grid-cols-2 sm:rounded-3xl sm:p-6">
+        <div className="grid gap-5 rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:grid-cols-2 sm:rounded-3xl sm:p-6">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               Resolution (DPI)
             </label>
             <div className="mt-2.5 flex flex-wrap items-center gap-2">
@@ -937,8 +937,8 @@ function ConverterPanel({ category }) {
                   onClick={() => setDpi(d)}
                   className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors ${
                     dpi === d
-                      ? `${category.accentBorder} ${category.accentBg} text-white`
-                      : "border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? `${category.accentBorder} ${category.accentBg} text-text`
+                      : "border-border text-muted hover:border-border"
                   }`}
                 >
                   {d}
@@ -948,12 +948,12 @@ function ConverterPanel({ category }) {
                 type="number"
                 value={dpi}
                 onChange={(e) => setDpi(parseFloat(e.target.value) || 96)}
-                className="w-20 rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-1.5 text-sm text-white outline-none focus:border-blue-500/50"
+                className="w-20 rounded-lg border border-border bg-page/60 px-2 py-1.5 text-sm text-text outline-none focus:border-brand/50"
               />
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               Base font size (for em / rem / %)
             </label>
             <div className="mt-2.5 flex items-center gap-2">
@@ -961,9 +961,9 @@ function ConverterPanel({ category }) {
                 type="number"
                 value={baseFontSize}
                 onChange={(e) => setBaseFontSize(parseFloat(e.target.value) || 16)}
-                className="w-24 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-sm text-white outline-none focus:border-blue-500/50"
+                className="w-24 rounded-lg border border-border bg-page/60 px-3 py-1.5 text-sm text-text outline-none focus:border-brand/50"
               />
-              <span className="text-sm text-slate-500">px</span>
+              <span className="text-sm text-muted">px</span>
             </div>
           </div>
         </div>
@@ -971,22 +971,22 @@ function ConverterPanel({ category }) {
 
       {/* Cooking controls */}
       {category.type === "cooking" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6">
-          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6">
+          <label className="text-xs font-semibold uppercase tracking-wide text-muted">
             Ingredient
           </label>
           <select
             value={ingredientId}
             onChange={(e) => setIngredientId(e.target.value)}
-            className="mt-2.5 w-full max-w-xs appearance-none rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5 text-sm font-semibold text-white outline-none focus:border-blue-500/50"
+            className="mt-2.5 w-full max-w-xs appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none focus:border-brand/50"
           >
             {INGREDIENTS.map((i) => (
-              <option key={i.id} value={i.id} className="bg-slate-900">
+              <option key={i.id} value={i.id} className="bg-surface">
                 {i.label}
               </option>
             ))}
           </select>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-muted">
             Weight-to-volume conversions are approximate — they vary by brand and how
             ingredients are packed or sifted.
           </p>
@@ -995,13 +995,13 @@ function ConverterPanel({ category }) {
 
       {/* Converter card */}
       <div
-        className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+        className="rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
         style={{ boxShadow: `0 0 60px ${category.glow}` }}
       >
         <div className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
           {/* From */}
           <div className="space-y-2.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               From
             </label>
             <UnitSelect units={category.units} value={fromId} onChange={setFromId} />
@@ -1011,7 +1011,7 @@ function ConverterPanel({ category }) {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Enter value"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-lg font-bold text-white outline-none transition-colors focus:border-blue-500/50 sm:text-xl"
+              className="w-full rounded-xl border border-border bg-page/60 px-4 py-3 text-lg font-bold text-text outline-none transition-colors focus:border-brand/50 sm:text-xl"
             />
           </div>
 
@@ -1020,7 +1020,7 @@ function ConverterPanel({ category }) {
             <button
               onClick={swap}
               aria-label="Swap units"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-800/80 text-slate-300 transition-all hover:rotate-180 hover:border-blue-500/50 hover:text-blue-400"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface/80 text-text transition-all hover:rotate-180 hover:border-accent/50 hover:text-accent"
             >
               <ArrowLeftRight size={18} />
             </button>
@@ -1028,14 +1028,14 @@ function ConverterPanel({ category }) {
 
           {/* To */}
           <div className="space-y-2.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               To
             </label>
             <UnitSelect units={category.units} value={toId} onChange={setToId} />
             <div className="relative">
-              <div className="w-full truncate rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-lg font-bold text-white sm:text-xl">
+              <div className="w-full truncate rounded-xl border border-border bg-page/60 px-4 py-3 text-lg font-bold text-text sm:text-xl">
                 {result === null ? (
-                  <span className="text-slate-600">—</span>
+                  <span className="text-muted">—</span>
                 ) : (
                   formatNumber(result)
                 )}
@@ -1044,17 +1044,17 @@ function ConverterPanel({ category }) {
                 onClick={copyResult}
                 disabled={result === null}
                 aria-label="Copy result"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white disabled:opacity-30"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted transition-colors hover:bg-surface hover:text-text disabled:opacity-30"
               >
-                {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+                {copied ? <Check size={16} className="text-brand" /> : <Copy size={16} />}
               </button>
             </div>
           </div>
         </div>
 
         {result !== null && fromUnit && toUnit && (
-          <p className="mt-5 text-center text-sm text-slate-400 sm:text-left">
-            <span className="font-semibold text-white">
+          <p className="mt-5 text-center text-sm text-muted sm:text-left">
+            <span className="font-semibold text-text">
               {formatNumber(numericInput)} {fromUnit.symbol}
             </span>{" "}
             equals{" "}
@@ -1066,8 +1066,8 @@ function ConverterPanel({ category }) {
       </div>
 
       {/* Quick reference */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-2xl border border-border bg-surface/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
           1 {fromUnit?.symbol} converts to
         </h3>
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -1078,11 +1078,11 @@ function ConverterPanel({ category }) {
               className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                 unit.id === toId
                   ? `${category.accentBorder} ${category.accentBg}`
-                  : "border-slate-800 bg-slate-950/40 hover:border-slate-700"
+                  : "border-border bg-page/40 hover:border-border"
               }`}
             >
-              <span className="text-slate-400">{unit.label}</span>
-              <span className="font-semibold text-white">
+              <span className="text-muted">{unit.label}</span>
+              <span className="font-semibold text-text">
                 {formatNumber(value)} {unit.symbol}
               </span>
             </button>
@@ -1118,12 +1118,12 @@ export default function UnitConverter() {
     <>
       {/* Background Effects */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
@@ -1140,7 +1140,7 @@ export default function UnitConverter() {
               Instantly, Accurately.
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted sm:text-lg">
               From inches to pixels, cups to grams, or miles-per-gallon to
               liters-per-100km &mdash; {CATEGORIES.length} categories, all in one fast,
               distraction-free tool.
@@ -1153,7 +1153,7 @@ export default function UnitConverter() {
               <button
                 key={cat.id}
                 onClick={() => setActiveId(cat.id)}
-                className="rounded-full border border-slate-700 px-3 py-1.5 text-xs text-slate-400 transition-colors hover:border-slate-500 hover:text-white sm:px-4 sm:py-2 sm:text-sm"
+                className="rounded-full border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-muted hover:text-text sm:px-4 sm:py-2 sm:text-sm"
               >
                 {cat.label}
               </button>

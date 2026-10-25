@@ -119,35 +119,35 @@ const DOWNLOAD_FORMATS = [
     label: "PNG",
     icon: FileImage,
     classes:
-      "border-green-500/40 bg-green-500/10 hover:border-green-400 hover:bg-green-500/20 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)]",
+      "border-brand/40 bg-brand/10 hover:border-accent hover:bg-accent/20 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--theme-brand)_60%,transparent)]",
   },
   {
     ext: "jpeg",
     label: "JPEG",
     icon: FileImage,
     classes:
-      "border-purple-500/40 bg-purple-500/10 hover:border-purple-400 hover:bg-purple-500/20 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]",
+      "border-brand/40 bg-brand/10 hover:border-accent hover:bg-accent/20 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--theme-brand)_60%,transparent)]",
   },
   {
     ext: "svg",
     label: "SVG",
     icon: FileCode,
     classes:
-      "border-yellow-500/40 bg-yellow-500/10 hover:border-yellow-400 hover:bg-yellow-500/20 hover:shadow-[0_0_20px_rgba(234,179,8,0.6)]",
+      "border-brand/40 bg-brand/10 hover:border-accent hover:bg-accent/20 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--theme-brand)_60%,transparent)]",
   },
   {
     ext: "pdf",
     label: "PDF",
     icon: FileText,
     classes:
-      "border-red-500/40 bg-red-500/10 hover:border-red-400 hover:bg-red-500/20 hover:shadow-[0_0_20px_rgba(239,68,68,0.6)]",
+      "border-brand/40 bg-brand/10 hover:border-accent hover:bg-accent/20 hover:shadow-[0_0_20px_color-mix(in_srgb,var(--theme-brand)_60%,transparent)]",
   },
 ];
 
 const inputClass =
-  "w-full rounded-xl border border-slate-600 bg-slate-700 p-4 text-white placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
+  "w-full rounded-xl border border-muted bg-border p-4 text-text placeholder:text-muted outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30";
 const selectClass =
-  "w-full cursor-pointer rounded-xl border border-slate-600 bg-slate-800 p-3 text-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
+  "w-full cursor-pointer rounded-xl border border-muted bg-surface p-3 text-text outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Helpers                                  */
@@ -351,12 +351,12 @@ function Field({ label, htmlFor, hint, children }) {
     <div>
       <label
         htmlFor={htmlFor}
-        className="mb-2 block text-sm font-medium text-slate-300"
+        className="mb-2 block text-sm font-medium text-text"
       >
         {label}
       </label>
       {children}
-      {hint && <p className="mt-1.5 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
     </div>
   );
 }
@@ -380,7 +380,7 @@ function PasswordInput({ id, name, value, onChange, placeholder }) {
         type="button"
         onClick={() => setShow((s) => !s)}
         aria-label={show ? "Hide password" : "Show password"}
-        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-2 text-slate-400 outline-none transition hover:text-white focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-2 text-muted outline-none transition hover:text-text focus-visible:ring-2 focus-visible:ring-brand"
       >
         {show ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
@@ -403,10 +403,10 @@ function TypeSelector({ value, onChange }) {
             type="button"
             onClick={() => onChange(id)}
             aria-pressed={active}
-            className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${
               active
-                ? "border-blue-500 bg-blue-600/20 text-white shadow-[0_0_15px_rgba(37,99,235,0.35)]"
-                : "border-slate-600 bg-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-600/70"
+                ? "border-brand bg-brand/20 text-text shadow-[0_0_15px_color-mix(in_srgb,var(--theme-brand)_35%,transparent)]"
+                : "border-muted bg-border text-text hover:border-muted hover:bg-surface/70"
             }`}
           >
             <Icon size={18} />
@@ -492,7 +492,7 @@ function QRForm({ qrType, formData, handleChange, setFields, notify }) {
             placeholder="Enter your text"
             className={`${inputClass} resize-y`}
           />
-          <p className="mt-1.5 text-right text-xs text-slate-400">
+          <p className="mt-1.5 text-right text-xs text-muted">
             {formData.text.length}/{MAX_DATA_LENGTH}
           </p>
         </Field>
@@ -636,7 +636,7 @@ function QRForm({ qrType, formData, handleChange, setFields, notify }) {
           <button
             type="button"
             onClick={useMyLocation}
-            className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-200 outline-none transition hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex cursor-pointer items-center gap-2 rounded-xl border border-muted bg-surface px-4 py-2.5 text-sm font-medium text-text outline-none transition hover:bg-border focus-visible:ring-2 focus-visible:ring-brand"
           >
             <MapPin size={16} />
             Use my current location
@@ -658,7 +658,7 @@ function ColorField({ id, label, value, onChange, presets }) {
     <div>
       <label
         htmlFor={id}
-        className="mb-2 block text-sm font-medium text-slate-300"
+        className="mb-2 block text-sm font-medium text-text"
       >
         {label}
       </label>
@@ -669,9 +669,9 @@ function ColorField({ id, label, value, onChange, presets }) {
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-12 w-16 cursor-pointer rounded-xl border border-slate-600 bg-slate-800 p-1"
+          className="h-12 w-16 cursor-pointer rounded-xl border border-muted bg-surface p-1"
         />
-        <span className="font-mono text-sm uppercase text-slate-400">{value}</span>
+        <span className="font-mono text-sm uppercase text-muted">{value}</span>
       </div>
 
       <div className="mt-3 flex gap-2">
@@ -682,8 +682,8 @@ function ColorField({ id, label, value, onChange, presets }) {
             onClick={() => onChange(color)}
             aria-label={`Use ${color}`}
             style={{ backgroundColor: color }}
-            className={`h-7 w-7 cursor-pointer rounded-full border-2 outline-none transition hover:scale-110 focus-visible:ring-2 focus-visible:ring-blue-500 ${
-              value.toLowerCase() === color ? "border-blue-400" : "border-slate-600"
+            className={`h-7 w-7 cursor-pointer rounded-full border-2 outline-none transition hover:scale-110 focus-visible:ring-2 focus-visible:ring-brand ${
+              value.toLowerCase() === color ? "border-brand" : "border-muted"
             }`}
           />
         ))}
@@ -697,7 +697,7 @@ function SelectField({ id, label, value, onChange, options, className = "" }) {
     <div className={className}>
       <label
         htmlFor={id}
-        className="mb-2 block text-sm font-medium text-slate-300"
+        className="mb-2 block text-sm font-medium text-text"
       >
         {label}
       </label>
@@ -747,8 +747,8 @@ const QRCustomizer = memo(function QRCustomizer({
   };
 
   return (
-    <div className="rounded-3xl border border-slate-700 bg-slate-900/70 p-5 shadow-xl backdrop-blur-md sm:p-6 lg:p-8">
-      <h3 className="mb-8 text-2xl font-bold text-white">Customize QR</h3>
+    <div className="rounded-3xl border border-border bg-surface/70 p-5 shadow-xl backdrop-blur-md sm:p-6 lg:p-8">
+      <h3 className="mb-8 text-2xl font-bold text-text">Customize QR</h3>
 
       {/* Colors */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -771,7 +771,7 @@ const QRCustomizer = memo(function QRCustomizer({
       {(lowContrast || inverted) && (
         <p
           role="status"
-          className="mt-4 flex items-start gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200"
+          className="mt-4 flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning"
         >
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           {lowContrast
@@ -783,10 +783,10 @@ const QRCustomizer = memo(function QRCustomizer({
       {/* Size */}
       <div className="mt-8">
         <div className="mb-2 flex justify-between">
-          <label htmlFor="size" className="text-sm font-medium text-slate-300">
+          <label htmlFor="size" className="text-sm font-medium text-text">
             Download Size
           </label>
-          <span className="text-sm text-blue-400">
+          <span className="text-sm text-brand">
             {style.size} × {style.size}px
           </span>
         </div>
@@ -798,9 +798,9 @@ const QRCustomizer = memo(function QRCustomizer({
           step="50"
           value={style.size}
           onChange={(e) => updateStyle("size", Number(e.target.value))}
-          className="w-full cursor-pointer accent-blue-600"
+          className="w-full cursor-pointer accent-brand"
         />
-        <p className="mt-1.5 text-xs text-slate-400">
+        <p className="mt-1.5 text-xs text-muted">
           The preview stays the same size. This only affects downloads.
         </p>
       </div>
@@ -833,17 +833,17 @@ const QRCustomizer = memo(function QRCustomizer({
 
       {/* Logo */}
       <div className="mt-8">
-        <span className="mb-2 block text-sm font-medium text-slate-300">
+        <span className="mb-2 block text-sm font-medium text-text">
           Logo (optional)
         </span>
 
         {!logo ? (
-          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-600 bg-slate-800/60 p-6 text-center transition focus-within:border-blue-500 hover:border-blue-500 hover:bg-slate-800">
-            <Upload size={22} className="text-blue-400" />
-            <span className="text-sm font-medium text-slate-200">
+          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-muted bg-surface/60 p-6 text-center transition focus-within:border-brand hover:border-accent hover:bg-surface">
+            <Upload size={22} className="text-brand" />
+            <span className="text-sm font-medium text-text">
               Click to upload a logo
             </span>
-            <span className="text-xs text-slate-400">PNG, JPG or WebP, up to 2MB</span>
+            <span className="text-xs text-muted">PNG, JPG or WebP, up to 2MB</span>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -852,16 +852,16 @@ const QRCustomizer = memo(function QRCustomizer({
             />
           </label>
         ) : (
-          <div className="flex flex-col gap-4 rounded-2xl border border-slate-700 bg-slate-800/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface/60 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <img
                 src={logo}
                 alt="Uploaded logo preview"
-                className="h-16 w-16 rounded-xl bg-white object-contain p-2"
+                className="h-16 w-16 rounded-xl bg-text object-contain p-2"
               />
               <div>
-                <p className="font-semibold text-white">Logo added</p>
-                <p className="text-sm text-slate-400">
+                <p className="font-semibold text-text">Logo added</p>
+                <p className="text-sm text-muted">
                   It appears in the center of your QR code.
                 </p>
               </div>
@@ -870,7 +870,7 @@ const QRCustomizer = memo(function QRCustomizer({
             <button
               type="button"
               onClick={() => setLogo("")}
-              className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2 font-medium outline-none transition hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-red-400"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-danger px-5 py-2 font-medium outline-none transition hover:bg-danger focus-visible:ring-2 focus-visible:ring-danger"
             >
               <X size={16} />
               Remove
@@ -888,9 +888,9 @@ const QRCustomizer = memo(function QRCustomizer({
 
 function DownloadButtons({ disabled, busy, size, onDownload, onCopy }) {
   return (
-    <div className="mt-8 border-t border-slate-700 pt-6">
-      <h4 className="text-center text-lg font-semibold text-white">Download Now</h4>
-      <p className="mt-1 text-center text-xs text-slate-400">
+    <div className="mt-8 border-t border-border pt-6">
+      <h4 className="text-center text-lg font-semibold text-text">Download Now</h4>
+      <p className="mt-1 text-center text-xs text-muted">
         {disabled
           ? "Fill in the details above to enable downloads."
           : `Exports at ${size} × ${size}px`}
@@ -904,7 +904,7 @@ function DownloadButtons({ disabled, busy, size, onDownload, onCopy }) {
             disabled={disabled || Boolean(busy)}
             onClick={() => onDownload(ext)}
             aria-label={`Download QR code as ${label}`}
-            className={`group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-white outline-none backdrop-blur-md transition-all duration-300 hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-none ${classes}`}
+            className={`group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-text outline-none backdrop-blur-md transition-all duration-300 hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-none ${classes}`}
           >
             {busy === ext ? (
               <Loader2 size={22} className="animate-spin" />
@@ -923,7 +923,7 @@ function DownloadButtons({ disabled, busy, size, onDownload, onCopy }) {
         type="button"
         disabled={disabled || Boolean(busy)}
         onClick={onCopy}
-        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 py-3 text-sm font-medium text-slate-200 outline-none transition hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-muted bg-surface py-3 text-sm font-medium text-text outline-none transition hover:bg-border focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Copy size={16} />
         Copy image to clipboard
@@ -1072,14 +1072,14 @@ export default function QRGenerator() {
   /* --------------------------------- render --------------------------------- */
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
       <Navbar />
 
       <main>
         <section id="qrcode" className="px-4 py-20">
           <div
             id="generator"
-            className="mx-auto max-w-4xl scroll-mt-24 rounded-3xl bg-slate-800 p-5 shadow-2xl sm:p-8"
+            className="mx-auto max-w-4xl scroll-mt-24 rounded-3xl bg-surface p-5 shadow-2xl sm:p-8"
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
@@ -1087,7 +1087,7 @@ export default function QRGenerator() {
                 <h1 className="text-center text-3xl font-bold sm:text-4xl">
                   QR Code Generator
                 </h1>
-                <p className="mt-3 text-center text-slate-400">
+                <p className="mt-3 text-center text-muted">
                   Pick a type, enter your details and your QR code appears instantly.
                 </p>
               </div>
@@ -1097,7 +1097,7 @@ export default function QRGenerator() {
                 onClick={handleReset}
                 aria-label="Reset everything"
                 title="Reset everything"
-                className="cursor-pointer rounded-xl border border-slate-600 bg-slate-700 p-3 text-slate-300 outline-none transition hover:bg-slate-600 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="cursor-pointer rounded-xl border border-muted bg-border p-3 text-text outline-none transition hover:bg-surface hover:text-text focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <RotateCcw size={18} />
               </button>
@@ -1105,7 +1105,7 @@ export default function QRGenerator() {
 
             {/* Step 1 */}
             <div className="mt-8">
-              <h3 className="mb-3 text-sm font-medium text-slate-300">
+              <h3 className="mb-3 text-sm font-medium text-text">
                 1. Choose a QR type
               </h3>
               <TypeSelector value={qrType} onChange={setQrType} />
@@ -1113,7 +1113,7 @@ export default function QRGenerator() {
 
             {/* Step 2 */}
             <div className="mt-8">
-              <h3 className="mb-3 text-sm font-medium text-slate-300">
+              <h3 className="mb-3 text-sm font-medium text-text">
                 2. Enter your details
               </h3>
               <QRForm
@@ -1127,7 +1127,7 @@ export default function QRGenerator() {
               {error && (
                 <p
                   role="alert"
-                  className="mt-4 flex items-center gap-2 text-sm text-red-400"
+                  className="mt-4 flex items-center gap-2 text-sm text-danger"
                 >
                   <AlertTriangle size={16} className="shrink-0" />
                   {error}
@@ -1148,7 +1148,7 @@ export default function QRGenerator() {
               </div>
 
               <div className="w-full lg:sticky lg:top-6 lg:w-1/2">
-                <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6">
+                <div className="rounded-3xl border border-border bg-surface p-6">
                   <h3 className="mb-6 text-center text-2xl font-bold">
                     QR Code Preview
                   </h3>
@@ -1159,7 +1159,7 @@ export default function QRGenerator() {
                       style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE }}
                     >
                       {!hasQR && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-600 bg-slate-800/50 px-6 text-center text-slate-400">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-muted bg-surface/50 px-6 text-center text-muted">
                           <QrCode size={48} className="opacity-60" />
                           <span className="text-sm">
                             Your QR code will appear here
@@ -1178,7 +1178,7 @@ export default function QRGenerator() {
                     </div>
                   </div>
 
-                  <p className="mt-4 min-h-4 text-center text-xs text-slate-400">
+                  <p className="mt-4 min-h-4 text-center text-xs text-muted">
                     {hasQR && "Scan it with your phone to test it before downloading."}
                   </p>
 
@@ -1211,8 +1211,8 @@ export default function QRGenerator() {
           <div
             className={`flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-medium shadow-2xl backdrop-blur-md ${
               toast.type === "success"
-                ? "border-green-500/40 bg-green-500/20 text-green-100"
-                : "border-red-500/40 bg-red-500/20 text-red-100"
+                ? "border-success/40 bg-success/20 text-success"
+                : "border-danger/40 bg-danger/20 text-danger"
             }`}
           >
             {toast.type === "success" ? (

@@ -220,17 +220,17 @@ const PRESETS = [
 ];
 
 const fmtBytes = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(2)} MB`);
-const card = "rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl";
-const lbl = "text-xs font-semibold uppercase tracking-wide text-slate-500";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40";
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(59,130,246,.3)] transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-40";
+const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
+const lbl = "text-xs font-semibold uppercase tracking-wide text-muted";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-4 py-2.5 text-sm font-semibold text-text transition hover:border-muted hover:text-text disabled:cursor-not-allowed disabled:opacity-40";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-2.5 text-sm font-semibold text-text shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-40";
 const Chip = ({ on, onClick, children }) => (
-  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-blue-500 bg-blue-500/15 text-white" : "border-slate-700 text-slate-300 hover:border-slate-500"}`}>{children}</button>
+  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-brand bg-brand/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
 );
 const Slider = ({ text, value, min, max, onChange, suffix = "" }) => (
   <label className="block">
-    <span className="flex justify-between text-xs text-slate-400"><span className={lbl}>{text}</span><span className="tabular-nums">{value}{suffix}</span></span>
-    <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-3 w-full accent-blue-500" />
+    <span className="flex justify-between text-xs text-muted"><span className={lbl}>{text}</span><span className="tabular-nums">{value}{suffix}</span></span>
+    <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-3 w-full accent-brand" />
   </label>
 );
 
@@ -382,10 +382,10 @@ export default function ImageToVector() {
     <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)}
       onDrop={(e) => { e.preventDefault(); setDragging(false); loadFile(e.dataTransfer.files[0]); }}>
       <button onClick={() => inputRef.current.click()}
-        className={`flex w-full flex-col items-center gap-3 rounded-3xl border-2 border-dashed py-16 text-center transition sm:py-24 ${dragging ? "scale-[1.01] border-blue-500 bg-blue-500/10" : "border-slate-700 bg-slate-900/60 hover:border-blue-500"}`}>
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400"><Upload size={30} /></span>
+        className={`flex w-full flex-col items-center gap-3 rounded-3xl border-2 border-dashed py-16 text-center transition sm:py-24 ${dragging ? "scale-[1.01] border-brand bg-brand/10" : "border-border bg-surface/60 hover:border-accent"}`}>
+        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10 text-brand"><Upload size={30} /></span>
         <span className="text-xl font-bold">{dragging ? "Drop to vectorize" : "Drop an image here"}</span>
-        <span className="text-sm text-slate-400">PNG, JPG, WebP, GIF · click to browse · or paste with Ctrl+V</span>
+        <span className="text-sm text-muted">PNG, JPG, WebP, GIF · click to browse · or paste with Ctrl+V</span>
       </button>
     </div>
   );
@@ -393,19 +393,19 @@ export default function ImageToVector() {
   return (
     <>
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <div className="text-center">
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">Image to Vector</span>
+            <span className="rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand">Image to Vector</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Turn Images into SVG / Vector.</h1>
-            <p className="mx-auto mt-3 flex max-w-xl items-center justify-center gap-2 text-slate-400">
+            <p className="mx-auto mt-3 flex max-w-xl items-center justify-center gap-2 text-muted">
              Scalable vectors for logos, icons and illustrations — traced on your device.
             </p>
           </div>
@@ -414,7 +414,7 @@ export default function ImageToVector() {
 
           <div className="mt-8 space-y-5">
             {msg && (
-              <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+              <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />{msg}
               </div>
             )}
@@ -424,13 +424,13 @@ export default function ImageToVector() {
                 {/* Preview */}
                 <section className={`${card} p-3 sm:p-5`}>
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs text-muted">
                       Preview background:
                       {[["checker", "Transparent"], ["#ffffff", "White"], ["#0f172a", "Dark"]].map(([v, l]) => (
-                        <button key={v} onClick={() => setBg(v)} className={`rounded-full border px-2.5 py-1 transition ${bg === v ? "border-blue-500 text-white" : "border-slate-700 hover:border-slate-500"}`}>{l}</button>
+                        <button key={v} onClick={() => setBg(v)} className={`rounded-full border px-2.5 py-1 transition ${bg === v ? "border-brand text-text" : "border-border hover:border-muted"}`}>{l}</button>
                       ))}
                     </div>
-                    <span className="text-xs text-slate-500">Drag the slider to compare</span>
+                    <span className="text-xs text-muted">Drag the slider to compare</span>
                   </div>
 
                   <div className="relative mx-auto select-none overflow-hidden rounded-xl" style={{ width: `min(100%, ${65 * ratio}vh)`, aspectRatio: `${img.w} / ${img.h}`, ...stageBg }}>
@@ -439,26 +439,26 @@ export default function ImageToVector() {
                       style={{ clipPath: `inset(0 ${100 - pos}% 0 0)`, ...stageBg }} />}
                     {res && (
                       <>
-                        <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,.6)]" style={{ left: `${pos}%` }}>
-                          <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-blue-600 px-1.5 py-1 text-[10px] font-bold">⇆</span>
+                        <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-text shadow-[0_0_8px_rgba(0,0,0,.6)]" style={{ left: `${pos}%` }}>
+                          <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-text bg-brand px-1.5 py-1 text-[10px] font-bold">⇆</span>
                         </div>
                         <input type="range" min={0} max={100} value={pos} onChange={(e) => setPos(+e.target.value)} aria-label="Compare original and vector"
                           className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0" />
-                        <span className="pointer-events-none absolute left-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] font-semibold">Vector</span>
-                        <span className="pointer-events-none absolute right-2 top-2 rounded bg-black/60 px-2 py-0.5 text-[11px] font-semibold">Original</span>
+                        <span className="pointer-events-none absolute left-2 top-2 rounded bg-page/60 px-2 py-0.5 text-[11px] font-semibold">Vector</span>
+                        <span className="pointer-events-none absolute right-2 top-2 rounded bg-page/60 px-2 py-0.5 text-[11px] font-semibold">Original</span>
                       </>
                     )}
                     {busy && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/55 backdrop-blur-[2px]">
-                        <Loader2 size={28} className="animate-spin text-blue-400" />
-                        <div className="h-1.5 w-40 overflow-hidden rounded-full bg-slate-700"><div className="h-full bg-blue-500 transition-all" style={{ width: `${Math.round(progress * 100)}%` }} /></div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-page/55 backdrop-blur-[2px]">
+                        <Loader2 size={28} className="animate-spin text-brand" />
+                        <div className="h-1.5 w-40 overflow-hidden rounded-full bg-border"><div className="h-full bg-brand transition-all" style={{ width: `${Math.round(progress * 100)}%` }} /></div>
                       </div>
                     )}
                   </div>
 
                   {res && (
-                    <p className="mt-3 text-center text-xs text-slate-400">
-                      {res.paths} layer{res.paths !== 1 ? "s" : ""} · {res.nodes.toLocaleString()} nodes · <span className="font-semibold text-slate-200">{fmtBytes(res.size)}</span> SVG · traced in {res.ms} ms
+                    <p className="mt-3 text-center text-xs text-muted">
+                      {res.paths} layer{res.paths !== 1 ? "s" : ""} · {res.nodes.toLocaleString()} nodes · <span className="font-semibold text-text">{fmtBytes(res.size)}</span> SVG · traced in {res.ms} ms
                     </p>
                   )}
                 </section>
@@ -472,7 +472,7 @@ export default function ImageToVector() {
                     </div>
                   </div>
 
-                  <div className="grid gap-5 border-t border-slate-800 pt-5 sm:grid-cols-2">
+                  <div className="grid gap-5 border-t border-border pt-5 sm:grid-cols-2">
                     <div className="space-y-2.5">
                       <p className={lbl}>Style</p>
                       <div className="flex gap-2">
@@ -497,14 +497,14 @@ export default function ImageToVector() {
                 {/* Actions */}
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <button onClick={saveSvg} disabled={!res || busy} className={btnPrimary}><Download size={16} />Download SVG</button>
-                  <button onClick={copySvg} disabled={!res || busy} className={btn}>{copied ? <><Check size={16} className="text-emerald-400" />Copied</> : <><Copy size={16} />Copy SVG code</>}</button>
+                  <button onClick={copySvg} disabled={!res || busy} className={btn}>{copied ? <><Check size={16} className="text-success" />Copied</> : <><Copy size={16} />Copy SVG code</>}</button>
                   <button onClick={() => inputRef.current.click()} className={btn}><ImagePlus size={16} />New image</button>
                   <button onClick={reset} className={btn}><RefreshCw size={16} />Start over</button>
                 </div>
               </>
             )}
 
-            <p className="pb-4 text-center text-xs text-slate-500">
+            <p className="pb-4 text-center text-xs text-muted">
               Best with logos, icons, drawings and flat artwork. Photos become stylised posters — raise the colours and detail for closer results.
             </p>
           </div>

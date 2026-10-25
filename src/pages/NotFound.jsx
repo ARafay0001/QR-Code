@@ -451,32 +451,32 @@ export default function NotFound() {
   }, [isDesktop]);
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-page via-surface to-page text-text">
       <Navbar />
 
       {/* Background glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-600/10 blur-3xl" />
-        <div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-purple-600/10 blur-3xl" />
-        <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-red-600/10 blur-3xl" />
+        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-brand/10 blur-3xl" />
+        <div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-brand/10 blur-3xl" />
+        <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-brand/10 blur-3xl" />
       </div>
 
       <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-16">
         {/* 404 */}
         <div className="text-center">
-          <p className="mb-4 text-sm font-bold uppercase tracking-[0.4em] text-blue-400">
+          <p className="mb-4 text-sm font-bold uppercase tracking-[0.4em] text-brand">
             FreeQRify
           </p>
 
           <h1 className="text-[120px] font-black leading-none tracking-tight sm:text-[170px]">
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand via-brand to-accent bg-clip-text text-transparent">
               404
             </span>
           </h1>
 
           <h2 className="mt-2 text-3xl font-bold sm:text-4xl">Page Not Found</h2>
 
-          <p className="mx-auto mt-4 max-w-lg text-slate-400">
+          <p className="mx-auto mt-4 max-w-lg text-muted">
             Looks like this page got lost somewhere. While you're here, try
             shooting some apples.
           </p>
@@ -486,37 +486,37 @@ export default function NotFound() {
         {isDesktop ? (
           <div className="mt-10 w-full max-w-2xl">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-sm font-semibold text-slate-400">
+              <span className="text-sm font-semibold text-muted">
                 MINI GAME
               </span>
 
               <div className="flex gap-2">
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-1.5 text-sm font-bold">
-                  Score: <span className="text-blue-400">{score}</span>
+                <span className="rounded-full border border-border bg-surface px-4 py-1.5 text-sm font-bold">
+                  Score: <span className="text-brand">{score}</span>
                 </span>
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-1.5 text-sm font-bold">
-                  Lvl: <span className="text-purple-400">{level}</span>
+                <span className="rounded-full border border-border bg-surface px-4 py-1.5 text-sm font-bold">
+                  Lvl: <span className="text-brand">{level}</span>
                 </span>
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-1.5 text-sm font-bold">
-                  Lives: <span className="text-red-400">{lives}</span>
+                <span className="rounded-full border border-border bg-surface px-4 py-1.5 text-sm font-bold">
+                  Lives: <span className="text-danger">{lives}</span>
                 </span>
               </div>
             </div>
 
             <div
               ref={stageRef}
-              className="relative h-72 overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl"
+              className="relative h-72 overflow-hidden rounded-3xl border border-border bg-page shadow-2xl"
               style={{ cursor: "crosshair" }}
             >
               <canvas ref={canvasRef} className="block h-full w-full" />
 
               {gameOver && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950/80 backdrop-blur-sm">
-                  <h3 className="text-3xl font-black text-red-400">Game Over</h3>
-                  <p className="text-sm text-slate-300">Final score: {score}</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-page/80 backdrop-blur-sm">
+                  <h3 className="text-3xl font-black text-danger">Game Over</h3>
+                  <p className="text-sm text-text">Final score: {score}</p>
                   <button
                     onClick={restartGame}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-semibold transition hover:bg-blue-500"
+                    className="flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 font-semibold transition hover:bg-accent"
                   >
                     <RotateCcw size={16} />
                     Try Again
@@ -525,19 +525,19 @@ export default function NotFound() {
               )}
             </div>
 
-            <div className="mt-4 text-center text-sm text-slate-500">
+            <div className="mt-4 text-center text-sm text-muted">
               Drag back from the{" "}
-              <span className="font-semibold text-slate-300">bow</span> to aim,
+              <span className="font-semibold text-text">bow</span> to aim,
               release to fire. The farther you pull, the harder you shoot.
             </div>
           </div>
         ) : (
-          <div className="mt-10 flex w-full max-w-md flex-col items-center gap-2 rounded-3xl border border-slate-800 bg-slate-900/60 px-6 py-8 text-center">
-            <Gamepad2 size={28} className="text-slate-500" />
-            <p className="text-sm font-semibold text-slate-300">
+          <div className="mt-10 flex w-full max-w-md flex-col items-center gap-2 rounded-3xl border border-border bg-surface/60 px-6 py-8 text-center">
+            <Gamepad2 size={28} className="text-muted" />
+            <p className="text-sm font-semibold text-text">
               The mini game needs a bit more room
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted">
               Open this page on a screen wider than {GAME_MIN_WIDTH}px to play.
             </p>
           </div>
@@ -547,7 +547,7 @@ export default function NotFound() {
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
+            className="flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold transition hover:bg-accent"
           >
             <Home size={18} />
             Back Home
@@ -556,7 +556,7 @@ export default function NotFound() {
           {isDesktop && (
             <button
               onClick={restartGame}
-              className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-6 py-3 font-semibold transition hover:border-blue-500 hover:bg-slate-800"
+              className="flex items-center gap-2 rounded-xl border border-border bg-surface px-6 py-3 font-semibold transition hover:border-accent hover:bg-surface"
             >
               <RotateCcw size={18} />
               Restart Game

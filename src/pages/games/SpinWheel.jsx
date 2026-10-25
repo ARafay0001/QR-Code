@@ -294,9 +294,9 @@ export default function SpinWheel() {
     <>
       <Navbar />
       <style>{CSS}</style>
-      <main className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
-        <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-violet-600/10 blur-[120px]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-blue-500/10 blur-[120px]" />
+      <main className="relative min-h-screen overflow-hidden bg-page text-text">
+        <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
 
         {confetti.length > 0 && (
           <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
@@ -320,16 +320,16 @@ export default function SpinWheel() {
 
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
           <header className="mx-auto max-w-2xl text-center">
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-violet-300">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-brand/20 bg-brand/10 text-brand">
               <RotateCw size={28} />
             </span>
             <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">Spin the wheel</h1>
-            <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+            <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
               Add your options and let the wheel decide. Every spin builds suspense for at least 8 seconds.
             </p>
           </header>
 
-          <section className="mt-12 grid items-center gap-10 rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-black/10 backdrop-blur sm:p-8 lg:grid-cols-2 lg:p-10">
+          <section className="mt-12 grid items-center gap-10 rounded-3xl border border-border bg-surface/70 p-5 shadow-2xl shadow-page/10 backdrop-blur sm:p-8 lg:grid-cols-2 lg:p-10">
             {/* Wheel */}
             <div className="flex flex-col items-center lg:order-2">
               <div className="w-[min(88vw,30rem)]">
@@ -477,20 +477,20 @@ export default function SpinWheel() {
               <div className="mt-6 min-h-24 w-full max-w-md text-center" aria-live="polite">
                 {isSpinning ? (
                   <div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                    <div className="h-2 overflow-hidden rounded-full bg-surface">
                       <div
                         ref={barRef}
-                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"
+                        className="h-full rounded-full bg-gradient-to-r from-brand to-accent"
                         style={{ width: "0%" }}
                       />
                     </div>
-                    <p className="mt-3 text-sm text-slate-400">
-                      Spinning… <span ref={timeRef} className="font-bold text-white" />
+                    <p className="mt-3 text-sm text-muted">
+                      Spinning… <span ref={timeRef} className="font-bold text-text" />
                     </p>
                   </div>
                 ) : winner ? (
                   <div style={{ animation: "pop-in .5s ease-out both" }}>
-                    <p className="flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-widest text-amber-300">
+                    <p className="flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-widest text-brand">
                       <Trophy size={16} /> Winner
                     </p>
                     <p
@@ -501,7 +501,7 @@ export default function SpinWheel() {
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted">
                     {n} {n === 1 ? "option" : "options"} on the wheel · press spin when ready
                   </p>
                 )}
@@ -520,8 +520,8 @@ export default function SpinWheel() {
                     disabled={isSpinning}
                     className={`rounded-full border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
                       preset === key
-                        ? "border-violet-400/50 bg-violet-500/15 text-violet-200"
-                        : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"
+                        ? "border-brand/50 bg-brand/15 text-brand"
+                        : "border-border text-muted hover:border-muted hover:text-text"
                     }`}
                   >
                     {p.label}
@@ -529,7 +529,7 @@ export default function SpinWheel() {
                 ))}
               </div>
 
-              <label htmlFor="wheel-options" className="mt-6 block text-sm font-semibold text-slate-200">
+              <label htmlFor="wheel-options" className="mt-6 block text-sm font-semibold text-text">
                 Wheel options
               </label>
               <textarea
@@ -543,13 +543,13 @@ export default function SpinWheel() {
                 disabled={isSpinning}
                 rows={8}
                 placeholder={"Enter one option per line\nExample:\nPizza\nTacos"}
-                className="mt-2 w-full resize-y rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white placeholder:text-slate-600 disabled:opacity-60"
+                className="mt-2 w-full resize-y rounded-xl border border-border bg-page px-4 py-3 text-text placeholder:text-muted disabled:opacity-60"
               />
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-muted">
                 Enter one option per line. Add 2–{MAX_OPTIONS} options to spin.
               </p>
               {error && (
-                <p className="mt-3 text-sm text-rose-300" role="alert">
+                <p className="mt-3 text-sm text-danger" role="alert">
                   {error}
                 </p>
               )}
@@ -559,7 +559,7 @@ export default function SpinWheel() {
                   type="button"
                   onClick={spin}
                   disabled={isSpinning}
-                  className="primary-btn inline-flex flex-1 items-center justify-center gap-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="primary-btn inline-flex flex-1 items-center justify-center gap-2 text-text disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <RotateCw size={18} className={isSpinning ? "animate-spin" : ""} />
                   {isSpinning ? "Spinning…" : winner ? "Spin again" : "Spin the wheel"}
@@ -570,7 +570,7 @@ export default function SpinWheel() {
                   disabled={isSpinning || n < 2}
                   aria-label="Shuffle options"
                   title="Shuffle options"
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-700 text-slate-300 transition hover:border-slate-500 disabled:opacity-40"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-border text-text transition hover:border-muted disabled:opacity-40"
                 >
                   <Shuffle size={18} />
                 </button>
@@ -579,7 +579,7 @@ export default function SpinWheel() {
                   onClick={() => setMuted((m) => !m)}
                   aria-label={muted ? "Unmute sound" : "Mute sound"}
                   title={muted ? "Unmute" : "Mute"}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-700 text-slate-300 transition hover:border-slate-500"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-border text-text transition hover:border-muted"
                 >
                   {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
@@ -589,20 +589,20 @@ export default function SpinWheel() {
                 <button
                   type="button"
                   onClick={removeWinner}
-                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-rose-400/50 hover:text-rose-200"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-text transition hover:border-danger/50 hover:text-danger"
                 >
                   <Trash2 size={16} /> Remove “{winner.label}” from the wheel
                 </button>
               )}
 
               {history.length > 0 && (
-                <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="mt-7 rounded-2xl border border-border bg-page/60 p-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-slate-300">Previous winners</p>
+                    <p className="text-sm font-semibold text-text">Previous winners</p>
                     <button
                       type="button"
                       onClick={() => setHistory([])}
-                      className="text-xs text-slate-500 transition hover:text-slate-300"
+                      className="text-xs text-muted transition hover:text-text"
                     >
                       Clear
                     </button>
@@ -611,7 +611,7 @@ export default function SpinWheel() {
                     {history.map((h, i) => (
                       <span
                         key={`${i}-${h.label}`}
-                        className="rounded-full border border-slate-700 px-3 py-1 text-sm font-semibold"
+                        className="rounded-full border border-border px-3 py-1 text-sm font-semibold"
                         style={{ borderColor: h.color, color: i === 0 ? "#fff" : "#cbd5e1" }}
                       >
                         {h.label}
@@ -623,7 +623,7 @@ export default function SpinWheel() {
             </div>
           </section>
 
-          <p className="mt-6 text-center text-xs text-slate-500">
+          <p className="mt-6 text-center text-xs text-muted">
             Results are generated in your browser and are for fun.
           </p>
         </div>

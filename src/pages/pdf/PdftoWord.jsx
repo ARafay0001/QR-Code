@@ -1324,22 +1324,22 @@ async function buildDocx(model, opts) {
 
 /* -------------------------------- UI bits --------------------------------- */
 
-const card = "rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl";
-const lbl = "text-xs font-semibold uppercase tracking-wide text-slate-500";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-40";
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(59,130,246,.3)] transition hover:scale-[1.03] disabled:opacity-40 disabled:hover:scale-100";
-const inputCls = "w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-blue-500/50";
+const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
+const lbl = "text-xs font-semibold uppercase tracking-wide text-muted";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-4 py-2.5 text-sm font-semibold text-text transition hover:border-muted hover:text-text disabled:opacity-40";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-2.5 text-sm font-semibold text-text shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.03] disabled:opacity-40 disabled:hover:scale-100";
+const inputCls = "w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-brand/50";
 
 const Chip = ({ on, onClick, children }) => (
-  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-blue-500 bg-blue-500/15 text-white" : "border-slate-700 text-slate-300 hover:border-slate-500"}`}>{children}</button>
+  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-brand bg-brand/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
 );
 const Row = ({ title, children }) => (
   <div className="space-y-2.5"><p className={lbl}>{title}</p>{children}</div>
 );
 const Check2 = ({ on, onChange, title, hint }) => (
-  <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-300">
-    <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-blue-500" />
-    <span>{title}{hint && <span className="block text-xs text-slate-500">{hint}</span>}</span>
+  <label className="flex cursor-pointer items-start gap-3 text-sm text-text">
+    <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-brand" />
+    <span>{title}{hint && <span className="block text-xs text-muted">{hint}</span>}</span>
   </label>
 );
 
@@ -1417,7 +1417,7 @@ function PrevPage({ pg, borders }) {
     padding: `${Math.min(pg.m.t, 60) * k}px ${pg.m.r * k}px ${Math.min(pg.m.b, 60) * k}px ${pg.m.l * k}px`,
   };
   return (
-    <div className="mx-auto mb-6 overflow-x-auto bg-white text-black shadow-xl" style={wrap}>
+    <div className="mx-auto mb-6 overflow-x-auto bg-text text-page shadow-xl" style={wrap}>
       {(pg.head || []).map((b, i) => <PrevBlock key={`h${i}`} b={b} k={k} borders={borders} />)}
       {pg.cols && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: Math.max(14, pg.gutter) * k }}>
@@ -1425,7 +1425,7 @@ function PrevPage({ pg, borders }) {
         </div>
       )}
       {pg.blocks.map((b, i) => <PrevBlock key={i} b={b} k={k} borders={borders} />)}
-      {!allBlocks(pg).length && <p className="py-6 text-center text-xs text-slate-400">No text found on this page</p>}
+      {!allBlocks(pg).length && <p className="py-6 text-center text-xs text-muted">No text found on this page</p>}
     </div>
   );
 }
@@ -1643,19 +1643,19 @@ export default function PdfToWord() {
   return (
     <>
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <div className="text-center">
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">PDF to Word</span>
+            <span className="rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand">PDF to Word</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Convert PDF to editable Word.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Keeps fonts, tables, lists, lines, images and math notation (A², xₙ). Reads scanned pages too. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-muted">Keeps fonts, tables, lists, lines, images and math notation (A², xₙ). Reads scanned pages too. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden type="file" accept="application/pdf,.pdf"
@@ -1665,14 +1665,14 @@ export default function PdfToWord() {
             {/* 1 — choose file */}
             {stage === "idle" && (
               <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); }}
-                className="flex flex-col items-center rounded-3xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-6 py-16 text-center transition hover:border-blue-500">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400"><FileText size={30} /></div>
+                className="flex flex-col items-center rounded-3xl border-2 border-dashed border-border bg-surface/60 px-6 py-16 text-center transition hover:border-accent">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10 text-brand"><FileText size={30} /></div>
                 <h2 className="mt-6 text-2xl font-bold">Select a PDF file</h2>
-                <p className="mt-2 text-slate-400">Drag &amp; drop it here, or choose it from your device.</p>
+                <p className="mt-2 text-muted">Drag &amp; drop it here, or choose it from your device.</p>
 
                 {needPw ? (
                   <div className="mt-8 w-full max-w-sm space-y-3">
-                    <p className="flex items-center justify-center gap-2 text-sm text-amber-400"><Lock size={15} />This PDF is password protected</p>
+                    <p className="flex items-center justify-center gap-2 text-sm text-warning"><Lock size={15} />This PDF is password protected</p>
                     <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Password" className={inputCls}
                       onKeyDown={(e) => { if (e.key === "Enter") loadFile(pendingRef.current, pw); }} />
                     <div className="flex justify-center gap-3">
@@ -1687,37 +1687,37 @@ export default function PdfToWord() {
                     </button>
                   </div>
                 )}
-                <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
+                <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-muted">
                   {["Fonts & formatting", "Tables", "Bullet lists", "Superscripts", "Lines & images", "Scanned PDFs", "Urdu · Arabic · more"].map((t) => (
-                    <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
+                    <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>
                   ))}
                 </div>
               </div>
             )}
 
-            {err && <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{err}</p>}
+            {err && <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{err}</p>}
 
             {/* 2 — options */}
             {stage === "ready" && file && (
               <>
                 <div className={`${card} space-y-4 p-4 sm:p-5`}>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400"><FileText size={22} /></div>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"><FileText size={22} /></div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{file.name}</p>
-                      <p className="text-xs text-slate-500">{numPages} page{numPages > 1 ? "s" : ""} · {fmtSize(file.size)}</p>
+                      <p className="text-xs text-muted">{numPages} page{numPages > 1 ? "s" : ""} · {fmtSize(file.size)}</p>
                     </div>
-                    <button onClick={reset} aria-label="Remove file" className="rounded-full bg-white/5 p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X size={16} /></button>
+                    <button onClick={reset} aria-label="Remove file" className="rounded-full bg-text/5 p-2 text-muted hover:bg-text/10 hover:text-text"><X size={16} /></button>
                   </div>
                   {thumbs.length > 0 && (
                     <div className="flex gap-2.5 overflow-x-auto py-1">
                       {thumbs.map((t, i) => (
-                        <div key={i} className={`relative h-24 shrink-0 overflow-hidden rounded-lg border-2 bg-white transition ${picked && picked.includes(i + 1) ? "border-blue-500" : "border-slate-800 opacity-40"}`}>
+                        <div key={i} className={`relative h-24 shrink-0 overflow-hidden rounded-lg border-2 bg-text transition ${picked && picked.includes(i + 1) ? "border-brand" : "border-border opacity-40"}`}>
                           <img src={t} alt={`Page ${i + 1}`} className="h-full w-auto" draggable={false} />
-                          <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 text-[10px] font-semibold">{i + 1}</span>
+                          <span className="absolute bottom-0.5 left-0.5 rounded bg-page/70 px-1 text-[10px] font-semibold">{i + 1}</span>
                         </div>
                       ))}
-                      {numPages > thumbs.length && <span className="flex shrink-0 items-center px-2 text-xs text-slate-500">+{numPages - thumbs.length} more</span>}
+                      {numPages > thumbs.length && <span className="flex shrink-0 items-center px-2 text-xs text-muted">+{numPages - thumbs.length} more</span>}
                     </div>
                   )}
                 </div>
@@ -1736,11 +1736,11 @@ export default function PdfToWord() {
                       <Chip on={rangeMode === "custom"} onClick={() => setRangeMode("custom")}>Choose pages</Chip>
                       {rangeMode === "custom" && (
                         <input value={rangeText} onChange={(e) => setRangeText(e.target.value)} placeholder="e.g. 1-3, 5, 8-10"
-                          className={`${inputCls} !w-52 ${rangeBad && rangeText ? "!border-red-500/60" : ""}`} />
+                          className={`${inputCls} !w-52 ${rangeBad && rangeText ? "border-danger/60" : ""}`} />
                       )}
                     </div>
                     {rangeMode === "custom" && (
-                      <p className={`text-xs ${rangeBad && rangeText ? "text-red-400" : "text-slate-500"}`}>
+                      <p className={`text-xs ${rangeBad && rangeText ? "text-danger" : "text-muted"}`}>
                         {rangeBad && rangeText ? `Please check the page numbers — this PDF has ${numPages} page${numPages > 1 ? "s" : ""}.` : "Type page numbers or ranges separated by commas, for example 1-3, 5, 8-10."}
                       </p>
                     )}
@@ -1754,17 +1754,17 @@ export default function PdfToWord() {
                     </div>
                     {opt.ocr !== "never" && (
                       <div className="flex flex-wrap items-center gap-3">
-                        <label htmlFor="doc-lang" className="text-sm text-slate-300">Language of the document</label>
+                        <label htmlFor="doc-lang" className="text-sm text-text">Language of the document</label>
                         <select id="doc-lang" value={opt.lang} onChange={(e) => setOpt({ ...opt, lang: e.target.value })} className={`${inputCls} !w-auto`}>
                           {LANGS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </select>
                       </div>
                     )}
-                    <p className="text-xs text-slate-500">A scan is just a picture of text, so the words have to be read from the image. “Detect automatically” only does this for pages that need it. It can take a little longer, and the language data downloads the first time.</p>
+                    <p className="text-xs text-muted">A scan is just a picture of text, so the words have to be read from the image. “Detect automatically” only does this for pages that need it. It can take a little longer, and the language data downloads the first time.</p>
                   </Row>
 
                   {!textOnly && (
-                    <div className="space-y-3 border-t border-slate-800 pt-5">
+                    <div className="space-y-3 border-t border-border pt-5">
                       <p className={lbl}>Formatting</p>
                       <Check2 on={opt.keepBreaks} onChange={(v) => setOpt({ ...opt, keepBreaks: v })} title="Keep the same pages as the PDF" hint="Every PDF page stays one Word page, with pictures in the same place. Turn off for one continuous document that is easier to edit." />
                       <Check2 on={opt.tables} onChange={(v) => setOpt({ ...opt, tables: v })} title="Recognise tables" hint="Turns rows and columns (and number grids like matrices) into real Word tables." />
@@ -1772,7 +1772,7 @@ export default function PdfToWord() {
                       <Check2 on={opt.images} onChange={(v) => setOpt({ ...opt, images: v })} title="Keep pictures" hint="Slower for PDFs with many pictures." />
                       {opt.tables && (
                         <div className="space-y-2 pt-1">
-                          <p className="text-sm text-slate-300">Table borders <span className="text-xs text-slate-500">(lines around table cells)</span></p>
+                          <p className="text-sm text-text">Table borders <span className="text-xs text-muted">(lines around table cells)</span></p>
                           <div className="flex flex-wrap gap-2">
                             <Chip on={opt.borders === "auto"} onClick={() => setOpt({ ...opt, borders: "auto" })}>Like the PDF</Chip>
                             <Chip on={opt.borders === "on"} onClick={() => setOpt({ ...opt, borders: "on" })}>Always show</Chip>
@@ -1797,11 +1797,11 @@ export default function PdfToWord() {
             {stage === "working" && (
               <div className={`${card} space-y-4 p-6`}>
                 <div className="flex items-center gap-3">
-                  <Loader2 size={20} className="shrink-0 animate-spin text-blue-400" />
-                  <p className="text-sm text-slate-200">{progress.msg}</p>
+                  <Loader2 size={20} className="shrink-0 animate-spin text-brand" />
+                  <p className="text-sm text-text">{progress.msg}</p>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-violet-600 transition-all duration-300" style={{ width: `${progress.pct}%` }} />
+                <div className="h-2 overflow-hidden rounded-full bg-surface">
+                  <div className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-all duration-300" style={{ width: `${progress.pct}%` }} />
                 </div>
                 <button onClick={() => { cancelRef.current = true; }} className={btn}><X size={15} />Cancel</button>
               </div>
@@ -1811,17 +1811,17 @@ export default function PdfToWord() {
             {stage === "done" && result && (
               <>
                 <div className={`${card} space-y-5 p-6 text-center`}>
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400"><Check size={28} /></div>
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success"><Check size={28} /></div>
                   <div>
                     <h2 className="text-2xl font-bold">Your file is ready</h2>
-                    <p className="mt-1 text-sm text-slate-400">{result.name} · {fmtSize(result.blob.size)}</p>
+                    <p className="mt-1 text-sm text-muted">{result.name} · {fmtSize(result.blob.size)}</p>
                   </div>
-                  <div className="flex flex-wrap justify-center gap-2 text-xs text-slate-300">
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-text">
                     {[`${result.model.stats.pages} page${result.model.stats.pages > 1 ? "s" : ""}`, `${result.model.stats.words.toLocaleString()} words`,
                       result.model.stats.tables ? `${result.model.stats.tables} table${result.model.stats.tables > 1 ? "s" : ""}` : null,
                       result.model.stats.images ? `${result.model.stats.images} picture${result.model.stats.images > 1 ? "s" : ""}` : null,
                       result.model.stats.ocr ? `${result.model.stats.ocr} page${result.model.stats.ocr > 1 ? "s" : ""} read from images` : null]
-                      .filter(Boolean).map((t) => <span key={t} className="rounded-full border border-slate-700 px-3 py-1">{t}</span>)}
+                      .filter(Boolean).map((t) => <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>)}
                   </div>
                   <div className="flex flex-wrap justify-center gap-3">
                     <button onClick={() => download(result.blob, result.name)} className={btnPrimary}><Download size={16} />Download again</button>
@@ -1830,25 +1830,25 @@ export default function PdfToWord() {
                     <button onClick={reset} className={btn}>Convert another PDF</button>
                   </div>
                   {result.notes.length > 0 && (
-                    <div className="space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-left text-sm text-amber-300">
+                    <div className="space-y-1 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-left text-sm text-warning">
                       {result.notes.map((t, i) => <p key={i}>{t}</p>)}
                     </div>
                   )}
                   {result.model.stats.words < 5 && (
-                    <p className="text-sm text-amber-400">Very little text was found. If this PDF is scanned, choose “Yes, read text from images” in the options and pick the document’s language.</p>
+                    <p className="text-sm text-warning">Very little text was found. If this PDF is scanned, choose “Yes, read text from images” in the options and pick the document’s language.</p>
                   )}
                 </div>
 
                 {showPreview && (
                   <div className={`${card} overflow-hidden`}>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
                       <p className="text-sm font-semibold">Preview · {result.model.pages.length} page{result.model.pages.length > 1 ? "s" : ""}</p>
-                      <p className="text-xs text-slate-500">Scroll down to see every page. Word may wrap a few lines slightly differently.</p>
+                      <p className="text-xs text-muted">Scroll down to see every page. Word may wrap a few lines slightly differently.</p>
                     </div>
-                    <div className="max-h-[75vh] overflow-y-auto bg-slate-950/70 px-3 py-4 sm:px-5 [scrollbar-color:#475569_transparent] [scrollbar-width:thin]">
+                    <div className="max-h-[75vh] overflow-y-auto bg-page/70 px-3 py-4 sm:px-5 [scrollbar-color:#475569_transparent] [scrollbar-width:thin]">
                       {result.model.pages.map((pg, i) => (
                         <div key={pg.n}>
-                          <p className="mb-1.5 text-center text-[11px] font-medium text-slate-500">Page {pg.n}{result.model.pages.length > 1 ? ` · ${i + 1} of ${result.model.pages.length}` : ""}</p>
+                          <p className="mb-1.5 text-center text-[11px] font-medium text-muted">Page {pg.n}{result.model.pages.length > 1 ? ` · ${i + 1} of ${result.model.pages.length}` : ""}</p>
                           <PrevPage pg={pg} borders={opt.borders} />
                         </div>
                       ))}

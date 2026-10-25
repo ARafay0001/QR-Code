@@ -22,43 +22,43 @@ export default function PrivacyPolicy() {
   const effectiveDate = "October 24, 2026";
 
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-950 dark:text-gray-200">
+    <main className="min-h-screen bg-surface text-page dark:bg-page dark:text-text">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <Breadcrumbs bare light />
         <Link
           to="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-gray-600 transition hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-muted transition hover:text-accent dark:text-muted dark:hover:text-accent"
         >
           <ArrowLeft size={16} />
           Back to Home
         </Link>
 
-        <header className="mb-10 rounded-3xl border border-gray-200 bg-white p-6 sm:p-10 dark:border-gray-800 dark:bg-gray-900">
-          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+        <header className="mb-10 rounded-3xl border border-muted bg-text p-6 sm:p-10 dark:border-border dark:bg-surface">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-brand dark:bg-brand dark:text-brand">
             <ShieldCheck size={30} />
           </div>
 
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand dark:text-brand">
             Legal & Privacy
           </p>
 
-          <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-page sm:text-4xl dark:text-text">
             Privacy Policy
           </h1>
 
-          <p className="mt-4 max-w-2xl leading-7 text-gray-600 dark:text-gray-400">
+          <p className="mt-4 max-w-2xl leading-7 text-muted dark:text-muted">
             Your privacy matters to us. This policy explains how Toolited
             handles information when you use our online tools.
           </p>
 
-          <p className="mt-5 text-sm text-gray-500 dark:text-gray-500">
+          <p className="mt-5 text-sm text-muted dark:text-muted">
             Effective date: {effectiveDate}
           </p>
         </header>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-5 lg:sticky lg:top-6 dark:border-gray-800 dark:bg-gray-900">
-            <h2 className="mb-4 text-sm font-semibold text-gray-950 dark:text-white">
+          <aside className="h-fit rounded-2xl border border-muted bg-text p-5 lg:sticky lg:top-6 dark:border-border dark:bg-surface">
+            <h2 className="mb-4 text-sm font-semibold text-page dark:text-text">
               On this page
             </h2>
 
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
                   <li key={section.id}>
                     <a
                       href={`#${section.id}`}
-                      className="block rounded-lg px-3 py-2 text-sm leading-5 text-gray-600 transition hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+                      className="block rounded-lg px-3 py-2 text-sm leading-5 text-muted transition hover:bg-surface hover:text-accent dark:text-muted dark:hover:bg-surface dark:hover:text-accent"
                     >
                       {section.title}
                     </a>
@@ -78,13 +78,13 @@ export default function PrivacyPolicy() {
             </nav>
           </aside>
 
-          <article className="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 sm:p-9 dark:border-gray-800 dark:bg-gray-900">
-            <div className="mb-8 flex items-start gap-3 rounded-xl bg-blue-50 p-4 dark:bg-blue-950/40">
+          <article className="min-w-0 rounded-2xl border border-muted bg-text p-6 sm:p-9 dark:border-border dark:bg-surface">
+            <div className="mb-8 flex items-start gap-3 rounded-xl bg-brand p-4 dark:bg-brand/40">
               <LockKeyhole
-                className="mt-1 shrink-0 text-blue-600 dark:text-blue-400"
+                className="mt-1 shrink-0 text-brand dark:text-brand"
                 size={20}
               />
-              <p className="text-sm leading-6 text-gray-700 dark:text-gray-300">
+              <p className="text-sm leading-6 text-page dark:text-text">
                 Toolited is designed to provide useful online tools without
                 requiring users to create an account. The handling of
                 information depends on the tool and the services currently
@@ -181,7 +181,7 @@ export default function PrivacyPolicy() {
       href="https://policies.google.com/privacy"
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 hover:underline dark:text-blue-400"
+      className="text-brand hover:underline dark:text-brand"
     >
       Google's Privacy Policy
     </a>.
@@ -292,22 +292,22 @@ export default function PrivacyPolicy() {
 
               <a
                 href="mailto:toolitedbusiness@gmail.com"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-blue-600 transition hover:bg-gray-50 dark:border-gray-700 dark:text-blue-400 dark:hover:bg-gray-800"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-muted px-4 py-3 text-sm font-medium text-brand transition hover:bg-surface dark:border-border dark:text-brand dark:hover:bg-surface"
               >
                 <Mail size={18} />
                 toolitedbusiness@gmail.com
               </a>
 
-              {/* <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              {/* <p className="mt-4 text-sm text-muted dark:text-muted">
                 Replace this placeholder with your official contact email
                 before publishing.
               </p> */}
             </section>
 
-            <div className="mt-10 border-t border-gray-200 pt-6 dark:border-gray-800">
+            <div className="mt-10 border-t border-muted pt-6 dark:border-border">
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:text-accent dark:text-brand"
               >
                 <ArrowLeft size={16} />
                 Return to Toolited
@@ -316,7 +316,7 @@ export default function PrivacyPolicy() {
           </article>
         </div>
 
-        <footer className="mt-10 text-center text-sm text-gray-500 dark:text-gray-500">
+        <footer className="mt-10 text-center text-sm text-muted dark:text-muted">
           © {new Date().getFullYear()} Toolited. All rights reserved.
         </footer>
       </div>

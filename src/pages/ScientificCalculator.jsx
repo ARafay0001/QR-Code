@@ -553,13 +553,13 @@ const KEYMAP = {
 const TEXT = { "%": "%", "!": "!", ",": ",", s: "sin(", c: "cos(", t: "tan(", l: "log(", n: "ln(", r: "√(", p: "π", e: "e" };
 
 const KS = {
-  mod: "bg-gradient-to-b from-[#626971] to-[#383d44] text-white",
+  mod: "bg-gradient-to-b from-[#626971] to-[#383d44] text-text",
   fn: "bg-gradient-to-b from-[#f0f2f4] to-[#cbd0d5] text-[#202832]",
   pad: "bg-gradient-to-b from-[#e0e4e8] to-[#b6bdc4] text-[#202832]",
-  num: "bg-gradient-to-b from-white to-[#e2e5e2] text-[#171b20]",
+  num: "bg-gradient-to-b from-accent to-[#e2e5e2] text-[#171b20]",
   op: "bg-gradient-to-b from-[#eef0f2] to-[#c7cdd2] text-[#171b20]",
-  ed: "bg-gradient-to-b from-[#6b86aa] to-[#405b7c] text-white",
-  eq: "bg-gradient-to-b from-[#526d8c] to-[#293e59] text-white ring-1 ring-[#26384d]",
+  ed: "bg-gradient-to-b from-[#6b86aa] to-[#405b7c] text-text",
+  eq: "bg-gradient-to-b from-[#526d8c] to-[#293e59] text-text ring-1 ring-[#26384d]",
 };
 
 const Frac = ({ n, d }) => (
@@ -576,7 +576,7 @@ const Overlay = ({ title, onClose, children }) => (
   <div className="absolute inset-0 z-20 overflow-auto rounded-[1.5rem] bg-[#e7ebef] p-3 text-[#202832] sm:rounded-[2rem] sm:p-5">
     <div className="flex items-center justify-between">
       <h2 className="text-lg font-bold">{title}</h2>
-      <button onClick={onClose} aria-label="Close" className="rounded-lg p-2 text-slate-600 hover:text-black"><X size={18} /></button>
+      <button onClick={onClose} aria-label="Close" className="rounded-lg p-2 text-muted hover:text-page"><X size={18} /></button>
     </div>
     {children}
   </div>
@@ -954,7 +954,7 @@ function ConvPanel({ value, onUse, onClose }) {
     out = sel.cat === "Temperature" ? fromK(toK(x, sel.from), sel.to) : (x * UNITS[sel.cat][sel.from]) / UNITS[sel.cat][sel.to];
     out = Number(out.toPrecision(10));
   }
-  const selCls = "rounded-md border border-[#aeb8c2] bg-white px-2 py-1.5 text-sm font-semibold";
+  const selCls = "rounded-md border border-[#aeb8c2] bg-text px-2 py-1.5 text-sm font-semibold";
   return (
     <Overlay title="Unit conversion (CONV)" onClose={onClose}>
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -962,14 +962,14 @@ function ConvPanel({ value, onUse, onClose }) {
           <button key={c} onClick={() => pick(c)} className={`rounded-md border px-2 py-1 text-xs font-semibold ${sel.cat === c ? "border-[#d3a83d] bg-[#e0b94f]" : "border-[#aeb8c2]"}`}>{c}</button>
         ))}
       </div>
-      <input value={val} onChange={(e) => setVal(e.target.value)} className="mt-4 w-full rounded-md border border-[#aeb8c2] bg-white px-3 py-2 font-mono" />
+      <input value={val} onChange={(e) => setVal(e.target.value)} className="mt-4 w-full rounded-md border border-[#aeb8c2] bg-text px-3 py-2 font-mono" />
       <div className="mt-3 flex items-center gap-2">
         <select value={sel.from} onChange={(e) => setSel({ ...sel, from: e.target.value })} className={selCls}>{units(sel.cat).map((u) => <option key={u}>{u}</option>)}</select>
         <span className="font-bold">→</span>
         <select value={sel.to} onChange={(e) => setSel({ ...sel, to: e.target.value })} className={selCls}>{units(sel.cat).map((u) => <option key={u}>{u}</option>)}</select>
       </div>
       <p className="mt-4 break-all font-mono text-xl font-bold">{Number.isFinite(out) ? `${fmtNum(out, { type: "norm", n: 0 })} ${sel.to}` : "—"}</p>
-      <button disabled={!Number.isFinite(out)} onClick={() => onUse(out)} className="mt-4 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">Use result</button>
+      <button disabled={!Number.isFinite(out)} onClick={() => onUse(out)} className="mt-4 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-text disabled:opacity-40">Use result</button>
     </Overlay>
   );
 }
@@ -1386,7 +1386,7 @@ export default function ScientificCalculator() {
         <button
           onClick={() => press(k)}
           aria-label={k.l}
-          className={`h-9 min-w-0 touch-manipulation select-none rounded-md border border-black/10 px-0.5 text-[10px] font-bold shadow-[0_2px_0_rgba(35,45,55,.3),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 active:translate-y-[2px] active:shadow-none sm:text-[11px] ${style} ${on ? "ring-2 ring-amber-300" : ""} ${k.id === "alpha" && alpha ? "!ring-red-400" : ""}`}
+          className={`h-9 min-w-0 touch-manipulation select-none rounded-md border border-border/10 px-0.5 text-[10px] font-bold shadow-[0_2px_0_rgba(35,45,55,.3),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-[2px] active:shadow-none sm:text-[11px] ${style} ${on ? "ring-2 ring-brand" : ""} ${k.id === "alpha" && alpha ? "ring-brand" : ""}`}
         >
           {k.l}
         </button>
@@ -1399,7 +1399,7 @@ export default function ScientificCalculator() {
       <div className="grid h-[76px] w-[76px] grid-cols-3 grid-rows-3 gap-0.5 rounded-full bg-gradient-to-b from-[#cbd0d5] to-[#aab2bb] p-1 shadow-[inset_0_2px_5px_rgba(50,60,70,.2)]">
         {DPAD.map((k) => (
           <button key={k.id} onClick={() => press(k)} aria-label={k.id}
-            className={`flex touch-manipulation items-center justify-center rounded-md border border-black/10 text-[9px] font-bold shadow-[0_2px_0_rgba(35,45,55,.28)] active:translate-y-px ${KS.pad} ${k.cls}`}>{k.l}</button>
+            className={`flex touch-manipulation items-center justify-center rounded-md border border-border/10 text-[9px] font-bold shadow-[0_2px_0_rgba(35,45,55,.28)] active:translate-y-px ${KS.pad} ${k.cls}`}>{k.l}</button>
         ))}
       </div>
     </div>
@@ -1409,11 +1409,11 @@ export default function ScientificCalculator() {
     <button key={text} onClick={onClick} className={`rounded-md border px-3 py-1.5 text-sm font-semibold ${on ? "border-[#d3a83d] bg-[#e0b94f] text-[#202832]" : "border-[#aeb8c2] text-[#263b53]"}`}>{text}</button>
   );
 
-  const tbtn = "inline-flex h-7 items-center gap-1 rounded-md border border-[#9aa4ae] bg-white/60 px-2 text-[11px] font-bold text-[#263b53] hover:bg-white";
+  const tbtn = "inline-flex h-7 items-center gap-1 rounded-md border border-[#9aa4ae] bg-text/60 px-2 text-[11px] font-bold text-[#263b53] hover:bg-text";
 
   const shell = pip
     ? "relative min-h-screen w-full min-w-0 bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-3"
-    : `relative mx-auto mt-5 w-full min-w-0 rounded-[1.5rem] border border-[#aeb6bf] bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-white/80 sm:mt-6 sm:rounded-[2rem] sm:p-6 ${land ? "max-w-[820px]" : "max-w-[400px]"}`;
+    : `relative mx-auto mt-5 w-full min-w-0 rounded-[1.5rem] border border-[#aeb6bf] bg-gradient-to-b from-[#f4f5f6] via-[#e0e4e8] to-[#c8ced4] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-text/80 sm:mt-6 sm:rounded-[2rem] sm:p-6 ${land ? "max-w-[820px]" : "max-w-[400px]"}`;
 
   const body = (
     <div className={shell}>
@@ -1482,10 +1482,10 @@ export default function ScientificCalculator() {
           {[["calc", "Calculate"], ["base", "Base-N"], ["eq", "Equation"], ["matrix", "Matrix"], ["stat", "Statistics"], ["table", "Table"]].map(([v, t], i) => (
             <button key={v} onClick={() => { setMode(v); setBase(10); act({ act: "ac" }); setMenu(false); }}
               className={`mt-3 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left font-semibold ${mode === v ? "border-[#d3a83d] bg-[#f6e7b8]" : "border-[#aeb8c2]"}`}>
-              <span className="flex h-6 w-6 items-center justify-center rounded bg-[#344b68] text-xs text-white">{i + 1}</span>{t}
+              <span className="flex h-6 w-6 items-center justify-center rounded bg-[#344b68] text-xs text-text">{i + 1}</span>{t}
             </button>
           ))}
-          <p className="mt-4 text-xs text-slate-600">Equation solves quadratic, cubic and 2–3 unknown linear systems. Matrix has MatA and MatB (up to 4×4). Statistics does 1-variable and A+BX regression. Table builds f(X) tables. In Base-N, the DEC, HEX, BIN and OCT keys (x², x▫, log, ln) pick the number base. Use ALPHA + a key for the digits A–F.</p>
+          <p className="mt-4 text-xs text-muted">Equation solves quadratic, cubic and 2–3 unknown linear systems. Matrix has MatA and MatB (up to 4×4). Statistics does 1-variable and A+BX regression. Table builds f(X) tables. In Base-N, the DEC, HEX, BIN and OCT keys (x², x▫, log, ln) pick the number base. Use ALPHA + a key for the digits A–F.</p>
         </Overlay>
       )}
 
@@ -1498,11 +1498,11 @@ export default function ScientificCalculator() {
                 <span className="w-6 text-lg">{n} =</span>
                 <input value={prompt.vals[n]} onChange={(e) => setPrompt({ ...prompt, vals: { ...prompt.vals, [n]: e.target.value } })}
                   onKeyDown={(e) => { if (e.key === "Enter") runPrompt(); }}
-                  className="w-full rounded-md border border-[#aeb8c2] bg-white px-3 py-2 font-mono" />
+                  className="w-full rounded-md border border-[#aeb8c2] bg-text px-3 py-2 font-mono" />
               </label>
             ))}
           </div>
-          <button onClick={runPrompt} className="mt-5 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-white">Calculate</button>
+          <button onClick={runPrompt} className="mt-5 rounded-md bg-[#344b68] px-4 py-2 text-sm font-semibold text-text">Calculate</button>
         </Overlay>
       )}
 
@@ -1511,7 +1511,7 @@ export default function ScientificCalculator() {
         <Overlay title="Constants (CONST)" onClose={() => setConstOpen(false)}>
           <div className="mt-3 space-y-1.5">
             {CONSTS.map(([sym, name, v, u]) => (
-              <button key={sym} onClick={() => { setConstOpen(false); insert(sym); }} className="flex w-full items-center gap-3 rounded-md border border-[#aeb8c2] px-3 py-1.5 text-left hover:bg-white">
+              <button key={sym} onClick={() => { setConstOpen(false); insert(sym); }} className="flex w-full items-center gap-3 rounded-md border border-[#aeb8c2] px-3 py-1.5 text-left hover:bg-text">
                 <span className="w-9 text-base font-bold">{sym}</span>
                 <span className="min-w-0 flex-1 text-xs"><span className="block font-semibold">{name}</span><span className="block truncate font-mono text-[#4c5b6b]">{fmtNum(v, { type: "norm", n: 0 })} {u}</span></span>
               </button>
@@ -1534,7 +1534,7 @@ export default function ScientificCalculator() {
             ["2: Memory", () => { setVars({}); setAns(0); setHist([]); setHi(-1); }],
             ["3: All", () => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); setVars({}); setAns(0); setHist([]); setHi(-1); setMode("calc"); setBase(10); }],
           ].map(([t, fn2]) => (
-            <button key={t} onClick={() => { fn2(); act({ act: "ac" }); setClrOpen(false); }} className="mt-3 block w-full rounded-lg border border-[#aeb8c2] px-3 py-2.5 text-left font-semibold hover:bg-white">{t}</button>
+            <button key={t} onClick={() => { fn2(); act({ act: "ac" }); setClrOpen(false); }} className="mt-3 block w-full rounded-lg border border-[#aeb8c2] px-3 py-2.5 text-left font-semibold hover:bg-text">{t}</button>
           ))}
         </Overlay>
       )}
@@ -1542,25 +1542,25 @@ export default function ScientificCalculator() {
       {/* SETUP */}
       {setup && (
         <Overlay title="Setup" onClose={() => setSetup(false)}>
-          <p className="mt-4 text-xs font-semibold text-slate-600">Angle unit</p>
+          <p className="mt-4 text-xs font-semibold text-muted">Angle unit</p>
           <div className="mt-2 flex gap-2">
             {[["deg", "Degree"], ["rad", "Radian"], ["gra", "Gradian"]].map(([v, t]) => chip(angle === v, () => setAngle(v), t))}
           </div>
-          <p className="mt-5 text-xs font-semibold text-slate-600">Number format</p>
+          <p className="mt-5 text-xs font-semibold text-muted">Number format</p>
           <div className="mt-2 flex gap-2">
             {[["norm", "Normal"], ["fix", "Fix"], ["sci", "Sci"]].map(([v, t]) => chip(fmt.type === v, () => setFmt({ type: v, n: v === "fix" ? 2 : v === "sci" ? 3 : 0 }), t))}
           </div>
           {fmt.type !== "norm" && (
             <>
-              <p className="mt-4 text-xs font-semibold text-slate-600">{fmt.type === "fix" ? "Decimal places" : "Significant digits"}</p>
+              <p className="mt-4 text-xs font-semibold text-muted">{fmt.type === "fix" ? "Decimal places" : "Significant digits"}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {Array.from({ length: fmt.type === "fix" ? 10 : 9 }, (_, i) => (fmt.type === "fix" ? i : i + 1)).map((n) => chip(fmt.n === n, () => setFmt({ ...fmt, n }), String(n)))}
               </div>
             </>
           )}
           <div className="mt-6 flex gap-2">
-            <button onClick={() => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-slate-600 px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
-            <button onClick={() => setSetup(false)} className="rounded-md bg-amber-300 px-4 py-1.5 text-sm font-semibold text-black">Done</button>
+            <button onClick={() => { setAngle(DEFAULT_ANGLE); setFmt({ type: "norm", n: 0 }); setVars({}); setHist([]); setAns(0); setMode("calc"); setBase(10); }} className="rounded-md border border-muted px-3 py-1.5 text-sm font-semibold text-[#263b53]">Reset all</button>
+            <button onClick={() => setSetup(false)} className="rounded-md bg-brand px-4 py-1.5 text-sm font-semibold text-page">Done</button>
           </div>
         </Overlay>
       )}
@@ -1568,39 +1568,39 @@ export default function ScientificCalculator() {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
       <Navbar />
 
       <main className="mx-auto w-full max-w-4xl px-2 py-4 sm:px-6 sm:py-6">
         <div className="px-1 text-center">
-          <h1 className="text-2xl font-black tracking-tight text-white sm:text-4xl">Scientific Calculator</h1>
-          <p className="mt-2 text-xs text-slate-400 sm:text-sm">Works like a Casio fx-991CW. Runs fully in your browser.</p>
+          <h1 className="text-2xl font-black tracking-tight text-text sm:text-4xl">Scientific Calculator</h1>
+          <p className="mt-2 text-xs text-muted sm:text-sm">Works like a Casio fx-991CW. Runs fully in your browser.</p>
         </div>
 
         {pip ? (
           <>
-            <div className="mx-auto mt-6 w-full max-w-[400px] rounded-2xl border border-slate-700 bg-slate-900/70 p-6 text-center">
-              <p className="text-sm text-slate-300">The calculator is open in its own window.</p>
-              <button onClick={popIn} className="mt-4 rounded-md bg-amber-300 px-4 py-2 text-sm font-semibold text-black">Bring it back here</button>
+            <div className="mx-auto mt-6 w-full max-w-[400px] rounded-2xl border border-border bg-surface/70 p-6 text-center">
+              <p className="text-sm text-text">The calculator is open in its own window.</p>
+              <button onClick={popIn} className="mt-4 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-page">Bring it back here</button>
             </div>
             {createPortal(body, pip.document.body)}
           </>
         ) : body}
 
         {rows && (
-          <div className="mx-auto mt-5 max-w-[820px] rounded-2xl border border-slate-700 bg-slate-900/70 p-4 text-sm">
+          <div className="mx-auto mt-5 max-w-[820px] rounded-2xl border border-border bg-surface/70 p-4 text-sm">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="font-bold text-slate-200">
+              <span className="font-bold text-text">
                 Pasted tests{rows.some((r) => r.ok !== null) ? ` – ${rows.filter((r) => r.ok === true).length}/${rows.filter((r) => r.ok !== null).length} match` : ""}
               </span>
-              <button onClick={() => setBatch(null)} className="rounded-md bg-amber-300 px-3 py-1 text-xs font-semibold text-black">Clear</button>
+              <button onClick={() => setBatch(null)} className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-page">Clear</button>
             </div>
             <div className="max-h-96 overflow-auto">
               <table className="w-full text-left font-mono text-xs sm:text-sm">
-                <thead><tr className="text-slate-400"><th className="pr-3">Expression</th><th className="pr-3">Result</th><th className="pr-3">Expected</th><th /></tr></thead>
+                <thead><tr className="text-muted"><th className="pr-3">Expression</th><th className="pr-3">Result</th><th className="pr-3">Expected</th><th /></tr></thead>
                 <tbody>
                   {rows.map((r, i) => (
-                    <tr key={i} className={r.ok === false ? "text-red-300" : "text-slate-200"}>
+                    <tr key={i} className={r.ok === false ? "text-brand" : "text-text"}>
                       <td className="break-all pr-3">{r.src}</td>
                       <td className="break-all pr-3">{r.got.replace(/-/g, "−")}</td>
                       <td className="break-all pr-3">{r.exp ?? ""}</td>
@@ -1610,12 +1610,12 @@ export default function ScientificCalculator() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">Results use the current angle unit and number format, so change SETUP and they update.</p>
+            <p className="mt-2 text-[11px] text-muted">Results use the current angle unit and number format, so change SETUP and they update.</p>
           </div>
         )}
 
-        <div className="mx-auto mt-5 max-w-[820px] space-y-2 px-1 text-xs text-slate-400 sm:mt-6 sm:space-y-1.5">
-          <p><span className="font-semibold text-[#c08d1b]">SHIFT</span> then a key uses the yellow function. <span className="font-semibold text-[#b83f46]">ALPHA</span> then a key uses the red letter. <span className="font-semibold text-slate-200">SHIFT + MODE</span> opens SETUP, MODE opens the menu.</p>
+        <div className="mx-auto mt-5 max-w-[820px] space-y-2 px-1 text-xs text-muted sm:mt-6 sm:space-y-1.5">
+          <p><span className="font-semibold text-[#c08d1b]">SHIFT</span> then a key uses the yellow function. <span className="font-semibold text-[#b83f46]">ALPHA</span> then a key uses the red letter. <span className="font-semibold text-text">SHIFT + MODE</span> opens SETUP, MODE opens the menu.</p>
           <p>Angle unit: the little letter at the top of the screen shows it (R = radian, D = degree, G = gradian). Change it in SETUP. For sin(π/2) = 1 use Radian.</p>
           <p>Fractions: type the top number, press a⁄b, then the bottom number. Store a value: SHIFT + RCL (STO), then ALPHA and a letter. ▲ ▼ browse history.</p>
           <p>CALC asks for the variables in your expression. SOLVE: type an equation with ALPHA + CALC for "=", e.g. X² − 4 = 0, then SHIFT + CALC. ∫ and Σ use X, e.g. ∫(X², 0, 3).</p>

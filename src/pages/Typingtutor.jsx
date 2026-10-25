@@ -665,7 +665,7 @@ function usePersistentStore() {
 /* -------------------------------------------------------------------------- */
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 function Pill({ active, onClick, children, className = "" }) {
   return (
@@ -675,8 +675,8 @@ function Pill({ active, onClick, children, className = "" }) {
       aria-pressed={active}
       className={`cursor-pointer rounded-xl border px-4 py-2 text-sm font-medium transition ${focusRing} ${
         active
-          ? "border-blue-500 bg-blue-600/20 text-white shadow-[0_0_15px_rgba(37,99,235,0.35)]"
-          : "border-slate-600 bg-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-600/70"
+          ? "border-brand bg-brand/20 text-text shadow-[0_0_15px_color-mix(in_srgb,var(--theme-brand)_35%,transparent)]"
+          : "border-muted bg-border text-text hover:border-muted hover:bg-surface/70"
       } ${className}`}
     >
       {children}
@@ -693,8 +693,8 @@ function Toggle({ checked, onChange, label, icon: Icon }) {
       onClick={() => onChange(!checked)}
       className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${focusRing} ${
         checked
-          ? "border-blue-500/60 bg-blue-600/20 text-blue-100"
-          : "border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200"
+          ? "border-brand/60 bg-brand/20 text-brand"
+          : "border-border bg-surface text-muted hover:text-text"
       }`}
     >
       {Icon && <Icon size={14} />}
@@ -716,8 +716,8 @@ function SoundButton({ on, onToggle }) {
       aria-label={on ? "Turn sound off" : "Turn sound on"}
       className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${focusRing} ${
         on
-          ? "border-blue-500/60 bg-blue-600/20 text-blue-100"
-          : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white"
+          ? "border-brand/60 bg-brand/20 text-brand"
+          : "border-muted bg-border text-text hover:bg-surface hover:text-text"
       }`}
     >
       {on ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -726,15 +726,15 @@ function SoundButton({ on, onToggle }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, accent = "text-blue-400" }) {
+function StatCard({ icon: Icon, label, value, sub, accent = "text-brand" }) {
   return (
-    <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+    <div className="rounded-2xl border border-border bg-surface/70 p-4">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted">
         <Icon size={14} className={accent} />
         {label}
       </div>
-      <div className="mt-2 text-3xl font-bold text-white">{value}</div>
-      {sub && <div className="mt-1 text-xs text-slate-400">{sub}</div>}
+      <div className="mt-2 text-3xl font-bold text-text">{value}</div>
+      {sub && <div className="mt-1 text-xs text-muted">{sub}</div>}
     </div>
   );
 }
@@ -746,7 +746,7 @@ function Stars({ count }) {
         <Star
           key={n}
           size={14}
-          className={n <= count ? "fill-yellow-400 text-yellow-400" : "text-slate-600"}
+          className={n <= count ? "fill-warning text-warning" : "text-muted"}
         />
       ))}
     </span>
@@ -763,7 +763,7 @@ function LineChart({ series, labels = [], markers = [], height = 200 }) {
 
   if (n === 0) {
     return (
-      <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-700 text-sm text-slate-400">
+      <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border text-sm text-muted">
         Not enough data yet
       </div>
     );
@@ -871,13 +871,13 @@ const Key = memo(function Key({ id, label, flex = 1, finger, isNext, pressed, gh
       className={`flex h-8 min-w-0 select-none items-center justify-center rounded-md border text-[11px] font-semibold transition-transform sm:h-9 sm:text-xs xl:h-10 xl:text-sm ${
         isPressed
           ? pressed.ok
-            ? "scale-95 ring-2 ring-white"
-            : "scale-95 bg-red-500/40 ring-2 ring-red-500"
+            ? "scale-95 ring-2 ring-text"
+            : "scale-95 bg-danger/40 ring-2 ring-danger"
           : ""
       }`}
     >
           {label}
-      {active && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-amber-400" />}
+      {active && <span className="ml-1 h-1.5 w-1.5 rounded-full bg-warning" />}
     </div>
   );
 });
@@ -942,8 +942,8 @@ const Word = memo(function Word({ text, start, typed, active }) {
     <span className="whitespace-pre">
       {[...text].map((ch, j) => {
         const t = typed[j];
-        let cls = "text-slate-500";
-        if (t !== undefined) cls = t === ch ? "text-slate-100" : "rounded bg-red-500/20 text-red-400";
+        let cls = "text-muted";
+        if (t !== undefined) cls = t === ch ? "text-text" : "rounded bg-danger/20 text-danger";
         const caret = active && j === typed.length;
         return (
           <span
@@ -1029,7 +1029,7 @@ function NextKeyCard({ nextChar }) {
   const info = key ? KEY_INFO[key.base] : null;
 
   if (!info) {
-    return <div className="hidden rounded-2xl border border-slate-700 bg-slate-900/40 lg:block" />;
+    return <div className="hidden rounded-2xl border border-border bg-surface/40 lg:block" />;
   }
 
   const color = FINGER_COLORS[info.finger];
@@ -1042,18 +1042,18 @@ function NextKeyCard({ nextChar }) {
     >
       <div className="flex items-center gap-3">
         <div
-          className="flex h-14 min-w-14 items-center justify-center rounded-xl px-2 font-mono text-2xl font-extrabold text-slate-900"
+          className="flex h-14 min-w-14 items-center justify-center rounded-xl px-2 font-mono text-2xl font-extrabold text-page"
           style={{ background: color, boxShadow: `0 0 16px ${color}99` }}
         >
           {nextChar === " " ? "Space" : nextChar}
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-300">Next key</p>
-          <p className="text-base font-bold leading-tight text-white">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-text">Next key</p>
+          <p className="text-base font-bold leading-tight text-text">
             <span style={{ color }}>{FINGER_NAMES[info.finger]}</span>
           </p>
           {shiftSide && (
-            <p className="text-sm text-slate-200">
+            <p className="text-sm text-text">
               + hold <b style={{ color }}>{shiftSide} Shift</b>
             </p>
           )}
@@ -1300,13 +1300,13 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
         @media (prefers-reduced-motion: reduce){.tf-fx{display:none}}
       `}</style>
 
-      <div className="rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-5">
+      <div className="rounded-3xl bg-surface p-4 shadow-2xl sm:p-5">
         {/* Top bar: exit, title, live stats, sound, restart */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onExit}
-            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-600 hover:text-white ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-muted bg-border px-3 py-2 text-sm text-text transition hover:bg-surface hover:text-text ${focusRing}`}
           >
             <X size={16} />
             <span className="hidden sm:inline">Exit</span>
@@ -1316,16 +1316,16 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
 
           <div className="flex items-center gap-2" aria-live="off">
             {[
-              ["WPM", liveWpm, "text-blue-400"],
-              ["Acc", `${liveAcc}%`, liveAcc >= 95 ? "text-green-400" : liveAcc >= 85 ? "text-yellow-300" : "text-red-400"],
-              [timed ? "Left" : "Time", timeLabel, "text-cyan-300"],
+              ["WPM", liveWpm, "text-brand"],
+              ["Acc", `${liveAcc}%`, liveAcc >= 95 ? "text-success" : liveAcc >= 85 ? "text-warning" : "text-danger"],
+              [timed ? "Left" : "Time", timeLabel, "text-brand"],
             ].map(([label, value, color]) => (
               <div
                 key={label}
-                className="flex items-baseline gap-1.5 rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-1.5"
+                className="flex items-baseline gap-1.5 rounded-xl border border-border bg-surface/70 px-3 py-1.5"
               >
                 <span className={`text-xl font-bold tabular-nums ${color}`}>{value}</span>
-                <span className="text-[10px] uppercase tracking-wide text-slate-400">{label}</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted">{label}</span>
               </div>
             ))}
           </div>
@@ -1336,7 +1336,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
             type="button"
             onClick={onRestart}
             aria-label="Restart with new text"
-            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-600 hover:text-white ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-muted bg-border px-3 py-2 text-sm text-text transition hover:bg-surface hover:text-text ${focusRing}`}
           >
             <RotateCcw size={16} />
             <span className="hidden sm:inline">Restart</span>
@@ -1344,23 +1344,23 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
         </div>
 
         <div
-          className="mt-3 h-1 overflow-hidden rounded-full bg-slate-700"
+          className="mt-3 h-1 overflow-hidden rounded-full bg-border"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(clamp(progress, 0, 1) * 100)}
         >
           <div
-            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-[width] duration-200"
+            className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-[width] duration-200"
             style={{ width: `${clamp(progress, 0, 1) * 100}%` }}
           />
         </div>
 
         {/* One-line instruction */}
-        <p className="mt-3 text-sm text-slate-300 sm:text-base">
-          <Keyboard size={16} className="mr-2 inline text-blue-300" />
-          <b className="text-white">{title}</b>
-          <span className="text-slate-400">
+        <p className="mt-3 text-sm text-text sm:text-base">
+          <Keyboard size={16} className="mr-2 inline text-brand" />
+          <b className="text-text">{title}</b>
+          <span className="text-muted">
             {status === "idle" ? " · press any key to start" : " · fix mistakes with Backspace"}
           </span>
         </p>
@@ -1369,7 +1369,7 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
         <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_270px]">
           <div
             ref={wrapRef}
-            className="relative rounded-2xl border border-slate-700 bg-slate-900 px-5 py-4"
+            className="relative rounded-2xl border border-border bg-surface px-5 py-4"
             style={shake ? { animation: "tf-shake .18s" } : undefined}
           >
             <div
@@ -1389,8 +1389,8 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
             </div>
 
             {!focused && (
-              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-900/70 backdrop-blur-sm">
-                <span className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200">
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-surface/70 backdrop-blur-sm">
+                <span className="rounded-xl border border-muted bg-surface px-4 py-2 text-sm font-medium text-text">
                   Click here or press any key to focus
                 </span>
               </div>
@@ -1457,11 +1457,11 @@ function TypingSession({ session, settings, onSetting, onFinish, onRestart, onEx
             <Toggle checked={settings.strict} onChange={(v) => onSetting({ strict: v })} label="Stop on mistakes" icon={Target} />
             <Toggle checked={settings.effects} onChange={(v) => onSetting({ effects: v })} label="Animations" icon={Zap} />
           </div>
-          <p className="text-xs text-slate-400">
-            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Tab</kbd> new text ·{" "}
-            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-100">Esc</kbd> exit
+          <p className="text-xs text-muted">
+            <kbd className="rounded bg-border px-1.5 py-0.5 font-mono text-text">Tab</kbd> new text ·{" "}
+            <kbd className="rounded bg-border px-1.5 py-0.5 font-mono text-text">Esc</kbd> exit
             {caps && (
-  <span className="ml-3 rounded-md border border-amber-500/50 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">
+  <span className="ml-3 rounded-md border border-warning/50 bg-warning/15 px-2 py-0.5 text-xs font-semibold text-warning">
     Caps Lock is on
   </span>
 )}
@@ -1495,48 +1495,48 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
   const lesson = session.type === "lesson" ? session.lesson : null;
 
   return (
-    <div className="mx-auto w-full max-w-6xl rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-6">
+    <div className="mx-auto w-full max-w-6xl rounded-3xl bg-surface p-4 shadow-2xl sm:p-6">
       <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-6">
         {/* Left: score */}
         <div className="text-center">
-          <p className="text-sm font-medium text-slate-400">{sessionTitle(session)}</p>
+          <p className="text-sm font-medium text-muted">{sessionTitle(session)}</p>
 
           {lesson && (
             <div className="mt-2 flex flex-col items-center gap-1.5">
               <Stars count={result.stars} />
-              <p className={`text-sm font-medium ${result.passed ? "text-green-400" : "text-yellow-300"}`}>
+              <p className={`text-sm font-medium ${result.passed ? "text-success" : "text-warning"}`}>
                 {result.passed ? "Lesson passed!" : `Goal: ${lesson.goal} WPM with 92% accuracy. Try again!`}
               </p>
             </div>
           )}
 
           {result.isBest && (
-            <p className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-3 py-1 text-sm font-medium text-yellow-200">
+            <p className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-3 py-1 text-sm font-medium text-warning">
               <Trophy size={14} /> New personal best!
             </p>
           )}
 
           <div className="mt-4 flex items-end justify-center gap-8">
             <div>
-              <div className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-5xl font-extrabold text-transparent sm:text-6xl">
+              <div className="bg-gradient-to-r from-brand to-accent bg-clip-text text-5xl font-extrabold text-transparent sm:text-6xl">
                 {result.wpm}
               </div>
-              <div className="text-xs uppercase tracking-wide text-slate-400">WPM</div>
+              <div className="text-xs uppercase tracking-wide text-muted">WPM</div>
             </div>
             <div>
               <div
                 className={`text-5xl font-extrabold sm:text-6xl ${
-                  result.accuracy >= 95 ? "text-green-400" : result.accuracy >= 85 ? "text-yellow-300" : "text-red-400"
+                  result.accuracy >= 95 ? "text-success" : result.accuracy >= 85 ? "text-warning" : "text-danger"
                 }`}
               >
                 {result.accuracy}%
               </div>
-              <div className="text-xs uppercase tracking-wide text-slate-400">Accuracy</div>
+              <div className="text-xs uppercase tracking-wide text-muted">Accuracy</div>
             </div>
           </div>
 
-          <p className="mt-3 text-sm text-slate-400">
-            Level: <span className="font-semibold text-slate-200">{levelFor(result.wpm)}</span>
+          <p className="mt-3 text-sm text-muted">
+            Level: <span className="font-semibold text-text">{levelFor(result.wpm)}</span>
             {result.prevBest > 0 && !result.isBest && <> · Best: {result.prevBest} WPM</>}
           </p>
 
@@ -1547,9 +1547,9 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
               ["Time", `${result.seconds}s`],
               ["Steady", result.consistency === null ? "–" : `${result.consistency}%`],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-slate-700 bg-slate-900/70 px-2 py-2.5">
-                <div className="text-lg font-bold text-white">{value}</div>
-                <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
+              <div key={label} className="rounded-xl border border-border bg-surface/70 px-2 py-2.5">
+                <div className="text-lg font-bold text-text">{value}</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted">{label}</div>
               </div>
             ))}
           </div>
@@ -1557,17 +1557,17 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
 
         {/* Right: chart + weak keys */}
         <div className="flex min-w-0 flex-col gap-4">
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+          <div className="rounded-2xl border border-border bg-surface/70 p-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
               <span className="font-medium uppercase tracking-wide">Speed over time</span>
               <span className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <i className="h-0.5 w-4 bg-blue-400" /> WPM
+                  <i className="h-0.5 w-4 bg-brand" /> WPM
                 </span>
                 <span className="flex items-center gap-1">
-                  <i className="h-0.5 w-4 border-t border-dashed border-slate-400" /> Raw
+                  <i className="h-0.5 w-4 border-t border-dashed border-muted" /> Raw
                 </span>
-                <span className="flex items-center gap-1 text-red-400">× Mistake</span>
+                <span className="flex items-center gap-1 text-danger">× Mistake</span>
               </span>
             </div>
             <LineChart
@@ -1582,11 +1582,11 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
           </div>
 
           {result.weak.length > 0 && (
-            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Keys to practice</div>
+            <div className="rounded-2xl border border-border bg-surface/70 p-4">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted">Keys to practice</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {result.weak.map(([k, v]) => (
-                  <span key={k} className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200">
+                  <span key={k} className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-1 text-sm text-danger">
                     <b className="font-mono">{keyLabel(k)}</b> · {v.m} missed
                   </span>
                 ))}
@@ -1601,7 +1601,7 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
           <button
             type="button"
             onClick={onNextLesson}
-            className={`flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 font-semibold transition hover:bg-green-700 ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl bg-success px-5 py-2.5 font-semibold transition hover:bg-success ${focusRing}`}
           >
             Next lesson <ArrowRight size={18} />
           </button>
@@ -1609,7 +1609,7 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
         <button
           type="button"
           onClick={onRestart}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-semibold transition hover:bg-blue-700 ${focusRing}`}
+          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-brand px-5 py-2.5 font-semibold transition hover:bg-accent ${focusRing}`}
         >
           <RotateCcw size={18} /> Try again
         </button>
@@ -1617,7 +1617,7 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
           <button
             type="button"
             onClick={onDrill}
-            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-slate-600 bg-slate-700 px-5 py-2.5 font-semibold transition hover:bg-slate-600 ${focusRing}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-xl border border-muted bg-border px-5 py-2.5 font-semibold transition hover:bg-surface ${focusRing}`}
           >
             <Target size={18} /> Drill weak keys
           </button>
@@ -1625,13 +1625,13 @@ function ResultView({ session, result, onRestart, onExit, onNextLesson, onDrill 
         <button
           type="button"
           onClick={onExit}
-          className={`cursor-pointer rounded-xl border border-slate-600 px-5 py-2.5 font-semibold text-slate-300 transition hover:bg-slate-700 ${focusRing}`}
+          className={`cursor-pointer rounded-xl border border-muted px-5 py-2.5 font-semibold text-text transition hover:bg-border ${focusRing}`}
         >
           Back to menu
         </button>
-        <span className="text-xs text-slate-400">
-          <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Enter</kbd> retry ·{" "}
-          <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-slate-200">Esc</kbd> menu
+        <span className="text-xs text-muted">
+          <kbd className="rounded bg-border px-1.5 py-0.5 text-text">Enter</kbd> retry ·{" "}
+          <kbd className="rounded bg-border px-1.5 py-0.5 text-text">Esc</kbd> menu
         </span>
       </div>
     </div>
@@ -1650,13 +1650,13 @@ function HowItWorks() {
   return (
     <ol className="mb-8 grid gap-3 sm:grid-cols-3">
       {STEPS.map(([title, text], i) => (
-        <li key={title} className="flex gap-4 rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-lg font-bold">
+        <li key={title} className="flex gap-4 rounded-2xl border border-border bg-surface/70 p-4 sm:p-5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-bold">
             {i + 1}
           </span>
           <div>
-            <p className="text-lg font-semibold text-white">{title}</p>
-            <p className="mt-1 text-base leading-relaxed text-slate-300">{text}</p>
+            <p className="text-lg font-semibold text-text">{title}</p>
+            <p className="mt-1 text-base leading-relaxed text-text">{text}</p>
           </div>
         </li>
       ))}
@@ -1671,14 +1671,14 @@ function LearnTab({ store, onStart }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-700 bg-slate-900/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface/70 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <p className="font-semibold text-white">
+          <p className="font-semibold text-text">
             {done === 0 ? "New here? Start with the home row." : `${done} of ${LESSONS.length} lessons completed`}
           </p>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-700">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-border">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-all"
               style={{ width: `${(done / LESSONS.length) * 100}%` }}
             />
           </div>
@@ -1686,7 +1686,7 @@ function LearnTab({ store, onStart }) {
         <button
           type="button"
           onClick={() => onStart({ type: "lesson", lesson: next })}
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-700 ${focusRing}`}
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold transition hover:bg-accent ${focusRing}`}
         >
           {done === 0 ? "Start learning" : done === LESSONS.length ? "Practice again" : "Continue"}
           <ArrowRight size={18} />
@@ -1702,13 +1702,13 @@ function LearnTab({ store, onStart }) {
               key={lesson.id}
               type="button"
               onClick={() => onStart({ type: "lesson", lesson })}
-              className={`group flex cursor-pointer gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-500/60 hover:bg-slate-800 ${focusRing} ${
-                passed ? "border-green-500/30 bg-slate-900/70" : "border-slate-700 bg-slate-900/70"
+              className={`group flex cursor-pointer gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 hover:border-accent/60 hover:bg-surface ${focusRing} ${
+                passed ? "border-success/30 bg-surface/70" : "border-border bg-surface/70"
               }`}
             >
               <div
                 className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-bold ${
-                  passed ? "bg-green-500/20 text-green-300" : "bg-blue-600/20 text-blue-300"
+                  passed ? "bg-success/20 text-success" : "bg-brand/20 text-brand"
                 }`}
               >
                 {passed ? <Check size={20} /> : i + 1}
@@ -1716,16 +1716,16 @@ function LearnTab({ store, onStart }) {
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-white">{lesson.title}</h3>
+                  <h3 className="font-semibold text-text">{lesson.title}</h3>
                   <Stars count={p?.stars || 0} />
                 </div>
-                <p className="mt-1 text-base text-slate-300">{lesson.desc}</p>
-                <div className="mt-3 flex items-center justify-between text-sm text-slate-400">
+                <p className="mt-1 text-base text-text">{lesson.desc}</p>
+                <div className="mt-3 flex items-center justify-between text-sm text-muted">
                   <span>
                     Goal: {lesson.goal} WPM · 92% accuracy
                   </span>
                   {p ? (
-                    <span className="text-blue-300">Best {p.bestWpm} WPM</span>
+                    <span className="text-brand">Best {p.bestWpm} WPM</span>
                   ) : (
                     <ChevronRight size={16} className="transition group-hover:translate-x-1" />
                   )}
@@ -1767,10 +1767,10 @@ function TestTab({ store, onChange, onStart }) {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/70 p-5 sm:p-6">
+      <div className="mt-6 rounded-2xl border border-border bg-surface/70 p-5 sm:p-6">
         {cfg.mode === "time" && (
           <div>
-            <p className="mb-3 text-sm font-medium text-slate-300">Duration</p>
+            <p className="mb-3 text-sm font-medium text-text">Duration</p>
             <div className="flex flex-wrap gap-2">
               {[15, 30, 60, 120].map((d) => (
                 <Pill key={d} active={cfg.duration === d} onClick={() => onChange({ duration: d })}>
@@ -1783,7 +1783,7 @@ function TestTab({ store, onChange, onStart }) {
 
         {cfg.mode === "words" && (
           <div>
-            <p className="mb-3 text-sm font-medium text-slate-300">Number of words</p>
+            <p className="mb-3 text-sm font-medium text-text">Number of words</p>
             <div className="flex flex-wrap gap-2">
               {[10, 25, 50, 100].map((w) => (
                 <Pill key={w} active={cfg.words === w} onClick={() => onChange({ words: w })}>
@@ -1795,18 +1795,18 @@ function TestTab({ store, onChange, onStart }) {
         )}
 
         {cfg.mode === "quote" && (
-          <p className="text-sm text-slate-300">Type two short sentences with capital letters and punctuation.</p>
+          <p className="text-sm text-text">Type two short sentences with capital letters and punctuation.</p>
         )}
 
         {cfg.mode === "code" && (
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-text">
             Type JavaScript and Node snippets: brackets, quotes, arrows and operators.
           </p>
         )}
 
         {cfg.mode === "custom" && (
           <div>
-            <label htmlFor="custom-text" className="mb-2 block text-sm font-medium text-slate-300">
+            <label htmlFor="custom-text" className="mb-2 block text-sm font-medium text-text">
               Paste anything you want to practice
             </label>
             <textarea
@@ -1816,16 +1816,16 @@ function TestTab({ store, onChange, onStart }) {
               rows={5}
               maxLength={2000}
               placeholder="Paste a paragraph, an article, or code you want to type…"
-              className="w-full resize-y rounded-xl border border-slate-600 bg-slate-700 p-4 text-white outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              className="w-full resize-y rounded-xl border border-muted bg-border p-4 text-text outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
-            <p className="mt-1.5 text-xs text-slate-400">
+            <p className="mt-1.5 text-xs text-muted">
               {customReady ? `${normalizeText(cfg.custom).length}/2000 characters` : "Enter at least 10 characters."}
             </p>
           </div>
         )}
 
         {(cfg.mode === "time" || cfg.mode === "words") && (
-          <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-700 pt-5">
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-5">
             <Toggle
               checked={cfg.punctuation}
               onChange={(v) => onChange({ punctuation: v })}
@@ -1841,17 +1841,17 @@ function TestTab({ store, onChange, onStart }) {
           type="button"
           disabled={!canStart}
           onClick={() => onStart(startCfg)}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-10 py-4 text-lg font-semibold transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
+          className={`flex cursor-pointer items-center gap-2 rounded-xl bg-brand px-10 py-4 text-lg font-semibold transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
         >
           <Zap size={20} /> Start test
         </button>
         {best ? (
-          <p className="flex items-center gap-2 text-sm text-slate-400">
-            <Trophy size={14} className="text-yellow-400" /> Personal best for this setup:{" "}
-            <b className="text-slate-200">{best} WPM</b>
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <Trophy size={14} className="text-warning" /> Personal best for this setup:{" "}
+            <b className="text-text">{best} WPM</b>
           </p>
         ) : (
-          <p className="text-sm text-slate-400">The clock starts when you press your first key.</p>
+          <p className="text-sm text-muted">The clock starts when you press your first key.</p>
         )}
       </div>
     </div>
@@ -1865,10 +1865,10 @@ function StatsTab({ store, onReset, onDrill }) {
 
   if (!history.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center">
-        <BarChart3 size={36} className="mx-auto text-slate-500" />
-        <p className="mt-4 font-semibold text-white">No results yet</p>
-        <p className="mt-1 text-sm text-slate-400">Finish a lesson or a test and your progress will show up here.</p>
+      <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+        <BarChart3 size={36} className="mx-auto text-muted" />
+        <p className="mt-4 font-semibold text-text">No results yet</p>
+        <p className="mt-1 text-sm text-muted">Finish a lesson or a test and your progress will show up here.</p>
       </div>
     );
   }
@@ -1881,26 +1881,26 @@ function StatsTab({ store, onReset, onDrill }) {
   return (
     <div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard icon={Trophy} accent="text-yellow-400" label="Best speed" value={`${best}`} sub="WPM" />
+        <StatCard icon={Trophy} accent="text-warning" label="Best speed" value={`${best}`} sub="WPM" />
         <StatCard icon={Zap} label="Average" value={`${avg(recent, "wpm")}`} sub="WPM, last 10" />
         <StatCard
           icon={Target}
-          accent="text-green-400"
+          accent="text-success"
           label="Accuracy"
           value={`${avg(recent, "acc")}%`}
           sub="last 10"
         />
         <StatCard
           icon={Flame}
-          accent="text-orange-400"
+          accent="text-warning"
           label="Streak"
           value={`${streak}`}
           sub={streak === 1 ? "day" : "days"}
         />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-        <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
+      <div className="mt-6 rounded-2xl border border-border bg-surface/70 p-4">
+        <div className="mb-2 flex items-center justify-between text-xs text-muted">
           <span className="font-medium uppercase tracking-wide">Last {last30.length} results</span>
           <span>{history.length} total</span>
         </div>
@@ -1911,18 +1911,18 @@ function StatsTab({ store, onReset, onDrill }) {
             { name: "Accuracy", color: "#4ade80", thin: true, data: last30.map((h) => h.acc) },
           ]}
         />
-        <p className="mt-1 text-center text-xs text-slate-400">Blue is speed (WPM). Dashed green is accuracy (%).</p>
+        <p className="mt-1 text-center text-xs text-muted">Blue is speed (WPM). Dashed green is accuracy (%).</p>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-5">
+        <div className="rounded-2xl border border-border bg-surface/70 p-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white">Weakest keys</h3>
+            <h3 className="font-semibold text-text">Weakest keys</h3>
             {weak.some((w) => /[a-z]/.test(w.k)) && (
               <button
                 type="button"
                 onClick={() => onDrill(weak.map((w) => w.k))}
-                className={`cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold transition hover:bg-blue-700 ${focusRing}`}
+                className={`cursor-pointer rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold transition hover:bg-accent ${focusRing}`}
               >
                 Practice them
               </button>
@@ -1932,37 +1932,37 @@ function StatsTab({ store, onReset, onDrill }) {
             <ul className="mt-4 space-y-3">
               {weak.map((w) => (
                 <li key={w.k} className="flex items-center gap-3">
-                  <span className="w-14 rounded-lg bg-slate-800 py-1 text-center font-mono text-sm font-bold text-white">
+                  <span className="w-14 rounded-lg bg-surface py-1 text-center font-mono text-sm font-bold text-text">
                     {keyLabel(w.k)}
                   </span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-700">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-border">
                     <div
-                      className={`h-full rounded-full ${w.acc >= 90 ? "bg-yellow-400" : "bg-red-400"}`}
+                      className={`h-full rounded-full ${w.acc >= 90 ? "bg-warning" : "bg-danger"}`}
                       style={{ width: `${w.acc}%` }}
                     />
                   </div>
-                  <span className="w-10 text-right text-sm text-slate-300">{w.acc}%</span>
+                  <span className="w-10 text-right text-sm text-text">{w.acc}%</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-sm text-slate-400">
+            <p className="mt-4 text-sm text-muted">
               Nothing stands out yet. Keep typing and your trouble keys will appear here.
             </p>
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-5">
-          <h3 className="font-semibold text-white">Recent results</h3>
-          <ul className="mt-4 divide-y divide-slate-800">
+        <div className="rounded-2xl border border-border bg-surface/70 p-5">
+          <h3 className="font-semibold text-text">Recent results</h3>
+          <ul className="mt-4 divide-y divide-border">
             {[...history]
               .reverse()
               .slice(0, 6)
               .map((h) => (
                 <li key={h.d} className="flex items-center justify-between py-2.5 text-sm">
-                  <span className="min-w-0 truncate text-slate-300">{h.label}</span>
-                  <span className="shrink-0 pl-3 text-slate-400">
-                    <b className="text-blue-300">{h.wpm}</b> WPM · {h.acc}%
+                  <span className="min-w-0 truncate text-text">{h.label}</span>
+                  <span className="shrink-0 pl-3 text-muted">
+                    <b className="text-brand">{h.wpm}</b> WPM · {h.acc}%
                   </span>
                 </li>
               ))}
@@ -1976,7 +1976,7 @@ function StatsTab({ store, onReset, onDrill }) {
           onClick={() => {
             if (window.confirm("Delete all your typing history and lesson progress? This can't be undone.")) onReset();
           }}
-          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-400 transition hover:text-red-300 ${focusRing}`}
+          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted transition hover:text-danger ${focusRing}`}
         >
           <Trash2 size={14} /> Reset all progress
         </button>
@@ -2125,26 +2125,26 @@ export default function TypingTutor() {
     content = (
       <div className="mx-auto max-w-4xl">
         <header className="text-center">
-          <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-300">
+          <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm text-brand">
             <Keyboard size={16} />
             Free Typing Tutor
           </div>
           <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-6xl">
             Type{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Faster</span>
+            <span className="bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">Faster</span>
             , Learn Smarter
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-slate-400">
+          <p className="mx-auto mt-4 max-w-xl text-muted">
             Learn touch typing with guided lessons, test your speed, and track your progress. No signup, and your
             progress is saved in this browser.
           </p>
         </header>
 
-        <div className="mt-10 rounded-3xl bg-slate-800 p-5 shadow-2xl sm:p-8">
+        <div className="mt-10 rounded-3xl bg-surface p-5 shadow-2xl sm:p-8">
           <div
             role="tablist"
             aria-label="Typing tutor sections"
-            className="mx-auto mb-8 grid max-w-md grid-cols-3 gap-1 rounded-2xl border border-slate-700 bg-slate-900 p-1"
+            className="mx-auto mb-8 grid max-w-md grid-cols-3 gap-1 rounded-2xl border border-border bg-surface p-1"
           >
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
@@ -2154,7 +2154,7 @@ export default function TypingTutor() {
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
                 className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition ${focusRing} ${
-                  tab === id ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                  tab === id ? "bg-brand text-text shadow-lg" : "text-muted hover:text-text"
                 }`}
               >
                 <Icon size={16} />
@@ -2182,8 +2182,8 @@ export default function TypingTutor() {
   }
 
    return (
-    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
+      <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
         <Navbar />
       </header>
 

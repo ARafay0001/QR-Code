@@ -258,10 +258,10 @@ export default function CompressPDF() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
           <div className="text-center">
-            {/* <span className="inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-blue-400 sm:py-2 sm:text-sm">
+            {/* <span className="inline-block rounded-full border border-brand/20 bg-brand/10 px-4 py-1.5 text-xs font-medium tracking-wide text-brand sm:py-2 sm:text-sm">
               PDF Tools
             </span> */}
 
@@ -269,7 +269,7 @@ export default function CompressPDF() {
               Compress PDF
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-slate-400 sm:mt-5 sm:text-base">
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-muted sm:mt-5 sm:text-base">
               Reduce PDF file size while keeping your document readable.
             </p>
           </div>
@@ -289,20 +289,20 @@ export default function CompressPDF() {
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                className={`flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-16 text-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 sm:rounded-3xl sm:py-24 ${
+                className={`flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-16 text-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 sm:rounded-3xl sm:py-24 ${
                   isDragging
-                    ? "scale-[1.01] border-blue-500 bg-blue-500/10"
-                    : "border-slate-700 bg-slate-900/60 hover:border-blue-500 hover:bg-slate-900"
+                    ? "scale-[1.01] border-brand bg-brand/10"
+                    : "border-border bg-surface/60 hover:border-accent hover:bg-surface"
                 }`}
               >
                 <div
                   className={`rounded-full p-4 transition-colors ${
-                    isDragging ? "bg-blue-500/20" : "bg-slate-800/60"
+                    isDragging ? "bg-brand/20" : "bg-surface/60"
                   }`}
                 >
                   <Upload
                     size={36}
-                    className={isDragging ? "text-blue-400" : "text-slate-300"}
+                    className={isDragging ? "text-brand" : "text-text"}
                   />
                 </div>
 
@@ -310,17 +310,17 @@ export default function CompressPDF() {
                   {isDragging ? "Drop your PDF here" : "Upload PDF"}
                 </span>
 
-                <span className="mt-2 text-sm text-slate-400">
+                <span className="mt-2 text-sm text-muted">
                   Drag and drop, or click to browse your computer
                 </span>
 
                 {/* Important Note */}
-                <div className="mt-6 flex max-w-md items-start gap-2 rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-left sm:px-5">
+                <div className="mt-6 flex max-w-md items-start gap-2 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3 text-left sm:px-5">
                   <AlertTriangle
                     size={16}
-                    className="mt-0.5 shrink-0 text-yellow-400"
+                    className="mt-0.5 shrink-0 text-warning"
                   />
-                  <p className="text-xs text-yellow-400 sm:text-sm">
+                  <p className="text-xs text-warning sm:text-sm">
                     <span className="font-semibold">Note:</span> This
                     compression tool works only with scanned/image-based PDFs.
                   </p>
@@ -332,10 +332,10 @@ export default function CompressPDF() {
           {file && (
             <div className="mt-10 grid gap-6 sm:mt-16 sm:gap-8 lg:grid-cols-[320px_1fr]">
               {/* Sidebar */}
-              <div className="h-fit rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:rounded-3xl sm:p-6 lg:sticky lg:top-6">
+              <div className="h-fit rounded-2xl border border-border bg-surface/60 p-5 sm:rounded-3xl sm:p-6 lg:sticky lg:top-6">
                 <div className="flex items-center gap-3">
-                  <div className="shrink-0 rounded-xl bg-blue-500/10 p-2.5">
-                    <FileArchive className="text-blue-400" size={24} />
+                  <div className="shrink-0 rounded-xl bg-brand/10 p-2.5">
+                    <FileArchive className="text-brand" size={24} />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -343,7 +343,7 @@ export default function CompressPDF() {
                       {file.name}
                     </p>
 
-                    <p className="mt-0.5 text-sm text-slate-400">
+                    <p className="mt-0.5 text-sm text-muted">
                       {formatSize(originalSize)}
                     </p>
                   </div>
@@ -352,7 +352,7 @@ export default function CompressPDF() {
                     onClick={changeFile}
                     disabled={loading}
                     aria-label="Remove file"
-                    className="shrink-0 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white disabled:opacity-40"
+                    className="shrink-0 rounded-lg p-1.5 text-muted transition hover:bg-surface hover:text-text disabled:opacity-40"
                   >
                     <X size={18} />
                   </button>
@@ -375,13 +375,13 @@ export default function CompressPDF() {
                           disabled={loading}
                           className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
                             active
-                              ? "bg-blue-600 shadow-lg shadow-blue-600/20"
-                              : "border border-slate-700 hover:border-blue-500/60 hover:bg-slate-800/50"
+                              ? "bg-brand shadow-lg shadow-brand/20"
+                              : "border border-border hover:border-accent/60 hover:bg-surface/50"
                           }`}
                         >
                           <Icon
                             size={18}
-                            className={active ? "text-white" : "text-slate-400"}
+                            className={active ? "text-text" : "text-muted"}
                           />
                           <span className="flex-1">
                             <span className="block text-sm font-semibold">
@@ -389,7 +389,7 @@ export default function CompressPDF() {
                             </span>
                             <span
                               className={`text-xs ${
-                                active ? "text-blue-100" : "text-slate-400"
+                                active ? "text-brand" : "text-muted"
                               }`}
                             >
                               {opt.hint}
@@ -404,7 +404,7 @@ export default function CompressPDF() {
                 <button
                   onClick={compressPDF}
                   disabled={loading}
-                  className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 font-bold transition hover:bg-blue-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:mt-8"
+                  className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 font-bold transition hover:bg-accent active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:mt-8"
                 >
                   {loading ? (
                     <>
@@ -419,32 +419,32 @@ export default function CompressPDF() {
                 <button
                   onClick={changeFile}
                   disabled={loading}
-                  className="mt-3 w-full rounded-xl border border-slate-700 py-3 font-semibold transition hover:border-blue-500 disabled:opacity-50"
+                  className="mt-3 w-full rounded-xl border border-border py-3 font-semibold transition hover:border-accent disabled:opacity-50"
                 >
                   Change PDF
                 </button>
               </div>
 
               {/* Result */}
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:rounded-3xl sm:p-8">
+              <div className="rounded-2xl border border-border bg-surface/60 p-5 sm:rounded-3xl sm:p-8">
                 <h2 className="text-xl font-bold sm:text-2xl">
                   Compression Result
                 </h2>
 
                 {!compressedPdf && !loading && !error && (
-                  <div className="mt-10 text-center text-slate-400 sm:mt-12">
+                  <div className="mt-10 text-center text-muted sm:mt-12">
                     <FileArchive size={56} className="mx-auto opacity-30 sm:size-16" />
 
                     <p className="mt-5 text-sm sm:text-base">
                       Choose a compression level and compress your PDF.
                     </p>
 
-                    <div className="mx-auto mt-6 flex max-w-md items-start gap-2 rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-left sm:px-5">
+                    <div className="mx-auto mt-6 flex max-w-md items-start gap-2 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3 text-left sm:px-5">
                       <AlertTriangle
                         size={16}
-                        className="mt-0.5 shrink-0 text-yellow-400"
+                        className="mt-0.5 shrink-0 text-warning"
                       />
-                      <p className="text-xs text-yellow-400 sm:text-sm">
+                      <p className="text-xs text-warning sm:text-sm">
                         <span className="font-semibold">Note:</span> This
                         compression tool works only with scanned/image-based
                         PDFs.
@@ -459,19 +459,19 @@ export default function CompressPDF() {
                       <span>
                         Processing page {currentPage} of {totalPages || "…"}
                       </span>
-                      <span className="font-semibold text-blue-400">
+                      <span className="font-semibold text-brand">
                         {progress}%
                       </span>
                     </div>
 
-                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-800 sm:h-3">
+                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-surface sm:h-3">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
+                        className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
 
-                    <p className="mt-4 text-xs text-slate-500 sm:text-sm">
+                    <p className="mt-4 text-xs text-muted sm:text-sm">
                       Larger files with many pages can take a little longer.
                       Keep this tab open.
                     </p>
@@ -480,14 +480,14 @@ export default function CompressPDF() {
 
                 {compressedPdf && (
                   <div className="mt-8 animate-[fadeIn_0.3s_ease-out] sm:mt-10">
-                    <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-400">
+                    <div className="flex items-center gap-2 rounded-xl border border-success/20 bg-success/5 px-4 py-3 text-sm text-success">
                       <CheckCircle2 size={18} className="shrink-0" />
                       Your PDF was compressed successfully.
                     </div>
 
                     <div className="mt-5 grid grid-cols-1 gap-3 xs:grid-cols-3 sm:grid-cols-3 sm:gap-4">
-                      <div className="rounded-xl bg-slate-950/60 p-4 sm:rounded-2xl sm:p-5">
-                        <p className="text-xs text-slate-400 sm:text-sm">
+                      <div className="rounded-xl bg-page/60 p-4 sm:rounded-2xl sm:p-5">
+                        <p className="text-xs text-muted sm:text-sm">
                           Original
                         </p>
                         <p className="mt-1.5 text-lg font-bold sm:mt-2 sm:text-2xl">
@@ -495,8 +495,8 @@ export default function CompressPDF() {
                         </p>
                       </div>
 
-                      <div className="rounded-xl bg-slate-950/60 p-4 sm:rounded-2xl sm:p-5">
-                        <p className="text-xs text-slate-400 sm:text-sm">
+                      <div className="rounded-xl bg-page/60 p-4 sm:rounded-2xl sm:p-5">
+                        <p className="text-xs text-muted sm:text-sm">
                           Compressed
                         </p>
                         <p className="mt-1.5 text-lg font-bold sm:mt-2 sm:text-2xl">
@@ -504,11 +504,11 @@ export default function CompressPDF() {
                         </p>
                       </div>
 
-                      <div className="rounded-xl bg-blue-600/10 p-4 sm:rounded-2xl sm:p-5">
-                        <p className="text-xs text-blue-300 sm:text-sm">
+                      <div className="rounded-xl bg-brand/10 p-4 sm:rounded-2xl sm:p-5">
+                        <p className="text-xs text-brand sm:text-sm">
                           Reduced
                         </p>
-                        <p className="mt-1.5 text-lg font-bold text-blue-400 sm:mt-2 sm:text-2xl">
+                        <p className="mt-1.5 text-lg font-bold text-brand sm:mt-2 sm:text-2xl">
                           {compressionPercentage}%
                         </p>
                       </div>
@@ -516,18 +516,18 @@ export default function CompressPDF() {
 
                     <button
                       onClick={downloadPDF}
-                      className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 font-bold transition hover:bg-blue-500 active:scale-[0.99] sm:mt-8 sm:py-4"
+                      className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3.5 font-bold transition hover:bg-accent active:scale-[0.99] sm:mt-8 sm:py-4"
                     >
                       <Download size={20} />
                       Download Compressed PDF
                     </button>
 
-                    <div className="mx-auto mt-6 flex max-w-md items-start gap-2 rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-left sm:px-5">
+                    <div className="mx-auto mt-6 flex max-w-md items-start gap-2 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3 text-left sm:px-5">
                       <AlertTriangle
                         size={16}
-                        className="mt-0.5 shrink-0 text-yellow-400"
+                        className="mt-0.5 shrink-0 text-warning"
                       />
-                      <p className="text-xs text-yellow-400 sm:text-sm">
+                      <p className="text-xs text-warning sm:text-sm">
                         <span className="font-semibold">Note:</span> This
                         compression tool currently works only with
                         scanned/image-based PDFs.
@@ -537,7 +537,7 @@ export default function CompressPDF() {
                 )}
 
                 {error && (
-                  <div className="mt-6 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+                  <div className="mt-6 flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
                     <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                     <span>{error}</span>
                   </div>

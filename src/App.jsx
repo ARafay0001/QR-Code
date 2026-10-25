@@ -36,17 +36,17 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 function PageLoading() {
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
+    <div className="flex min-h-screen items-center justify-center bg-page px-4 text-text">
       <div className="w-full max-w-sm" role="status" aria-live="polite" aria-busy="true">
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-xl shadow-black/20">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface/70 p-5 shadow-xl shadow-page/20">
           <Loader2
-            className="h-5 w-5 shrink-0 animate-spin text-emerald-400 motion-reduce:animate-none"
+            className="h-5 w-5 shrink-0 animate-spin text-brand motion-reduce:animate-none"
             aria-hidden="true"
           />
-          <p className="text-sm text-slate-200">Loading your tool…</p>
+          <p className="text-sm text-text">Loading your tool…</p>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
-          <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-emerald-600 to-teal-400 motion-reduce:animate-none" />
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface">
+          <div className="h-full w-2/5 animate-pulse rounded-full bg-gradient-to-r from-brand to-accent motion-reduce:animate-none" />
         </div>
       </div>
     </div>

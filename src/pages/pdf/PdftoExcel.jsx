@@ -440,22 +440,22 @@ async function buildXlsx(model, opts) {
 
 /* -------------------------------- UI bits --------------------------------- */
 
-const card = "rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl";
-const lbl = "text-xs font-semibold uppercase tracking-wide text-slate-500";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-40";
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(16,185,129,.3)] transition hover:scale-[1.03] disabled:opacity-40 disabled:hover:scale-100";
-const inputCls = "w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-emerald-500/50";
+const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
+const lbl = "text-xs font-semibold uppercase tracking-wide text-muted";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-4 py-2.5 text-sm font-semibold text-text transition hover:border-muted hover:text-text disabled:opacity-40";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-2.5 text-sm font-semibold text-text shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.03] disabled:opacity-40 disabled:hover:scale-100";
+const inputCls = "w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-success/50";
 
 const Chip = ({ on, onClick, children }) => (
-  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-emerald-500 bg-emerald-500/15 text-white" : "border-slate-700 text-slate-300 hover:border-slate-500"}`}>{children}</button>
+  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-success bg-success/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
 );
 const Row = ({ title, children }) => (
   <div className="space-y-2.5"><p className={lbl}>{title}</p>{children}</div>
 );
 const Check2 = ({ on, onChange, title, hint }) => (
-  <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-300">
-    <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-emerald-500" />
-    <span>{title}{hint && <span className="block text-xs text-slate-500">{hint}</span>}</span>
+  <label className="flex cursor-pointer items-start gap-3 text-sm text-text">
+    <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-success" />
+    <span>{title}{hint && <span className="block text-xs text-muted">{hint}</span>}</span>
   </label>
 );
 
@@ -466,16 +466,16 @@ function PrevSheet({ sh }) {
   const rows = sh.rows.slice(0, MAX);
   return (
     <div className="mb-5">
-      <p className="mb-1.5 inline-block rounded-t-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">{sh.name}</p>
-      <div className="overflow-x-auto rounded-b-md rounded-tr-md border border-slate-300 bg-white text-black">
+      <p className="mb-1.5 inline-block rounded-t-md bg-success px-3 py-1 text-xs font-semibold text-text">{sh.name}</p>
+      <div className="overflow-x-auto rounded-b-md rounded-tr-md border border-muted bg-text text-page">
         <table className="min-w-full border-collapse text-xs">
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className={r.hdr ? "bg-blue-50" : ""}>
-                <td className="w-8 select-none border border-slate-200 bg-slate-100 px-1.5 text-center text-[10px] text-slate-500">{i + 1}</td>
-                {r.cells.length === 0 && <td className="border border-slate-200 px-2 py-1">&nbsp;</td>}
+              <tr key={i} className={r.hdr ? "bg-brand" : ""}>
+                <td className="w-8 select-none border border-muted bg-surface px-1.5 text-center text-[10px] text-muted">{i + 1}</td>
+                {r.cells.length === 0 && <td className="border border-muted px-2 py-1">&nbsp;</td>}
                 {r.cells.map((c, j) => (
-                  <td key={j} className={`border border-slate-200 px-2 py-1 align-top ${c && typeof c.v === "number" ? "text-right" : ""} ${c && (c.b || r.hdr) ? "font-bold" : ""}`}>
+                  <td key={j} className={`border border-muted px-2 py-1 align-top ${c && typeof c.v === "number" ? "text-right" : ""} ${c && (c.b || r.hdr) ? "font-bold" : ""}`}>
                     {cellText(c)}
                   </td>
                 ))}
@@ -484,7 +484,7 @@ function PrevSheet({ sh }) {
           </tbody>
         </table>
       </div>
-      {sh.rows.length > MAX && <p className="mt-1 text-xs text-slate-500">…and {sh.rows.length - MAX} more rows</p>}
+      {sh.rows.length > MAX && <p className="mt-1 text-xs text-muted">…and {sh.rows.length - MAX} more rows</p>}
     </div>
   );
 }
@@ -656,19 +656,19 @@ export default function PdfToExcel() {
   return (
     <>
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-teal-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-success/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <div className="text-center">
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400">PDF to Excel</span>
+            <span className="rounded-full border border-success/20 bg-success/10 px-4 py-2 text-sm font-medium text-success">PDF to Excel</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Convert PDF tables to Excel.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Finds tables, keeps numbers as real numbers, reads scanned pages with OCR. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-muted">Finds tables, keeps numbers as real numbers, reads scanned pages with OCR. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden type="file" accept="application/pdf,.pdf"
@@ -678,14 +678,14 @@ export default function PdfToExcel() {
             {/* 1 — choose file */}
             {stage === "idle" && (
               <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); }}
-                className="flex flex-col items-center rounded-3xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-6 py-16 text-center transition hover:border-emerald-500">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600/10 text-emerald-400"><FileText size={30} /></div>
+                className="flex flex-col items-center rounded-3xl border-2 border-dashed border-border bg-surface/60 px-6 py-16 text-center transition hover:border-success">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10 text-success"><FileText size={30} /></div>
                 <h2 className="mt-6 text-2xl font-bold">Select a PDF file</h2>
-                <p className="mt-2 text-slate-400">Drag &amp; drop it here, or choose it from your device.</p>
+                <p className="mt-2 text-muted">Drag &amp; drop it here, or choose it from your device.</p>
 
                 {needPw ? (
                   <div className="mt-8 w-full max-w-sm space-y-3">
-                    <p className="flex items-center justify-center gap-2 text-sm text-amber-400"><Lock size={15} />This PDF is password protected</p>
+                    <p className="flex items-center justify-center gap-2 text-sm text-warning"><Lock size={15} />This PDF is password protected</p>
                     <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Password" className={inputCls}
                       onKeyDown={(e) => { if (e.key === "Enter") loadFile(pendingRef.current, pw); }} />
                     <div className="flex justify-center gap-3">
@@ -700,37 +700,37 @@ export default function PdfToExcel() {
                     </button>
                   </div>
                 )}
-                <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
+                <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-muted">
                   {["Table detection", "Real numbers & %", "Merged cells", "Sheet per page / table", "Scanned PDFs (OCR)", "XLSX & CSV"].map((t) => (
-                    <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
+                    <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>
                   ))}
                 </div>
               </div>
             )}
 
-            {err && <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{err}</p>}
+            {err && <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{err}</p>}
 
             {/* 2 — options */}
             {stage === "ready" && file && (
               <>
                 <div className={`${card} space-y-4 p-4 sm:p-5`}>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-400"><FileText size={22} /></div>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success"><FileText size={22} /></div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{file.name}</p>
-                      <p className="text-xs text-slate-500">{numPages} page{numPages > 1 ? "s" : ""} · {fmtSize(file.size)}</p>
+                      <p className="text-xs text-muted">{numPages} page{numPages > 1 ? "s" : ""} · {fmtSize(file.size)}</p>
                     </div>
-                    <button onClick={reset} aria-label="Remove file" className="rounded-full bg-white/5 p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X size={16} /></button>
+                    <button onClick={reset} aria-label="Remove file" className="rounded-full bg-text/5 p-2 text-muted hover:bg-text/10 hover:text-text"><X size={16} /></button>
                   </div>
                   {thumbs.length > 0 && (
                     <div className="flex gap-2.5 overflow-x-auto py-1">
                       {thumbs.map((t, i) => (
-                        <div key={i} className={`relative h-24 shrink-0 overflow-hidden rounded-lg border-2 bg-white transition ${picked && picked.includes(i + 1) ? "border-emerald-500" : "border-slate-800 opacity-40"}`}>
+                        <div key={i} className={`relative h-24 shrink-0 overflow-hidden rounded-lg border-2 bg-text transition ${picked && picked.includes(i + 1) ? "border-success" : "border-border opacity-40"}`}>
                           <img src={t} alt={`Page ${i + 1}`} className="h-full w-auto" draggable={false} />
-                          <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 text-[10px] font-semibold">{i + 1}</span>
+                          <span className="absolute bottom-0.5 left-0.5 rounded bg-page/70 px-1 text-[10px] font-semibold">{i + 1}</span>
                         </div>
                       ))}
-                      {numPages > thumbs.length && <span className="flex shrink-0 items-center px-2 text-xs text-slate-500">+{numPages - thumbs.length} more</span>}
+                      {numPages > thumbs.length && <span className="flex shrink-0 items-center px-2 text-xs text-muted">+{numPages - thumbs.length} more</span>}
                     </div>
                   )}
                 </div>
@@ -749,7 +749,7 @@ export default function PdfToExcel() {
                       <Chip on={rangeMode === "custom"} onClick={() => setRangeMode("custom")}>Custom range</Chip>
                       {rangeMode === "custom" && (
                         <input value={rangeText} onChange={(e) => setRangeText(e.target.value)} placeholder="e.g. 1-3, 5, 8-10"
-                          className={`${inputCls} !w-52 ${rangeBad && rangeText ? "!border-red-500/60" : ""}`} />
+                          className={`${inputCls} !w-52 ${rangeBad && rangeText ? "border-danger/60" : ""}`} />
                       )}
                     </div>
                   </Row>
@@ -767,7 +767,7 @@ export default function PdfToExcel() {
                       <Chip on={opt.layout === "table"} onClick={() => setOpt({ ...opt, layout: "table" })}>One per table</Chip>
                       <Chip on={opt.layout === "single"} onClick={() => setOpt({ ...opt, layout: "single" })}>Everything on one sheet</Chip>
                     </div>
-                    {opt.layout === "single" && <p className="text-xs text-slate-500">Tables that continue across pages are joined into one, and repeated header rows are dropped.</p>}
+                    {opt.layout === "single" && <p className="text-xs text-muted">Tables that continue across pages are joined into one, and repeated header rows are dropped.</p>}
                   </Row>
 
                   <Row title="Column detection">
@@ -776,7 +776,7 @@ export default function PdfToExcel() {
                       <Chip on={opt.sens === "normal"} onClick={() => setOpt({ ...opt, sens: "normal" })}>Normal</Chip>
                       <Chip on={opt.sens === "high"} onClick={() => setOpt({ ...opt, sens: "high" })}>Tight columns</Chip>
                     </div>
-                    <p className="text-xs text-slate-500">If columns get merged together, try “Tight columns”. If one cell is split into several, try “Wide gaps only”.</p>
+                    <p className="text-xs text-muted">If columns get merged together, try “Tight columns”. If one cell is split into several, try “Wide gaps only”.</p>
                   </Row>
 
                   <Row title="Scanned pages (OCR)">
@@ -790,10 +790,10 @@ export default function PdfToExcel() {
                         </select>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">Auto-detect only runs OCR on pages without selectable text. The language pack downloads the first time it’s used.</p>
+                    <p className="text-xs text-muted">Auto-detect only runs OCR on pages without selectable text. The language pack downloads the first time it’s used.</p>
                   </Row>
 
-                  <div className="space-y-3 border-t border-slate-800 pt-5">
+                  <div className="space-y-3 border-t border-border pt-5">
                     <p className={lbl}>Cells</p>
                     <Check2 on={opt.numbers} onChange={(v) => setOpt({ ...opt, numbers: v })} title="Convert numbers" hint="“1,234.50”, “(45)” and “12%” become real numbers you can calculate with" />
                     {!isCsv && (
@@ -817,11 +817,11 @@ export default function PdfToExcel() {
             {stage === "working" && (
               <div className={`${card} space-y-4 p-6`}>
                 <div className="flex items-center gap-3">
-                  <Loader2 size={20} className="shrink-0 animate-spin text-emerald-400" />
-                  <p className="text-sm text-slate-200">{progress.msg}</p>
+                  <Loader2 size={20} className="shrink-0 animate-spin text-success" />
+                  <p className="text-sm text-text">{progress.msg}</p>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all duration-300" style={{ width: `${progress.pct}%` }} />
+                <div className="h-2 overflow-hidden rounded-full bg-surface">
+                  <div className="h-full rounded-full bg-gradient-to-r from-brand to-accent transition-all duration-300" style={{ width: `${progress.pct}%` }} />
                 </div>
                 <button onClick={() => { cancelRef.current = true; }} className={btn}><X size={15} />Cancel</button>
               </div>
@@ -833,7 +833,7 @@ export default function PdfToExcel() {
                 {result.model.sheets.length === 0 ? (
                   <div className={`${card} space-y-4 p-6 text-center`}>
                     <h2 className="text-xl font-bold">No tables found</h2>
-                    <p className="text-sm text-amber-400">
+                    <p className="text-sm text-warning">
                       Nothing table-like was detected. Try “Tight columns”, switch to “Tables + other text”, or set OCR to “Always OCR” if the PDF is scanned.
                     </p>
                     <div className="flex flex-wrap justify-center gap-3">
@@ -843,16 +843,16 @@ export default function PdfToExcel() {
                   </div>
                 ) : (
                   <div className={`${card} space-y-5 p-6 text-center`}>
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400"><Check size={28} /></div>
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success"><Check size={28} /></div>
                     <div>
                       <h2 className="text-2xl font-bold">Your file is ready</h2>
-                      <p className="mt-1 text-sm text-slate-400">{result.name} · {fmtSize(result.blob.size)}</p>
+                      <p className="mt-1 text-sm text-muted">{result.name} · {fmtSize(result.blob.size)}</p>
                     </div>
-                    <div className="flex flex-wrap justify-center gap-2 text-xs text-slate-300">
+                    <div className="flex flex-wrap justify-center gap-2 text-xs text-text">
                       {[`${result.model.stats.tables} table${result.model.stats.tables === 1 ? "" : "s"}`, `${result.model.stats.rows.toLocaleString()} table rows`,
                         isCsv ? null : `${result.model.stats.sheets} sheet${result.model.stats.sheets === 1 ? "" : "s"}`,
                         result.model.stats.ocr ? `${result.model.stats.ocr} page${result.model.stats.ocr > 1 ? "s" : ""} read with OCR` : null]
-                        .filter(Boolean).map((t) => <span key={t} className="rounded-full border border-slate-700 px-3 py-1">{t}</span>)}
+                        .filter(Boolean).map((t) => <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>)}
                     </div>
                     <div className="flex flex-wrap justify-center gap-3">
                       <button onClick={() => download(result.blob, result.name)} className={btnPrimary}><Download size={16} />Download again</button>
@@ -861,14 +861,14 @@ export default function PdfToExcel() {
                       <button onClick={reset} className={btn}>Convert another PDF</button>
                     </div>
                     {result.model.stats.tables === 0 && (
-                      <p className="text-sm text-amber-400">No real tables were detected, only plain text. Try “Tight columns” if this PDF has a table.</p>
+                      <p className="text-sm text-warning">No real tables were detected, only plain text. Try “Tight columns” if this PDF has a table.</p>
                     )}
                   </div>
                 )}
 
                 {showPreview && result.model.sheets.length > 0 && (
                   <div className={`${card} p-3 sm:p-5`}>
-                    <p className="mb-3 text-xs text-slate-500">Preview of the first {Math.min(3, result.model.sheets.length)} sheet(s) — check column alignment before using the data.</p>
+                    <p className="mb-3 text-xs text-muted">Preview of the first {Math.min(3, result.model.sheets.length)} sheet(s) — check column alignment before using the data.</p>
                     {result.model.sheets.slice(0, 3).map((sh) => <PrevSheet key={sh.name} sh={sh} />)}
                   </div>
                 )}

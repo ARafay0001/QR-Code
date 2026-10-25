@@ -88,9 +88,9 @@ function Spinner({ className = "h-5 w-5" }) {
 
 function Stat({ label, value, accent }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${accent || "text-white"}`}>{value}</p>
+    <div className="rounded-2xl border border-text/10 bg-text/5 p-4">
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-bold ${accent || "text-text"}`}>{value}</p>
     </div>
   );
 }
@@ -99,10 +99,10 @@ function Toast({ toast, onClose }) {
   if (!toast) return null;
   const tone =
     toast.type === "error"
-      ? "border-red-500/30 bg-red-500/10 text-red-300"
+      ? "border-danger/30 bg-danger/10 text-danger"
       : toast.type === "success"
-      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-      : "border-blue-500/30 bg-blue-500/10 text-blue-300";
+      ? "border-success/30 bg-success/10 text-success"
+      : "border-brand/30 bg-brand/10 text-brand";
   return (
     <div
       role="status"
@@ -119,7 +119,7 @@ function Toast({ toast, onClose }) {
 
 function VideoCard({ title, badge, src, meta }) {
   return (
-    <figure className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60">
+    <figure className="overflow-hidden rounded-2xl border border-text/10 bg-page/60">
       <div className="flex items-center justify-between px-4 py-3">
         <figcaption className="text-sm font-semibold">{title}</figcaption>
         <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${badge}`}>{meta}</span>
@@ -129,7 +129,7 @@ function VideoCard({ title, badge, src, meta }) {
         controls
         playsInline
         preload="metadata"
-        className="aspect-video w-full bg-black object-contain"
+        className="aspect-video w-full bg-page object-contain"
       />
     </figure>
   );
@@ -347,12 +347,12 @@ export default function VideoCompressor() {
     <>
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
@@ -361,17 +361,17 @@ export default function VideoCompressor() {
             <h1 className="mt-4 text-4xl font-black leading-tight sm:text-5xl">
               Compress Videos
               <br />
-              <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand via-brand to-accent bg-clip-text text-transparent">
                 Without Losing Quality.
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-slate-400 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-muted sm:text-lg">
               Compress MP4, MOV, AVI and WebM videos directly in your browser.
               No uploads. Completely private.
             </p>
-            <ul className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-300 sm:text-sm">
+            <ul className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-text sm:text-sm">
               {["100% Free", "No upload to servers", "MP4 · MOV · AVI · WebM"].map((t) => (
-                <li key={t} className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+                <li key={t} className="rounded-full border border-text/10 bg-text/5 px-4 py-1.5">
                   {t}
                 </li>
               ))}
@@ -384,16 +384,16 @@ export default function VideoCompressor() {
             className="mt-12 grid gap-8 lg:grid-cols-[380px_1fr]"
           >
             {/* ------------------------------ Toolbar ------------------------------ */}
-            <aside className="h-fit rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl lg:sticky lg:top-6">
+            <aside className="h-fit rounded-3xl border border-text/10 bg-text/5 p-6 backdrop-blur-xl lg:sticky lg:top-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold">Settings</h2>
                 <span
                   className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
                     engine === "ready"
-                      ? "bg-emerald-500/10 text-emerald-300"
+                      ? "bg-success/10 text-success"
                       : engine === "error"
-                      ? "bg-red-500/10 text-red-300"
-                      : "bg-blue-500/10 text-blue-300"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-brand/10 text-brand"
                   }`}
                 >
                   {engine === "loading" && <Spinner className="h-3 w-3" />}
@@ -404,7 +404,7 @@ export default function VideoCompressor() {
               </div>
 
               {engine === "error" && (
-                <p className="mt-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+                <p className="mt-3 rounded-xl border border-danger/20 bg-danger/10 p-3 text-xs text-danger">
                   The compression engine couldn&apos;t load. Refresh the page and check your
                   connection.
                 </p>
@@ -412,7 +412,7 @@ export default function VideoCompressor() {
 
               {/* Target size */}
               <div className="mt-6">
-                <label htmlFor="target-size" className="mb-2 block text-sm font-medium text-slate-300">
+                <label htmlFor="target-size" className="mb-2 block text-sm font-medium text-text">
                   Target size
                 </label>
                 <div className="flex gap-2">
@@ -424,14 +424,14 @@ export default function VideoCompressor() {
                     value={targetSize}
                     disabled={loading}
                     onChange={(e) => setTargetSize(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-900/70 px-4 py-2.5 text-sm outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30 disabled:opacity-50"
+                    className="w-full rounded-xl border border-text/10 bg-surface/70 px-4 py-2.5 text-sm outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/30 disabled:opacity-50"
                   />
                   <select
                     aria-label="Size unit"
                     value={targetUnit}
                     disabled={loading}
                     onChange={(e) => setTargetUnit(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-slate-900/70 px-3 text-sm outline-none focus:border-blue-500/60 disabled:opacity-50"
+                    className="rounded-xl border border-text/10 bg-surface/70 px-3 text-sm outline-none focus:border-brand/60 disabled:opacity-50"
                   >
                     <option>KB</option>
                     <option>MB</option>
@@ -447,14 +447,14 @@ export default function VideoCompressor() {
                         setTargetSize(p.size);
                         setTargetUnit(p.unit);
                       }}
-                      className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:border-blue-500/50 hover:text-white disabled:opacity-50"
+                      className="rounded-full border border-text/10 px-3 py-1 text-xs text-text transition hover:border-accent/50 hover:text-text disabled:opacity-50"
                     >
                       {p.label}
                     </button>
                   ))}
                 </div>
                 {targetTooBig && (
-                  <p className="mt-2 text-xs text-amber-400">
+                  <p className="mt-2 text-xs text-warning">
                     Target must be smaller than the original ({formatBytes(selectedVideo.size)}).
                   </p>
                 )}
@@ -462,8 +462,8 @@ export default function VideoCompressor() {
 
               {/* Resolution */}
               <fieldset className="mt-6">
-                <legend className="mb-2 text-sm font-medium text-slate-300">Resolution</legend>
-                <div className="grid grid-cols-5 gap-1 rounded-xl border border-white/10 bg-slate-900/50 p-1">
+                <legend className="mb-2 text-sm font-medium text-text">Resolution</legend>
+                <div className="grid grid-cols-5 gap-1 rounded-xl border border-text/10 bg-surface/50 p-1">
                   {RESOLUTIONS.map((r) => (
                     <button
                       key={r.value}
@@ -473,15 +473,15 @@ export default function VideoCompressor() {
                       onClick={() => setResolution(r.value)}
                       className={`rounded-lg py-2 text-[11px] font-semibold transition disabled:opacity-50 ${
                         resolution === r.value
-                          ? "bg-blue-600 text-white"
-                          : "text-slate-400 hover:text-white"
+                          ? "bg-brand text-text"
+                          : "text-muted hover:text-text"
                       }`}
                     >
                       {r.label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-muted">
                   Lower resolution helps hit small targets without heavy blur.
                 </p>
               </fieldset>
@@ -492,7 +492,7 @@ export default function VideoCompressor() {
                   type="button"
                   onClick={compressVideo}
                   disabled={!canCompress}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 font-semibold shadow-lg shadow-blue-600/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-3 font-semibold shadow-lg shadow-brand/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -510,14 +510,14 @@ export default function VideoCompressor() {
                       aria-valuenow={progress}
                       aria-valuemin={0}
                       aria-valuemax={100}
-                      className="h-1.5 overflow-hidden rounded-full bg-white/10"
+                      className="h-1.5 overflow-hidden rounded-full bg-text/10"
                     >
                       <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+                        className="h-full bg-gradient-to-r from-brand to-accent transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-center text-xs text-slate-400">
+                    <p className="mt-2 text-center text-xs text-muted">
                       Elapsed {formatTime(elapsed)} · keep this tab open
                     </p>
                   </div>
@@ -527,7 +527,7 @@ export default function VideoCompressor() {
                   <a
                     href={compressedUrl || undefined}
                     download={compressedFile.name}
-                    className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-center font-semibold text-emerald-300 transition hover:bg-emerald-500/20"
+                    className="rounded-xl border border-success/40 bg-success/10 px-5 py-3 text-center font-semibold text-success transition hover:bg-success/20"
                   >
                     ⬇ Download {formatBytes(compressedFile.size)}
                   </a>
@@ -537,7 +537,7 @@ export default function VideoCompressor() {
                   <button
                     type="button"
                     onClick={reset}
-                    className="rounded-xl px-5 py-2 text-sm text-slate-400 transition hover:text-white"
+                    className="rounded-xl px-5 py-2 text-sm text-muted transition hover:text-text"
                   >
                     {loading ? "Cancel & start over" : "Clear & start over"}
                   </button>
@@ -546,7 +546,7 @@ export default function VideoCompressor() {
             </aside>
 
             {/* ------------------------------ Preview ------------------------------ */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-6">
+            <div className="rounded-3xl border border-text/10 bg-text/5 p-4 backdrop-blur-xl sm:p-6">
               {!selectedVideo ? (
                 <button
                   type="button"
@@ -559,18 +559,18 @@ export default function VideoCompressor() {
                   onDrop={onDrop}
                   className={`flex min-h-[420px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 text-center transition ${
                     dragging
-                      ? "border-blue-400 bg-blue-500/10"
-                      : "border-white/15 hover:border-blue-500/50 hover:bg-white/5"
+                      ? "border-brand bg-brand/10"
+                      : "border-text/15 hover:border-accent/50 hover:bg-text/5"
                   }`}
                 >
-                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600/30 to-violet-600/30 text-3xl">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand/30 to-accent/30 text-3xl">
                     🎬
                   </span>
                   <span className="mt-5 text-xl font-bold">
                     {dragging ? "Drop it here" : "Drop your video here"}
                   </span>
-                  <span className="mt-2 text-sm text-slate-400">or click to browse your files</span>
-                  <span className="mt-4 text-xs text-slate-500">
+                  <span className="mt-2 text-sm text-muted">or click to browse your files</span>
+                  <span className="mt-4 text-xs text-muted">
                     MP4, MOV, AVI, WebM, MKV · up to {MAX_INPUT_MB} MB
                   </span>
                 </button>
@@ -579,7 +579,7 @@ export default function VideoCompressor() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate font-semibold">{selectedVideo.name}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted">
                         {formatBytes(selectedVideo.size)}
                         {duration ? ` · ${formatTime(duration)}` : ""}
                       </p>
@@ -588,7 +588,7 @@ export default function VideoCompressor() {
                       type="button"
                       disabled={loading}
                       onClick={() => inputRef.current?.click()}
-                      className="shrink-0 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition hover:border-blue-500/50 hover:text-white disabled:opacity-50"
+                      className="shrink-0 rounded-lg border border-text/10 px-3 py-1.5 text-xs text-text transition hover:border-accent/50 hover:text-text disabled:opacity-50"
                     >
                       Change video
                     </button>
@@ -599,20 +599,20 @@ export default function VideoCompressor() {
                       title="Original"
                       src={originalUrl}
                       meta={formatBytes(selectedVideo.size)}
-                      badge="bg-white/10 text-slate-200"
+                      badge="bg-text/10 text-text"
                     />
                     {compressedUrl && (
                       <VideoCard
                         title="Compressed"
                         src={compressedUrl}
                         meta={formatBytes(compressedFile.size)}
-                        badge="bg-blue-600/80 text-white"
+                        badge="bg-brand/80 text-text"
                       />
                     )}
                   </div>
 
                   {loading && !compressedUrl && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4 text-sm text-blue-200">
+                    <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-brand/10 p-4 text-sm text-brand">
                       <Spinner className="h-5 w-5 shrink-0" />
                       <span>
                         Encoding your video… {progress}%. Larger files can take a few minutes.
@@ -623,8 +623,8 @@ export default function VideoCompressor() {
                   {stats && (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       <Stat label="Original" value={formatBytes(stats.originalSize)} />
-                      <Stat label="Compressed" value={formatBytes(stats.compressedSize)} accent="text-blue-400" />
-                      <Stat label="Saved" value={`${stats.savedPercent}%`} accent="text-emerald-400" />
+                      <Stat label="Compressed" value={formatBytes(stats.compressedSize)} accent="text-brand" />
+                      <Stat label="Saved" value={`${stats.savedPercent}%`} accent="text-success" />
                       <Stat label="Space freed" value={formatBytes(Math.max(0, stats.savedBytes))} />
                     </div>
                   )}

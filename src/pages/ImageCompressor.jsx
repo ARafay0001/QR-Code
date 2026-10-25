@@ -112,9 +112,9 @@ function Spinner({ className = "h-5 w-5" }) {
 
 function Stat({ label, value, accent }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${accent || "text-white"}`}>{value}</p>
+    <div className="rounded-2xl border border-text/10 bg-text/5 p-4">
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-bold ${accent || "text-text"}`}>{value}</p>
     </div>
   );
 }
@@ -123,10 +123,10 @@ function Toast({ toast, onClose }) {
   if (!toast) return null;
   const tone =
     toast.type === "error"
-      ? "border-red-500/30 bg-red-500/10 text-red-300"
+      ? "border-danger/30 bg-danger/10 text-danger"
       : toast.type === "success"
-      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-      : "border-blue-500/30 bg-blue-500/10 text-blue-300";
+      ? "border-success/30 bg-success/10 text-success"
+      : "border-brand/30 bg-brand/10 text-brand";
   return (
     <div
       role="status"
@@ -144,7 +144,7 @@ function Toast({ toast, onClose }) {
 function CompareSlider({ originalUrl, compressedUrl }) {
   const [pos, setPos] = useState(50);
   return (
-    <div className="relative h-[300px] select-none overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 sm:h-[400px]">
+    <div className="relative h-[300px] select-none overflow-hidden rounded-2xl border border-text/10 bg-page/60 sm:h-[400px]">
       <img src={compressedUrl} alt="Compressed version" className="absolute inset-0 h-full w-full object-contain" draggable={false} />
       <img
         src={originalUrl}
@@ -153,13 +153,13 @@ function CompareSlider({ originalUrl, compressedUrl }) {
         style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
         draggable={false}
       />
-      <span className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold backdrop-blur">Original</span>
-      <span className="absolute right-3 top-3 rounded-full bg-blue-600/80 px-3 py-1 text-xs font-semibold backdrop-blur">Compressed</span>
+      <span className="absolute left-3 top-3 rounded-full bg-page/60 px-3 py-1 text-xs font-semibold backdrop-blur">Original</span>
+      <span className="absolute right-3 top-3 rounded-full bg-brand/80 px-3 py-1 text-xs font-semibold backdrop-blur">Compressed</span>
       <div
-        className="pointer-events-none absolute inset-y-0 w-0.5 bg-white/90 shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+        className="pointer-events-none absolute inset-y-0 w-0.5 bg-text/90 shadow-[0_0_12px_rgba(255,255,255,0.6)]"
         style={{ left: `${pos}%` }}
       >
-        <div className="absolute top-1/2 left-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-slate-900/90 text-xs backdrop-blur">
+        <div className="absolute top-1/2 left-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-text/30 bg-surface/90 text-xs backdrop-blur">
           ⇄
         </div>
       </div>
@@ -179,17 +179,17 @@ function CompareSlider({ originalUrl, compressedUrl }) {
 function StatusBadge({ item }) {
   if (item.status === "processing")
     return (
-      <span className="flex items-center gap-1.5 text-xs text-blue-300">
+      <span className="flex items-center gap-1.5 text-xs text-brand">
         <Spinner className="h-3 w-3" /> {item.progress}%
       </span>
     );
-  if (item.status === "queued") return <span className="text-xs text-slate-400">Queued</span>;
-  if (item.status === "error") return <span className="text-xs text-red-400">Failed</span>;
+  if (item.status === "queued") return <span className="text-xs text-muted">Queued</span>;
+  if (item.status === "error") return <span className="text-xs text-danger">Failed</span>;
   if (item.status === "done") {
     const saved = Math.max(0, Math.round((1 - item.result.size / item.file.size) * 100));
-    return <span className="text-xs font-semibold text-emerald-400">−{saved}%</span>;
+    return <span className="text-xs font-semibold text-success">−{saved}%</span>;
   }
-  return <span className="text-xs text-slate-500">Ready</span>;
+  return <span className="text-xs text-muted">Ready</span>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -451,12 +451,12 @@ export default function ImageCompressor() {
     <>
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
@@ -465,17 +465,17 @@ export default function ImageCompressor() {
             <h1 className="mt-4 text-4xl font-black leading-tight sm:text-5xl">
               Compress Images
               <br />
-              <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand via-brand to-accent bg-clip-text text-transparent">
                 Without Losing Quality.
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-slate-400 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-muted sm:text-lg">
               Reduce image size for websites, forms and social media in seconds. Compress up to {MAX_FILES} images
               at once — private by design, your files never leave your browser.
             </p>
-            <ul className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-300 sm:text-sm">
+            <ul className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-text sm:text-sm">
               {["100% Free", "Bulk compression", "No upload to servers", "JPG · PNG · WebP"].map((t) => (
-                <li key={t} className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+                <li key={t} className="rounded-full border border-text/10 bg-text/5 px-4 py-1.5">
                   {t}
                 </li>
               ))}
@@ -485,24 +485,24 @@ export default function ImageCompressor() {
           {/* Workspace */}
           <section aria-label="Image compressor tool" className="mt-12 grid gap-8 lg:grid-cols-[380px_1fr]">
             {/* ------------------------------ Toolbar ------------------------------ */}
-            <aside className="h-fit rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl lg:sticky lg:top-6">
+            <aside className="h-fit rounded-3xl border border-text/10 bg-text/5 p-6 backdrop-blur-xl lg:sticky lg:top-6">
               <h2 className="text-lg font-bold">Settings</h2>
-              <p className="mt-1 text-xs text-slate-500">Applied to every image in the list.</p>
+              <p className="mt-1 text-xs text-muted">Applied to every image in the list.</p>
 
               {/* Mode */}
               <fieldset className="mt-5" disabled={running}>
-                <legend className="mb-2 text-sm font-medium text-slate-300">Compression mode</legend>
+                <legend className="mb-2 text-sm font-medium text-text">Compression mode</legend>
                 <div className="grid gap-2">
                   {Object.entries(MODES).map(([key, m]) => (
                     <label
                       key={key}
                       className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 transition ${
-                        mode === key ? "border-blue-500/60 bg-blue-500/10" : "border-white/10 hover:border-white/25"
+                        mode === key ? "border-brand/60 bg-brand/10" : "border-text/10 hover:border-text/25"
                       }`}
                     >
                       <span>
                         <span className="block text-sm font-semibold">{m.label}</span>
-                        <span className="block text-xs text-slate-400">{m.hint}</span>
+                        <span className="block text-xs text-muted">{m.hint}</span>
                       </span>
                       <input
                         type="radio"
@@ -510,7 +510,7 @@ export default function ImageCompressor() {
                         value={key}
                         checked={mode === key}
                         onChange={() => setMode(key)}
-                        className="h-4 w-4 accent-blue-500"
+                        className="h-4 w-4 accent-brand"
                       />
                     </label>
                   ))}
@@ -519,7 +519,7 @@ export default function ImageCompressor() {
 
               {/* Target size */}
               <div className="mt-6">
-                <label htmlFor="target-size" className="mb-2 block text-sm font-medium text-slate-300">
+                <label htmlFor="target-size" className="mb-2 block text-sm font-medium text-text">
                   Target size per image
                 </label>
                 <div className="flex gap-2">
@@ -531,14 +531,14 @@ export default function ImageCompressor() {
                     value={targetSize}
                     disabled={running}
                     onChange={(e) => setTargetSize(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-900/70 px-4 py-2.5 text-sm outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30 disabled:opacity-50"
+                    className="w-full rounded-xl border border-text/10 bg-surface/70 px-4 py-2.5 text-sm outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/30 disabled:opacity-50"
                   />
                   <select
                     aria-label="Size unit"
                     value={targetUnit}
                     disabled={running}
                     onChange={(e) => setTargetUnit(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-slate-900/70 px-3 text-sm outline-none focus:border-blue-500/60 disabled:opacity-50"
+                    className="rounded-xl border border-text/10 bg-surface/70 px-3 text-sm outline-none focus:border-brand/60 disabled:opacity-50"
                   >
                     <option>KB</option>
                     <option>MB</option>
@@ -554,7 +554,7 @@ export default function ImageCompressor() {
                         setTargetSize(p.size);
                         setTargetUnit(p.unit);
                       }}
-                      className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300 transition hover:border-blue-500/50 hover:text-white disabled:opacity-50"
+                      className="rounded-full border border-text/10 px-3 py-1 text-xs text-text transition hover:border-accent/50 hover:text-text disabled:opacity-50"
                     >
                       {p.label}
                     </button>
@@ -564,8 +564,8 @@ export default function ImageCompressor() {
 
               {/* Format */}
               <fieldset className="mt-6" disabled={running}>
-                <legend className="mb-2 text-sm font-medium text-slate-300">Output format</legend>
-                <div className="grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-slate-900/50 p-1">
+                <legend className="mb-2 text-sm font-medium text-text">Output format</legend>
+                <div className="grid grid-cols-3 gap-2 rounded-xl border border-text/10 bg-surface/50 p-1">
                   {FORMATS.map((f) => (
                     <button
                       key={f.value}
@@ -573,14 +573,14 @@ export default function ImageCompressor() {
                       aria-pressed={format === f.value}
                       onClick={() => setFormat(f.value)}
                       className={`rounded-lg py-2 text-xs font-semibold transition ${
-                        format === f.value ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                        format === f.value ? "bg-brand text-text" : "text-muted hover:text-text"
                       }`}
                     >
                       {f.label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-slate-500">WebP usually gives the smallest files at the same quality.</p>
+                <p className="mt-2 text-xs text-muted">WebP usually gives the smallest files at the same quality.</p>
               </fieldset>
 
               {/* Actions */}
@@ -589,7 +589,7 @@ export default function ImageCompressor() {
                   type="button"
                   onClick={compressAll}
                   disabled={running || !items.length}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 font-semibold shadow-lg shadow-blue-600/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-3 font-semibold shadow-lg shadow-brand/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {running ? (
                     <>
@@ -608,10 +608,10 @@ export default function ImageCompressor() {
                     aria-valuenow={processedCount}
                     aria-valuemin={0}
                     aria-valuemax={items.length}
-                    className="h-1.5 overflow-hidden rounded-full bg-white/10"
+                    className="h-1.5 overflow-hidden rounded-full bg-text/10"
                   >
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+                      className="h-full bg-gradient-to-r from-brand to-accent transition-all"
                       style={{
                         width: `${((processedCount + (processingItem?.progress || 0) / 100) / items.length) * 100}%`,
                       }}
@@ -624,7 +624,7 @@ export default function ImageCompressor() {
                     type="button"
                     onClick={downloadZip}
                     disabled={zipping || running}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-center font-semibold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-success/40 bg-success/10 px-5 py-3 text-center font-semibold text-success transition hover:bg-success/20 disabled:opacity-50"
                   >
                     {zipping ? <Spinner /> : "⬇"}
                     {doneItems.length > 1 ? `Download all (ZIP) · ${formatBytes(totals.compressed)}` : `Download ${formatBytes(totals.compressed)}`}
@@ -635,7 +635,7 @@ export default function ImageCompressor() {
                   <button
                     type="button"
                     onClick={clearAll}
-                    className="rounded-xl px-5 py-2 text-sm text-slate-400 transition hover:text-white"
+                    className="rounded-xl px-5 py-2 text-sm text-muted transition hover:text-text"
                   >
                     {running ? "Cancel & clear all" : "Clear all"}
                   </button>
@@ -645,7 +645,7 @@ export default function ImageCompressor() {
 
             {/* ------------------------------ Right panel ------------------------------ */}
             <div
-              className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-6"
+              className="rounded-3xl border border-text/10 bg-text/5 p-4 backdrop-blur-xl sm:p-6"
               onDragOver={(e) => {
                 e.preventDefault();
                 if (!running) setDragging(true);
@@ -658,15 +658,15 @@ export default function ImageCompressor() {
                   type="button"
                   onClick={() => inputRef.current?.click()}
                   className={`flex min-h-[420px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 text-center transition ${
-                    dragging ? "border-blue-400 bg-blue-500/10" : "border-white/15 hover:border-blue-500/50 hover:bg-white/5"
+                    dragging ? "border-brand bg-brand/10" : "border-text/15 hover:border-accent/50 hover:bg-text/5"
                   }`}
                 >
-                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600/30 to-violet-600/30 text-3xl">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand/30 to-accent/30 text-3xl">
                     🖼️
                   </span>
                   <span className="mt-5 text-xl font-bold">{dragging ? "Drop them here" : "Drop your images here"}</span>
-                  <span className="mt-2 text-sm text-slate-400">or click to browse · paste with Ctrl/⌘ + V</span>
-                  <span className="mt-4 text-xs text-slate-500">
+                  <span className="mt-2 text-sm text-muted">or click to browse · paste with Ctrl/⌘ + V</span>
+                  <span className="mt-4 text-xs text-muted">
                     JPG, PNG, WebP · up to {MAX_FILES} images · {MAX_INPUT_MB} MB each
                   </span>
                 </button>
@@ -678,7 +678,7 @@ export default function ImageCompressor() {
                       {active.status === "done" ? (
                         <CompareSlider key={active.id} originalUrl={active.url} compressedUrl={active.resultUrl} />
                       ) : (
-                        <div className="relative flex h-[300px] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 sm:h-[400px]">
+                        <div className="relative flex h-[300px] items-center justify-center overflow-hidden rounded-2xl border border-text/10 bg-page/60 sm:h-[400px]">
                           <img
                             src={active.url}
                             alt={`Preview of ${active.file.name}`}
@@ -688,13 +688,13 @@ export default function ImageCompressor() {
                           />
                           {active.status === "processing" && (
                             <div className="absolute flex flex-col items-center gap-3">
-                              <Spinner className="h-8 w-8 text-blue-400" />
-                              <span className="text-sm text-slate-300">Optimising… {active.progress}%</span>
+                              <Spinner className="h-8 w-8 text-brand" />
+                              <span className="text-sm text-text">Optimising… {active.progress}%</span>
                             </div>
                           )}
                         </div>
                       )}
-                      <p className="mt-2 truncate text-center text-xs text-slate-400">
+                      <p className="mt-2 truncate text-center text-xs text-muted">
                         {active.file.name} · {formatBytes(active.file.size)}
                         {active.status === "done" && ` → ${formatBytes(active.result.size)}`}
                       </p>
@@ -706,15 +706,15 @@ export default function ImageCompressor() {
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                       <Stat label="Images" value={`${doneItems.length}/${items.length}`} />
                       <Stat label="Original" value={formatBytes(totals.original)} />
-                      <Stat label="Compressed" value={formatBytes(totals.compressed)} accent="text-blue-400" />
-                      <Stat label="Saved" value={`${totals.saved}%`} accent="text-emerald-400" />
+                      <Stat label="Compressed" value={formatBytes(totals.compressed)} accent="text-brand" />
+                      <Stat label="Saved" value={`${totals.saved}%`} accent="text-success" />
                     </div>
                   )}
 
                   {/* File list */}
                   <div>
                     <div className="mb-3 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-300">
+                      <h3 className="text-sm font-semibold text-text">
                         Images ({items.length}/{MAX_FILES})
                       </h3>
                       <button
@@ -723,8 +723,8 @@ export default function ImageCompressor() {
                         onClick={() => inputRef.current?.click()}
                         className={`rounded-lg border px-3 py-1.5 text-xs transition disabled:opacity-50 ${
                           dragging
-                            ? "border-blue-400 bg-blue-500/10 text-white"
-                            : "border-white/10 text-slate-300 hover:border-blue-500/50 hover:text-white"
+                            ? "border-brand bg-brand/10 text-text"
+                            : "border-text/10 text-text hover:border-accent/50 hover:text-text"
                         }`}
                       >
                         {dragging ? "Drop to add" : "+ Add more"}
@@ -736,7 +736,7 @@ export default function ImageCompressor() {
                         <li
                           key={item.id}
                           className={`flex items-center gap-3 rounded-xl border p-2.5 transition ${
-                            item.id === active?.id ? "border-blue-500/50 bg-blue-500/10" : "border-white/10 hover:border-white/25"
+                            item.id === active?.id ? "border-brand/50 bg-brand/10" : "border-text/10 hover:border-text/25"
                           }`}
                         >
                           <button
@@ -753,10 +753,10 @@ export default function ImageCompressor() {
                             />
                             <span className="min-w-0">
                               <span className="block truncate text-sm font-medium">{item.file.name}</span>
-                              <span className="block text-xs text-slate-400">
+                              <span className="block text-xs text-muted">
                                 {formatBytes(item.file.size)}
                                 {item.status === "done" && (
-                                  <span className="text-blue-300"> → {formatBytes(item.result.size)}</span>
+                                  <span className="text-brand"> → {formatBytes(item.result.size)}</span>
                                 )}
                               </span>
                             </span>
@@ -769,7 +769,7 @@ export default function ImageCompressor() {
                               type="button"
                               onClick={() => downloadOne(item)}
                               aria-label={`Download ${item.file.name}`}
-                              className="rounded-lg border border-emerald-500/30 px-2.5 py-1.5 text-xs text-emerald-300 transition hover:bg-emerald-500/10"
+                              className="rounded-lg border border-success/30 px-2.5 py-1.5 text-xs text-success transition hover:bg-success/10"
                             >
                               ⬇
                             </button>
@@ -779,7 +779,7 @@ export default function ImageCompressor() {
                             onClick={() => removeItem(item.id)}
                             disabled={item.status === "processing"}
                             aria-label={`Remove ${item.file.name}`}
-                            className="rounded-lg px-2 py-1.5 text-xs text-slate-500 transition hover:text-red-400 disabled:opacity-30"
+                            className="rounded-lg px-2 py-1.5 text-xs text-muted transition hover:text-danger disabled:opacity-30"
                           >
                             ✕
                           </button>

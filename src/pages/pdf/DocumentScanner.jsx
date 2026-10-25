@@ -1153,19 +1153,19 @@ const ocrWords = (data) => {
 
 /* -------------------------------- UI bits --------------------------------- */
 
-const card = "rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl";
-const lbl = "text-xs font-semibold uppercase tracking-wide text-slate-500";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-40";
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(59,130,246,.3)] transition hover:scale-[1.03] disabled:opacity-40";
+const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
+const lbl = "text-xs font-semibold uppercase tracking-wide text-muted";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-4 py-2.5 text-sm font-semibold text-text transition hover:border-muted hover:text-text disabled:opacity-40";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-2.5 text-sm font-semibold text-text shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.03] disabled:opacity-40";
 
 const Chip = ({ on, onClick, children }) => (
-  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-blue-500 bg-blue-500/15 text-white" : "border-slate-700 text-slate-300 hover:border-slate-500"}`}>{children}</button>
+  <button onClick={onClick} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${on ? "border-brand bg-brand/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
 );
 const Swatches = ({ colors, value, onChange }) => (
   <div className="flex flex-wrap gap-2.5">
     {colors.map((c) => (
       <button key={c} onClick={() => onChange(c)} aria-label={c} style={{ background: c }}
-        className={`h-8 w-8 rounded-full border-2 transition ${value === c ? "scale-110 border-blue-500" : "border-slate-600"}`} />
+        className={`h-8 w-8 rounded-full border-2 transition ${value === c ? "scale-110 border-brand" : "border-muted"}`} />
     ))}
   </div>
 );
@@ -1174,12 +1174,12 @@ const Row = ({ title, children }) => (
 );
 const Slider = ({ text, value, min = -100, max = 100, onChange }) => (
   <label className="block">
-    <span className="flex justify-between text-xs text-slate-400"><span>{text}</span><span className="tabular-nums">{value}</span></span>
-    <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-2 w-full accent-blue-500" />
+    <span className="flex justify-between text-xs text-muted"><span>{text}</span><span className="tabular-nums">{value}</span></span>
+    <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-2 w-full accent-brand" />
   </label>
 );
 const ToolBtn = ({ icon: Icon, text, active, onClick }) => (
-  <button onClick={onClick} className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-semibold transition ${active ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}>
+  <button onClick={onClick} className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-semibold transition ${active ? "bg-brand text-text" : "text-muted hover:bg-text/5 hover:text-text"}`}>
     <Icon size={20} />{text}
   </button>
 );
@@ -1191,12 +1191,12 @@ const PresetStrip = ({ thumbs, current, onPick }) => (
       const on = current === p.id;
       return (
         <button key={p.id} onClick={() => onPick(p)} className="group w-[76px] shrink-0 text-center">
-          <div className={`relative flex h-[100px] items-center justify-center overflow-hidden rounded-xl border-2 bg-slate-950 transition ${on ? "border-blue-500 shadow-[0_0_18px_rgba(59,130,246,.35)]" : "border-slate-800 group-hover:border-slate-600"}`}>
+          <div className={`relative flex h-[100px] items-center justify-center overflow-hidden rounded-xl border-2 bg-page transition ${on ? "border-brand shadow-[0_0_18px_color-mix(in_srgb,var(--theme-brand)_35%,transparent)]" : "border-border group-hover:border-muted"}`}>
             {thumbs[p.id] ? <img src={thumbs[p.id]} alt={p.label} draggable={false} className="max-h-full max-w-full object-contain" />
-              : <Loader2 size={16} className="animate-spin text-slate-600" />}
-            {on && <span className="absolute right-1 top-1 rounded-full bg-blue-600 p-0.5"><Check size={10} /></span>}
+              : <Loader2 size={16} className="animate-spin text-muted" />}
+            {on && <span className="absolute right-1 top-1 rounded-full bg-brand p-0.5"><Check size={10} /></span>}
           </div>
-          <span className={`mt-1.5 block truncate text-[11px] font-semibold ${on ? "text-white" : "text-slate-400"}`}>{p.label}</span>
+          <span className={`mt-1.5 block truncate text-[11px] font-semibold ${on ? "text-text" : "text-muted"}`}>{p.label}</span>
         </button>
       );
     })}
@@ -1237,18 +1237,18 @@ function CropEditor({ page, onChange, onCommit }) {
         <div key={i} onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = i; }}
           style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%` }}
           className="absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-grab items-center justify-center">
-          <span className="h-5 w-5 rounded-full border-2 border-white bg-blue-500 shadow-lg" />
+          <span className="h-5 w-5 rounded-full border-2 border-text bg-brand shadow-lg" />
         </div>
       ))}
       {loupe && (
-        <div className={`pointer-events-none absolute top-2 ${loupe.x < 0.5 && loupe.y < 0.4 ? "right-2" : "left-2"} overflow-hidden rounded-full border-2 border-white shadow-2xl`}
+        <div className={`pointer-events-none absolute top-2 ${loupe.x < 0.5 && loupe.y < 0.4 ? "right-2" : "left-2"} overflow-hidden rounded-full border-2 border-text shadow-2xl`}
           style={{
             width: LOUPE, height: LOUPE, backgroundImage: `url(${page.original})`, backgroundRepeat: "no-repeat",
             backgroundSize: `${loupe.W * 3}px ${loupe.H * 3}px`,
             backgroundPosition: `${-(loupe.x * loupe.W * 3 - LOUPE / 2)}px ${-(loupe.y * loupe.H * 3 - LOUPE / 2)}px`,
           }}>
-          <span className="absolute left-1/2 top-0 h-full w-px bg-blue-500/80" />
-          <span className="absolute left-0 top-1/2 h-px w-full bg-blue-500/80" />
+          <span className="absolute left-1/2 top-0 h-full w-px bg-brand/80" />
+          <span className="absolute left-0 top-1/2 h-px w-full bg-brand/80" />
         </div>
       )}
     </div>
@@ -1340,25 +1340,25 @@ function CameraModal({ onClose, onCapture }) {
   captureRef.current = capture;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/90 p-4">
-      <div className="flex items-center justify-between text-white">
-        <span className="text-sm text-slate-300">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-page/90 p-4">
+      <div className="flex items-center justify-between text-text">
+        <span className="text-sm text-text">
           {found ? (auto ? "Page found — hold steady, capturing automatically" : "Page found — tap the shutter") : "Place the page on a contrasting surface"}
         </span>
-        <button onClick={onClose} className="rounded-full bg-white/10 p-2 hover:bg-white/20"><X size={18} /></button>
+        <button onClick={onClose} className="rounded-full bg-text/10 p-2 hover:bg-text/20"><X size={18} /></button>
       </div>
       <div className="flex flex-1 items-center justify-center overflow-hidden">
-        {err ? <p className="max-w-sm text-center text-red-400">{err}</p> : (
+        {err ? <p className="max-w-sm text-center text-danger">{err}</p> : (
           <div className="relative max-h-full max-w-full">
             <video ref={videoRef} playsInline muted className="block max-h-[72vh] max-w-full rounded-xl" />
             <canvas ref={overlayRef} className="pointer-events-none absolute inset-0 h-full w-full" />
-            {flash && <div className="absolute inset-0 rounded-xl bg-white/70" />}
+            {flash && <div className="absolute inset-0 rounded-xl bg-text/70" />}
           </div>
         )}
       </div>
       <div className="flex items-center justify-center gap-4 pt-4">
         <Chip on={auto} onClick={() => setAuto((a) => !a)}>Auto-capture</Chip>
-        <button onClick={capture} disabled={!!err} aria-label="Capture" className="h-16 w-16 rounded-full border-4 border-white bg-white/20 transition active:scale-90 disabled:opacity-30" />
+        <button onClick={capture} disabled={!!err} aria-label="Capture" className="h-16 w-16 rounded-full border-4 border-text bg-text/20 transition active:scale-90 disabled:opacity-30" />
         <button onClick={onClose} className={btn}>{shots ? `Done (${shots})` : "Cancel"}</button>
       </div>
     </div>
@@ -1436,14 +1436,14 @@ export default function DocumentScanner() {
     const what = kind === "filter" ? "its own filter" : "its own layout";
     return (
       <div className="space-y-2">
-        <div className="flex rounded-xl border border-slate-800 bg-slate-950/60 p-1">
+        <div className="flex rounded-xl border border-border bg-page/60 p-1">
           {[["all", `All pages (${pages.length})`], ["page", "This page only"]].map(([v, l]) => (
             <button key={v} onClick={() => setScope(v)}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${scope === v ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>{l}</button>
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${scope === v ? "bg-brand text-text" : "text-muted hover:text-text"}`}>{l}</button>
           ))}
         </div>
         {scope === "all" && custom > 0 && (
-          <p className="text-xs text-amber-400">
+          <p className="text-xs text-warning">
             {custom} page{custom > 1 ? "s use" : " uses"} {what} and won’t change here.{" "}
             <button onClick={() => resetKind(kind)} className="font-semibold underline">Match all pages</button>
           </p>
@@ -1451,10 +1451,10 @@ export default function DocumentScanner() {
         {scope === "page" && (
           mine ? (
             <div className="flex flex-wrap gap-4 text-xs font-semibold">
-              <button onClick={() => useForAll(kind)} className="text-blue-400 hover:text-blue-300">Use this for all pages</button>
-              <button onClick={() => patch(active.id, { [kind]: null })} className="text-slate-400 hover:text-white">Reset this page</button>
+              <button onClick={() => useForAll(kind)} className="text-brand hover:text-accent">Use this for all pages</button>
+              <button onClick={() => patch(active.id, { [kind]: null })} className="text-muted hover:text-text">Reset this page</button>
             </div>
-          ) : <p className="text-xs text-slate-500">Matches all pages — change anything to customise this page only.</p>
+          ) : <p className="text-xs text-muted">Matches all pages — change anything to customise this page only.</p>
         )}
       </div>
     );
@@ -1816,17 +1816,17 @@ export default function DocumentScanner() {
 
   const Empty = (
     <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); handleFiles([...e.dataTransfer.files]); }}
-      className="flex flex-col items-center rounded-3xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-6 py-16 text-center transition hover:border-blue-500">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-400"><ScanLine size={30} /></div>
+      className="flex flex-col items-center rounded-3xl border-2 border-dashed border-border bg-surface/60 px-6 py-16 text-center transition hover:border-accent">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10 text-brand"><ScanLine size={30} /></div>
       <h2 className="mt-6 text-2xl font-bold">Scan a document</h2>
-      <p className="mt-2 max-w-sm text-slate-400">Snap a photo or drop files here. We find the page, straighten it, flatten curls and clean it up — automatically.</p>
+      <p className="mt-2 max-w-sm text-muted">Snap a photo or drop files here. We find the page, straighten it, flatten curls and clean it up — automatically.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button onClick={() => setCameraOpen(true)} className={btnPrimary}><Camera size={18} />Scan with camera</button>
         <button onClick={() => fileRef.current.click()} className={btn}><Upload size={18} />Upload files</button>
       </div>
-      <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-slate-500">
+      <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-muted">
         {["Auto edge detection", "Flattens curled pages", "Shadow removal", "19 one-tap looks", "Searchable PDF"].map((t) => (
-          <span key={t} className="rounded-full border border-slate-800 px-3 py-1">{t}</span>
+          <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>
         ))}
       </div>
     </div>
@@ -1835,19 +1835,19 @@ export default function DocumentScanner() {
   return (
     <>
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <div className="text-center">
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">Document Scanner</span>
+            <span className="rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand">Document Scanner</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Scan &amp; Save as PDF.</h1>
-            <p className="mx-auto mt-3 max-w-xl text-slate-400">Photograph a page — we straighten, flatten and clean it up. Everything stays on your device.</p>
+            <p className="mx-auto mt-3 max-w-xl text-muted">Photograph a page — we straighten, flatten and clean it up. Everything stays on your device.</p>
           </div>
 
           <input ref={fileRef} hidden multiple type="file" accept="image/jpeg,image/png,application/pdf"
@@ -1862,19 +1862,19 @@ export default function DocumentScanner() {
                     {pages.map((p, i) => (
                       <div key={p.id} draggable onDragStart={() => (dragIdx.current = i)} onDragOver={(e) => e.preventDefault()} onDrop={() => reorder(i)}
                         onClick={() => setActiveId(p.id)}
-                        className={`relative h-20 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 bg-slate-950 transition ${p.id === active.id ? "border-blue-500" : "border-slate-800"}`}>
+                        className={`relative h-20 w-14 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 bg-page transition ${p.id === active.id ? "border-brand" : "border-border"}`}>
                         <img src={thumbs[p.id] || p.base} alt={`Page ${i + 1}`} className="h-full w-full object-cover" draggable={false} />
-                        {p.busy && <span className="absolute inset-0 flex items-center justify-center bg-slate-950/70"><Loader2 size={16} className="animate-spin text-blue-400" /></span>}
-                        <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 text-[10px] font-semibold">{i + 1}</span>
-                        {(p.filter || p.layout) && <span title="Custom look" className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-amber-400" />}
+                        {p.busy && <span className="absolute inset-0 flex items-center justify-center bg-page/70"><Loader2 size={16} className="animate-spin text-brand" /></span>}
+                        <span className="absolute bottom-0.5 left-0.5 rounded bg-page/70 px-1 text-[10px] font-semibold">{i + 1}</span>
+                        {(p.filter || p.layout) && <span title="Custom look" className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-warning" />}
                         {pages.length > 1 && (
                           <button onClick={(e) => { e.stopPropagation(); removePage(p.id); }} aria-label="Delete page"
-                            className="absolute right-0.5 top-0.5 rounded-full bg-black/70 p-1 text-red-400"><Trash2 size={10} /></button>
+                            className="absolute right-0.5 top-0.5 rounded-full bg-page/70 p-1 text-danger"><Trash2 size={10} /></button>
                         )}
                       </div>
                     ))}
-                    <button onClick={() => setCameraOpen(true)} aria-label="Scan another page" className="flex h-20 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-slate-700 text-slate-400 hover:border-blue-500 hover:text-white"><Camera size={18} /></button>
-                    <button onClick={() => fileRef.current.click()} aria-label="Upload more pages" className="flex h-20 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-slate-700 text-slate-400 hover:border-blue-500 hover:text-white"><Plus size={18} /></button>
+                    <button onClick={() => setCameraOpen(true)} aria-label="Scan another page" className="flex h-20 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-border text-muted hover:border-accent hover:text-text"><Camera size={18} /></button>
+                    <button onClick={() => fileRef.current.click()} aria-label="Upload more pages" className="flex h-20 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-border text-muted hover:border-accent hover:text-text"><Plus size={18} /></button>
                   </div>
                   <button onClick={() => setSaveOpen((o) => !o)} className={btnPrimary}><Download size={16} />Save</button>
                 </div>
@@ -1887,11 +1887,11 @@ export default function DocumentScanner() {
                       <Chip on={exp.format === "zip"} onClick={() => setExp({ ...exp, format: "zip" })}>Images (ZIP)</Chip>
                     </div>
                     <input value={exp.name} onChange={(e) => setExp({ ...exp, name: e.target.value })} placeholder="File name"
-                      className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-blue-500/50" />
+                      className="w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-brand/50" />
                     {exp.format === "pdf" && (
-                      <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-300">
-                        <input type="checkbox" checked={exp.ocr} onChange={(e) => setExp({ ...exp, ocr: e.target.checked })} className="h-4 w-4 accent-blue-500" />
-                        Make text searchable <span className="text-xs text-slate-500">(English OCR — slower)</span>
+                      <label className="flex cursor-pointer items-center gap-3 text-sm text-text">
+                        <input type="checkbox" checked={exp.ocr} onChange={(e) => setExp({ ...exp, ocr: e.target.checked })} className="h-4 w-4 accent-brand" />
+                        Make text searchable <span className="text-xs text-muted">(English OCR — slower)</span>
                       </label>
                     )}
                     <button onClick={exportDoc} disabled={toast.busy} className={btnPrimary + " w-full"}>
@@ -1906,15 +1906,15 @@ export default function DocumentScanner() {
                     <CropEditor page={active} onChange={(corners) => patch(active.id, { corners, detected: false })} onCommit={() => setTimeout(() => commitCrop(), 0)} />
                   ) : (
                     <canvas ref={canvasRef} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
-                      className={`mx-auto h-auto max-h-[65vh] w-auto max-w-full touch-none rounded-lg bg-white shadow-2xl ${panel === "draw" ? "cursor-crosshair" : panel === "text" ? "cursor-move" : ""}`} />
+                      className={`mx-auto h-auto max-h-[65vh] w-auto max-w-full touch-none rounded-lg bg-text shadow-2xl ${panel === "draw" ? "cursor-crosshair" : panel === "text" ? "cursor-move" : ""}`} />
                   )}
 
                   {active.busy && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-950/75 backdrop-blur-sm">
-                      <div className="relative h-28 w-20 overflow-hidden rounded-lg border border-blue-500/50 bg-slate-900">
-                        <span className="absolute inset-x-0 h-1 animate-[scan_1.4s_ease-in-out_infinite] bg-blue-400 shadow-[0_0_16px_#60a5fa]" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-page/75 backdrop-blur-sm">
+                      <div className="relative h-28 w-20 overflow-hidden rounded-lg border border-brand/50 bg-surface">
+                        <span className="absolute inset-x-0 h-1 animate-[scan_1.4s_ease-in-out_infinite] bg-brand shadow-[0_0_16px_#60a5fa]" />
                       </div>
-                      <p className="text-sm font-semibold text-slate-200">{toast.msg || "Scanning…"}</p>
+                      <p className="text-sm font-semibold text-text">{toast.msg || "Scanning…"}</p>
                       <style>{`@keyframes scan{0%,100%{top:0}50%{top:calc(100% - 4px)}}`}</style>
                     </div>
                   )}
@@ -1922,11 +1922,11 @@ export default function DocumentScanner() {
                   {panel !== "crop" && !active.busy && (
                     <>
                       {active.mesh && flat > 0 && (
-                        <span className="absolute left-3 top-3 rounded-full border border-sky-500/30 bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">Curves flattened</span>
+                        <span className="absolute left-3 top-3 rounded-full border border-brand/30 bg-brand/15 px-3 py-1 text-xs font-semibold text-brand">Curves flattened</span>
                       )}
                       <button
                         onPointerDown={() => setPeek(true)} onPointerUp={() => setPeek(false)} onPointerLeave={() => setPeek(false)} onPointerCancel={() => setPeek(false)}
-                        className="absolute bottom-3 right-3 inline-flex select-none items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur hover:border-slate-500">
+                        className="absolute bottom-3 right-3 inline-flex select-none items-center gap-1.5 rounded-full border border-border bg-surface/90 px-3 py-1.5 text-xs font-semibold text-text backdrop-blur hover:border-muted">
                         <Eye size={13} />Hold to compare
                       </button>
                     </>
@@ -1948,13 +1948,13 @@ export default function DocumentScanner() {
                   {panel === "crop" && (
                     <>
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-muted">
                           {active.detected
-                            ? <span className="font-medium text-emerald-400">✓ Edges found automatically. </span>
-                            : <span className="font-medium text-amber-400">Drag the dots onto the page corners. </span>}
+                            ? <span className="font-medium text-success">✓ Edges found automatically. </span>
+                            : <span className="font-medium text-warning">Drag the dots onto the page corners. </span>}
                           Move any corner — the scan re-straightens itself.
                         </p>
-                        <span className="shrink-0 text-xs tabular-nums text-slate-500">Page {activeIdx + 1} / {pages.length}</span>
+                        <span className="shrink-0 text-xs tabular-nums text-muted">Page {activeIdx + 1} / {pages.length}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button onClick={autoCrop} className={btn}><ScanLine size={15} />Auto-detect</button>
@@ -1978,15 +1978,15 @@ export default function DocumentScanner() {
                           min={0} max={100} value={flat} onChange={setFlat} />
                       </Row>
 
-                      <div className="border-t border-slate-800 pt-4">
+                      <div className="border-t border-border pt-4">
                         <button onClick={() => setTuneOpen((o) => !o)} className="flex w-full items-center justify-between text-left">
                           <span className={lbl}>Fine-tune{curF.look === "custom" ? " · custom" : ""}</span>
-                          <ChevronDown size={16} className={`text-slate-400 transition ${tuneOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`text-muted transition ${tuneOpen ? "rotate-180" : ""}`} />
                         </button>
                         {tuneOpen && (
                           <div className="mt-4 space-y-4">
                             <div className="flex justify-end">
-                              <button onClick={() => setFilter(presetFilter(PRESETS[0]))} className="text-xs text-slate-400 hover:text-white">Back to Auto</button>
+                              <button onClick={() => setFilter(presetFilter(PRESETS[0]))} className="text-xs text-muted hover:text-text">Back to Auto</button>
                             </div>
                             <Slider text="Brightness" value={curF.brightness} onChange={(v) => setFilter({ brightness: v })} />
                             <Slider text="Contrast" value={curF.contrast} onChange={(v) => setFilter({ contrast: v })} />
@@ -2012,25 +2012,25 @@ export default function DocumentScanner() {
                       {selected ? (
                         <div className="space-y-4">
                           <input value={selected.text} onChange={(e) => patchText(selected.id, { text: e.target.value })}
-                            className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-blue-500/50" />
+                            className="w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-brand/50" />
                           <div className="flex flex-wrap gap-2">
                             {[["sans", "Clean"], ["serif", "Classic"], ["mono", "Typewriter"], ["script", "Handwritten"]].map(([v, l]) => (
                               <Chip key={v} on={selected.font === v} onClick={() => patchText(selected.id, { font: v })}>{l}</Chip>
                             ))}
                           </div>
-                          <input type="range" min={14} max={140} value={selected.size} onChange={(e) => patchText(selected.id, { size: Number(e.target.value) })} className="w-full accent-blue-500" aria-label="Text size" />
+                          <input type="range" min={14} max={140} value={selected.size} onChange={(e) => patchText(selected.id, { size: Number(e.target.value) })} className="w-full accent-brand" aria-label="Text size" />
                           <div className="flex items-center justify-between gap-3">
                             <Swatches colors={INK} value={selected.color} onChange={(c) => patchText(selected.id, { color: c })} />
-                            <button onClick={() => { patch(active.id, (x) => ({ texts: x.texts.filter((t) => t.id !== selected.id) })); setSelText(null); }} className={btn + " !text-red-400"}><Trash2 size={14} /></button>
+                            <button onClick={() => { patch(active.id, (x) => ({ texts: x.texts.filter((t) => t.id !== selected.id) })); setSelText(null); }} className={btn + " text-danger"}><Trash2 size={14} /></button>
                           </div>
                         </div>
-                      ) : <p className="text-sm text-slate-400">Tap “Add text”, then drag it where you want. Tap a text on the page to edit it.</p>}
+                      ) : <p className="text-sm text-muted">Tap “Add text”, then drag it where you want. Tap a text on the page to edit it.</p>}
                     </>
                   )}
 
                   {panel === "draw" && (
                     <>
-                      <p className="text-sm text-slate-400">Draw or sign directly on the page.</p>
+                      <p className="text-sm text-muted">Draw or sign directly on the page.</p>
                       <Swatches colors={INK} value={pen.color} onChange={(c) => setPen({ ...pen, color: c })} />
                       <div className="flex flex-wrap items-center gap-2">
                         {[[2, "Thin"], [4, "Medium"], [9, "Thick"]].map(([w, l]) => <Chip key={w} on={pen.width === w} onClick={() => setPen({ ...pen, width: w })}>{l}</Chip>)}
@@ -2073,8 +2073,8 @@ export default function DocumentScanner() {
       </div>
 
       {toast.msg && !(active?.busy) && (
-        <div className="fixed bottom-5 left-1/2 z-[90] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-full border border-slate-700 bg-slate-900/95 px-5 py-3 text-sm shadow-2xl backdrop-blur">
-          {toast.busy && <Loader2 size={16} className="shrink-0 animate-spin text-blue-400" />}
+        <div className="fixed bottom-5 left-1/2 z-[90] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-surface/95 px-5 py-3 text-sm shadow-2xl backdrop-blur">
+          {toast.busy && <Loader2 size={16} className="shrink-0 animate-spin text-brand" />}
           {toast.msg}
         </div>
       )}

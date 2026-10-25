@@ -495,18 +495,18 @@ export default function BackgroundRemover() {
     <>
       {/* Background effects */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/20 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
 
         <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           {/* Hero */}
           <header className="text-center">
-            {/* <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400">
+            {/* <span className="rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand">
               Background Remover
             </span> */}
 
@@ -516,7 +516,7 @@ export default function BackgroundRemover() {
               Instantly.
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base text-slate-400 sm:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-base text-muted sm:text-lg">
               Upload an image and remove its background in seconds. Free, private
               and no account required – everything runs in your browser.
             </p>
@@ -528,17 +528,17 @@ export default function BackgroundRemover() {
               aria-live="polite"
             >
               {modelError ? (
-                <span className="rounded-full bg-red-500/10 px-4 py-2 text-red-400">
+                <span className="rounded-full bg-danger/10 px-4 py-2 text-danger">
                   AI failed to load – check your connection and refresh.
                 </span>
               ) : modelReady ? (
-                <span className="flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-emerald-400">
+                <span className="flex items-center gap-2 rounded-full bg-success/10 px-4 py-2 text-success">
                   {profile?.device === "gpu" ? <Zap size={16} /> : <Cpu size={16} />}
                   AI ready · {profile?.label}
                 </span>
               ) : (
-                <span className="flex items-center gap-3 rounded-full bg-slate-800/80 px-4 py-2 text-slate-300">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                <span className="flex items-center gap-3 rounded-full bg-surface/80 px-4 py-2 text-text">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand border-t-transparent" />
                   Preparing AI… {modelProgress}% (only for the first time this usually takes &lt;1 minute)
                 </span>
               )}
@@ -581,13 +581,13 @@ export default function BackgroundRemover() {
                   setDragging(false);
                   handleFile(e.dataTransfer.files?.[0]);
                 }}
-                className={`cursor-pointer rounded-3xl border-2 border-dashed p-8 text-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:p-14 ${
+                className={`cursor-pointer rounded-3xl border-2 border-dashed p-8 text-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:p-14 ${
                   dragging
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-slate-700 hover:border-blue-500 hover:bg-slate-900/50"
+                    ? "border-brand bg-brand/10"
+                    : "border-border hover:border-accent hover:bg-surface/50"
                 }`}
               >
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-brand/10 text-brand">
                   <UploadCloud size={40} />
                 </div>
 
@@ -595,21 +595,21 @@ export default function BackgroundRemover() {
                   {file ? "Choose a different image" : "Drag & drop your image"}
                 </h2>
 
-                <p className="mt-3 text-slate-400">
+                <p className="mt-3 text-muted">
                   or click to browse · you can also paste with Ctrl+V
                 </p>
 
                 {file && (
-                  <p className="mx-auto mt-4 max-w-full truncate text-sm text-blue-300">
+                  <p className="mx-auto mt-4 max-w-full truncate text-sm text-brand">
                     {file.name}
                   </p>
                 )}
 
-                <span className="mt-8 inline-block rounded-xl bg-blue-600 px-8 py-4 font-semibold transition hover:bg-blue-500">
+                <span className="mt-8 inline-block rounded-xl bg-brand px-8 py-4 font-semibold transition hover:bg-accent">
                   Browse Files
                 </span>
 
-                <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm text-slate-400">
+                <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm text-muted">
                   <span className="flex items-center gap-2">
                     <ImageIcon size={18} /> PNG
                   </span>
@@ -618,7 +618,7 @@ export default function BackgroundRemover() {
                   <span>WEBP</span>
                 </div>
 
-                <p className="mt-5 text-sm text-slate-500">
+                <p className="mt-5 text-sm text-muted">
                   Maximum size: 20 MB
                 </p>
               </div>
@@ -628,9 +628,9 @@ export default function BackgroundRemover() {
             <div
               id="preview"
               ref={previewRef}
-              className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/60"
+              className="overflow-hidden rounded-3xl border border-border bg-surface/60"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4">
                 <h2 className="font-semibold">Preview</h2>
 
                 {resultUrl && (
@@ -639,7 +639,7 @@ export default function BackgroundRemover() {
                     onPointerDown={() => setShowOriginal(true)}
                     onPointerUp={() => setShowOriginal(false)}
                     onPointerLeave={() => setShowOriginal(false)}
-                    className="flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-slate-800"
+                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-text transition hover:bg-surface"
                   >
                     <Eye size={16} /> Hold to see original
                   </button>
@@ -651,22 +651,22 @@ export default function BackgroundRemover() {
                 className="relative flex h-[340px] items-center justify-center sm:h-[420px]"
               >
                 {loading && (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-page/70 p-4 backdrop-blur-md">
                     <div
-                      className="w-full max-w-[340px] rounded-2xl border border-slate-700 bg-slate-900/90 p-8 shadow-2xl"
+                      className="w-full max-w-[340px] rounded-2xl border border-border bg-surface/90 p-8 shadow-2xl"
                       role="status"
                       aria-live="polite"
                     >
                       <div className="flex justify-center">
-                        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-blue-500" />
+                        <div className="h-16 w-16 animate-spin rounded-full border-4 border-border border-t-brand" />
                       </div>
                       <h3 className="mt-6 text-center text-2xl font-bold">
                         {enhancing ? "Improving Quality" : "Removing Background"}
                       </h3>
-                      <p className="mt-6 animate-pulse text-center text-lg font-medium text-blue-400">
+                      <p className="mt-6 animate-pulse text-center text-lg font-medium text-brand">
                         {overlayMessage}
                       </p>
-                      <p className="mt-4 text-center text-xs text-slate-500">
+                      <p className="mt-4 text-center text-xs text-muted">
                         {enhancing
                           ? "High-detail mode can take 30–90 seconds on this device. Your current result is kept if you cancel."
                           : profile?.device === "gpu"
@@ -678,7 +678,7 @@ export default function BackgroundRemover() {
                         <button
                           type="button"
                           onClick={cancelEnhance}
-                          className="mx-auto mt-5 flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+                          className="mx-auto mt-5 flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-text transition hover:bg-surface"
                         >
                           <X size={16} /> Cancel
                         </button>
@@ -696,19 +696,19 @@ export default function BackgroundRemover() {
                     decoding="async"
                   />
                 ) : (
-                  <p className="px-6 text-center text-slate-500">
+                  <p className="px-6 text-center text-muted">
                     Your image will appear here
                   </p>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap items-center justify-center gap-3 border-t border-slate-800 p-4">
+              <div className="flex flex-wrap items-center justify-center gap-3 border-t border-border p-4">
                 {resultUrl ? (
                   <a
                     href={resultUrl}
                     download={downloadName}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
+                    className="flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold transition hover:bg-accent"
                   >
                     <Download size={18} /> Download PNG
                   </a>
@@ -717,7 +717,7 @@ export default function BackgroundRemover() {
                     type="button"
                     disabled={!canRun}
                     onClick={handleRemoveBackground}
-                    className="flex items-center gap-3 rounded-xl bg-blue-600 px-8 py-3 font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-3 rounded-xl bg-brand px-8 py-3 font-semibold transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Wand2 size={20} />
                     {loading
@@ -732,7 +732,7 @@ export default function BackgroundRemover() {
                   <button
                     type="button"
                     onClick={handleEnhance}
-                    className="flex items-center gap-2 rounded-xl border border-violet-500/40 bg-violet-500/10 px-6 py-3 font-semibold text-violet-200 transition hover:bg-violet-500/20"
+                    className="flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 px-6 py-3 font-semibold text-brand transition hover:bg-accent/20"
                   >
                     <Sparkles size={18} /> Improve quality
                   </button>
@@ -742,14 +742,14 @@ export default function BackgroundRemover() {
                   <button
                     type="button"
                     onClick={reset}
-                    className="flex items-center gap-2 rounded-xl border border-slate-700 px-6 py-3 font-semibold transition hover:bg-slate-800"
+                    className="flex items-center gap-2 rounded-xl border border-border px-6 py-3 font-semibold transition hover:bg-surface"
                   >
                     <RotateCcw size={18} /> Start over
                   </button>
                 )}
 
                 {canEnhance && (
-                  <p className="w-full text-center text-xs text-slate-500">
+                  <p className="w-full text-center text-xs text-muted">
                     Edges not perfect? Re-run with the high-detail model. It is
                     slower on this device and may download extra data once.
                   </p>
@@ -761,7 +761,7 @@ export default function BackgroundRemover() {
           {error && (
             <p
               role="alert"
-              className="mx-auto mt-6 max-w-xl rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300"
+              className="mx-auto mt-6 max-w-xl rounded-xl border border-danger/20 bg-danger/10 px-4 py-3 text-center text-sm text-danger"
             >
               {error}
             </p>

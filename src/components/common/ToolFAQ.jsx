@@ -16,10 +16,10 @@ export default function ToolFAQ({
     <section id={id} className={`${container} scroll-mt-24 ${className}`}>
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
             {title}
           </h2>
-          <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+          <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
             {description}
           </p>
         </div>
@@ -34,10 +34,10 @@ export default function ToolFAQ({
             return (
               <div
                 key={question}
-                className={`overflow-hidden rounded-xl border bg-slate-900/60 transition-colors ${
+                className={`overflow-hidden rounded-xl border bg-surface/60 transition-colors ${
                   isOpen
-                    ? "border-blue-500/40"
-                    : "border-slate-800 hover:border-slate-600"
+                    ? "border-brand/40"
+                    : "border-border hover:border-muted"
                 }`}
               >
                 <button
@@ -45,16 +45,16 @@ export default function ToolFAQ({
                   onClick={() => setOpenIndex(isOpen ? -1 : index)}
                   aria-expanded={isOpen}
                   aria-controls={panelId}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 sm:px-6"
+                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand sm:px-6"
                 >
-                  <h3 className="text-base font-semibold text-white sm:text-lg">
+                  <h3 className="text-base font-semibold text-text sm:text-lg">
                     {question}
                   </h3>
                   <ChevronDown
                     size={20}
                     aria-hidden="true"
                     className={`shrink-0 transition-transform duration-300 motion-reduce:transition-none ${
-                      isOpen ? "rotate-180 text-blue-400" : "text-slate-500"
+                      isOpen ? "rotate-180 text-brand" : "text-muted"
                     }`}
                   />
                 </button>
@@ -66,7 +66,7 @@ export default function ToolFAQ({
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <p className="px-5 pb-5 text-sm leading-6 text-slate-400 sm:px-6 sm:text-base sm:leading-7">
+                    <p className="px-5 pb-5 text-sm leading-6 text-muted sm:px-6 sm:text-base sm:leading-7">
                       {answer}
                     </p>
                   </div>

@@ -50,11 +50,11 @@ export default function Breadcrumbs({ bare = false, light = false }) {
     ? "pb-2"
     : "mx-auto w-full max-w-7xl px-4 pb-2 sm:px-6 lg:px-8";
   const navClass = light
-    ? "text-gray-500"
-    : "text-slate-400";
+    ? "text-muted"
+    : "text-muted";
   const linkClass = light
-    ? "transition hover:text-blue-600 focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-    : "transition hover:text-white focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400";
+    ? "transition hover:text-accent focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+    : "transition hover:text-text focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand";
 
   return (
     <div className={wrapperClass}>
@@ -67,7 +67,7 @@ export default function Breadcrumbs({ bare = false, light = false }) {
             {index > 0 && (
               <ChevronRight
                 aria-hidden="true"
-                className="h-3.5 w-3.5 shrink-0 text-slate-600"
+                className="h-3.5 w-3.5 shrink-0 text-muted"
               />
             )}
             {crumb.to ? (
@@ -80,7 +80,7 @@ export default function Breadcrumbs({ bare = false, light = false }) {
             ) : (
               <span
                 aria-current="page"
-                className={`truncate font-medium ${light ? "text-gray-900 dark:text-white" : "text-white"}`}
+                className={`truncate font-medium ${light ? "text-page dark:text-text" : "text-text"}`}
               >
                 {crumb.label}
               </span>

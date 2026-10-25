@@ -40,11 +40,11 @@ function SectionHeader({ title, subtitle, children, className = "" }) {
       className={`flex flex-col gap-6 md:flex-row md:items-end md:justify-between ${className}`}
     >
       <div className="max-w-2xl">
-        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
           {title}
         </h2>
         {subtitle && (
-          <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+          <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
             {subtitle}
           </p>
         )}
@@ -235,7 +235,7 @@ const features = [
     description:
       "Every tool is optimized for speed, delivering results without unnecessary waiting.",
     icon: Zap,
-    accent: "text-yellow-400 bg-yellow-400/10",
+    accent: "text-brand bg-brand/10",
     span: "md:col-span-2",
   },
   {
@@ -243,7 +243,7 @@ const features = [
     description:
       "Your files and data stay secure. We avoid collecting unnecessary personal information.",
     icon: ShieldCheck,
-    accent: "text-emerald-400 bg-emerald-400/10",
+    accent: "text-brand bg-brand/10",
     span: "",
   },
   {
@@ -251,7 +251,7 @@ const features = [
     description:
       "Core tools are completely free, with no sign-up required to get started.",
     icon: Globe,
-    accent: "text-blue-400 bg-blue-400/10",
+    accent: "text-brand bg-brand/10",
     span: "",
   },
   {
@@ -259,7 +259,7 @@ const features = [
     description:
       "A clean, responsive interface that feels just as good on your phone as on your desktop.",
     icon: Sparkles,
-    accent: "text-violet-400 bg-violet-400/10",
+    accent: "text-brand bg-brand/10",
     span: "md:col-span-2",
   },
 ];
@@ -305,39 +305,39 @@ function ToolPreview() {
 
   return (
     <div className="relative">
-      <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-blue-600/20 via-cyan-400/10 to-violet-600/20 blur-3xl" />
+      <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-brand/20 via-brand/10 to-accent/20 blur-3xl" />
 
-      <div className="relative overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/80 shadow-2xl shadow-blue-950/40 backdrop-blur-xl">
-        <div className="flex items-center gap-2 border-b border-slate-800 px-5 py-3.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
-          <span className="ml-3 text-xs font-medium text-slate-400">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 shadow-2xl shadow-brand/40 backdrop-blur-xl">
+        <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
+          <span className="h-2.5 w-2.5 rounded-full bg-border" />
+          <span className="ml-3 text-xs font-medium text-muted">
             Popular tools
           </span>
         </div>
 
-        <ul className="divide-y divide-slate-800/80">
+        <ul className="divide-y divide-border/80">
           {rows.map(({ title, icon: Icon, href, category }) => (
             <li key={title}>
               <Link
                 to={href}
-                className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-800/50 focus:outline-none focus-visible:bg-slate-800/50"
+                className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface/50 focus:outline-none focus-visible:bg-surface/50"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600/10 text-blue-400">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
                   <Icon size={20} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-white">
+                  <span className="block truncate text-sm font-semibold text-text">
                     {title}
                   </span>
-                  <span className="block text-xs text-slate-500">
+                  <span className="block text-xs text-muted">
                     {category}
                   </span>
                 </span>
                 <ChevronRight
                   size={18}
-                  className="text-slate-600 transition-colors group-hover:text-blue-400"
+                  className="text-muted transition-colors group-hover:text-accent"
                 />
               </Link>
             </li>
@@ -358,12 +358,12 @@ function Hero() {
           <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
             Free online tools.
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand via-brand to-accent bg-clip-text text-transparent">
               Every tool you need.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 sm:text-lg sm:leading-8">
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
             Create a free QR code, remove image backgrounds with AI, compress
             images online, or reduce video file sizes. Explore practical tools
             for files, documents, and everyday tasks in one place.
@@ -406,16 +406,16 @@ function Stats() {
   ];
 
   return (
-    <section className="border-y border-slate-800/80 bg-slate-950/40 backdrop-blur">
+    <section className="border-y border-border/80 bg-page/40 backdrop-blur">
       <dl
-        className={`${container} grid grid-cols-3 divide-x divide-slate-800/80`}
+        className={`${container} grid grid-cols-3 divide-x divide-border/80`}
       >
         {stats.map((s) => (
           <div key={s.label} className="px-2 py-6 text-center sm:px-6 sm:py-8">
-            <dt className="order-2 text-xs text-slate-400 sm:text-sm">
+            <dt className="order-2 text-xs text-muted sm:text-sm">
               {s.label}
             </dt>
-            <dd className="text-2xl font-bold text-white sm:text-4xl">
+            <dd className="text-2xl font-bold text-text sm:text-4xl">
               {s.value}
             </dd>
           </div>
@@ -454,21 +454,21 @@ function Products() {
         title="Everything you need in one platform."
         subtitle="Toolited is a growing suite of fast, privacy-focused online tools."
       >
-        <div className="flex w-full items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 md:w-80">
-          <Search size={18} className="shrink-0 text-slate-500" />
+        <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface/70 px-4 py-3 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 md:w-80">
+          <Search size={18} className="shrink-0 text-muted" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tools..."
             aria-label="Search tools"
-            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+            className="w-full bg-transparent text-sm text-text outline-none placeholder:text-muted"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="text-xs font-medium text-slate-400 transition hover:text-white"
+              className="text-xs font-medium text-muted transition hover:text-text"
             >
               Clear
             </button>
@@ -490,10 +490,10 @@ function Products() {
               type="button"
               onClick={() => setCategory(c)}
               aria-pressed={active}
-              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 active
-                  ? "border-blue-500/50 bg-blue-500/15 text-blue-300"
-                  : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"
+                  ? "border-brand/50 bg-brand/15 text-brand"
+                  : "border-border text-muted hover:border-muted hover:text-text"
               }`}
             >
               {c}
@@ -509,7 +509,7 @@ function Products() {
             <ProductCard key={product.title} {...product} />
           ))
         ) : (
-          <p className="col-span-full rounded-2xl border border-dashed border-slate-700 py-14 text-center text-slate-400">
+          <p className="col-span-full rounded-2xl border border-dashed border-border py-14 text-center text-muted">
             No tools match &ldquo;{search}&rdquo;. Try a different search or
             category.
           </p>
@@ -538,7 +538,7 @@ function WhyChoose() {
           return (
             <div
               key={feature.title}
-              className={`rounded-2xl border border-slate-800 bg-slate-900/60 p-6 transition-colors hover:border-slate-600 sm:p-8 ${feature.span}`}
+              className={`rounded-2xl border border-border bg-surface/60 p-6 transition-colors hover:border-muted sm:p-8 ${feature.span}`}
             >
               <div
                 className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${feature.accent}`}
@@ -546,11 +546,11 @@ function WhyChoose() {
                 <Icon size={24} />
               </div>
 
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-xl font-semibold text-text">
                 {feature.title}
               </h3>
 
-              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+              <p className="mt-3 max-w-md text-sm leading-6 text-muted sm:text-base sm:leading-7">
                 {feature.description}
               </p>
             </div>
@@ -573,28 +573,28 @@ function HowItWorks() {
         subtitle="Every Toolited tool follows the same workflow, so you get results in seconds."
       />
 
-      <ol className="mt-12 grid overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 lg:grid-cols-3">
+      <ol className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-surface/60 lg:grid-cols-3">
         {steps.map((step, index) => {
           const Icon = step.icon;
 
           return (
             <li
               key={step.title}
-              className="relative border-b border-slate-800 p-6 last:border-b-0 sm:p-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
+              className="relative border-b border-border p-6 last:border-b-0 sm:p-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
             >
               <div className="flex items-center justify-between">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/10 text-blue-400">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand">
                   <Icon size={24} />
                 </span>
-                <span className="text-sm font-semibold text-slate-600">
+                <span className="text-sm font-semibold text-muted">
                   Step {index + 1}
                 </span>
               </div>
 
-              <h3 className="mt-6 text-xl font-semibold text-white">
+              <h3 className="mt-6 text-xl font-semibold text-text">
                 {step.title}
               </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+              <p className="mt-3 text-sm leading-6 text-muted sm:text-base sm:leading-7">
                 {step.description}
               </p>
             </li>
@@ -612,15 +612,15 @@ function HowItWorks() {
 function CTA() {
   return (
     <section className={`${container} pb-20 pt-10 sm:pb-28`}>
-      <div className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 px-6 py-14 sm:px-12 sm:py-20 lg:px-16">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-cyan-400/25 blur-[120px]" />
+      <div className="relative overflow-hidden rounded-3xl border border-brand/20 bg-gradient-to-br from-brand via-brand to-accent px-6 py-14 sm:px-12 sm:py-20 lg:px-16">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand/25 blur-[120px]" />
 
         <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
+            <h2 className="text-3xl font-black tracking-tight text-text sm:text-4xl md:text-5xl">
               Ready to create something amazing?
             </h2>
-            <p className="mt-5 text-base leading-7 text-blue-100 sm:text-lg sm:leading-8">
+            <p className="mt-5 text-base leading-7 text-brand sm:text-lg sm:leading-8">
               Generate QR codes in seconds and explore a growing collection of
               fast, modern, privacy-focused online tools.
             </p>
@@ -631,7 +631,7 @@ function CTA() {
 
             <Link
               to="#tools"
-              className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/10 px-7 py-3.5 font-semibold text-white backdrop-blur transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex items-center justify-center rounded-xl border border-text/25 bg-text/10 px-7 py-3.5 font-semibold text-text backdrop-blur transition hover:bg-text/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-text"
             >
               Explore tools
             </Link>
@@ -653,16 +653,16 @@ export default function Home() {
       `overflow-x-hidden` turns this wrapper into a scroll container and
       silently breaks `position: sticky` on the navbar.
     */
-    <div className="relative isolate min-h-screen overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="relative isolate min-h-screen overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
       {/* Background glows */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-72 w-72 rounded-full bg-blue-600/20 blur-[100px] sm:h-96 sm:w-96 sm:blur-[140px]" />
-        <div className="absolute -right-32 top-1/2 h-[320px] w-[320px] rounded-full bg-violet-600/15 blur-[120px] sm:h-[500px] sm:w-[500px] sm:blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[110px] sm:h-[400px] sm:w-[400px] sm:blur-[150px]" />
+        <div className="absolute -left-40 -top-40 h-72 w-72 rounded-full bg-brand/20 blur-[100px] sm:h-96 sm:w-96 sm:blur-[140px]" />
+        <div className="absolute -right-32 top-1/2 h-[320px] w-[320px] rounded-full bg-brand/15 blur-[120px] sm:h-[500px] sm:w-[500px] sm:blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-brand/10 blur-[110px] sm:h-[400px] sm:w-[400px] sm:blur-[150px]" />
       </div>
 
       {/* Sticky navbar */}
-      <div className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+      <div className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
         <Navbar />
       </div>
 

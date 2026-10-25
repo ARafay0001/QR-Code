@@ -5,17 +5,17 @@ export default function Button({
   ...props
 }) {
   const base =
-    "inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none";
+    "inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none";
 
   const variants = {
     primary:
-      "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-[0_0_25px_rgba(37,99,235,.45)]",
+      "bg-brand text-text hover:bg-accent hover:shadow-[0_0_25px_color-mix(in_srgb,var(--theme-brand)_45%,transparent)]",
 
     secondary:
-      "border border-slate-700 bg-slate-900/60 text-white hover:border-blue-500",
+      "border border-border bg-surface/60 text-text hover:border-accent",
 
     ghost:
-      "text-slate-300 hover:text-white",
+      "text-text hover:text-text",
   };
 
   return (

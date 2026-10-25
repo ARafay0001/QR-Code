@@ -164,7 +164,7 @@ const CATS = ["All", ...new Set(TOOLS.map((t) => t.cat))];
 const STORAGE_KEY = "texttools:v1";
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 function loadSaved() {
   try {
@@ -252,27 +252,27 @@ export default function TextTools() {
   const btn = `flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`;
 
   return (
-    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
+      <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
         <Navbar />
       </header>
 
       <main className="flex-1 px-4 py-6 sm:py-8">
         <div className="mx-auto w-full max-w-7xl">
           <div className="mb-5 flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600/20 text-blue-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/20 text-brand">
               <Type size={22} />
             </span>
             <div>
               <h1 className="text-2xl font-extrabold sm:text-3xl">Text Tools</h1>
-              <p className="text-sm text-slate-400">{TOOLS.length} free tools for changing, cleaning, encoding and counting text. Nothing leaves your browser.</p>
+              <p className="text-sm text-muted">{TOOLS.length} free tools for changing, cleaning, encoding and counting text. Nothing leaves your browser.</p>
             </div>
           </div>
 
           {/* Search */}
           <div className="relative">
             <label htmlFor="tool-search" className="sr-only">Search text tools</label>
-            <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
             <input
               id="tool-search"
               ref={searchRef}
@@ -283,10 +283,10 @@ export default function TextTools() {
                 if (e.key === "Escape") setQuery("");
               }}
               placeholder='Search tools: "uppercase", "remove duplicates", "base64", "count words"   (press / to focus)'
-              className="w-full rounded-2xl border border-slate-600 bg-slate-800 py-3.5 pl-11 pr-11 text-base text-white outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              className="w-full rounded-2xl border border-muted bg-surface py-3.5 pl-11 pr-11 text-base text-text outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
             {query && (
-              <button type="button" aria-label="Clear search" onClick={() => setQuery("")} className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-slate-400 hover:text-white ${focusRing}`}>
+              <button type="button" aria-label="Clear search" onClick={() => setQuery("")} className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-muted hover:text-text ${focusRing}`}>
                 <X size={16} />
               </button>
             )}
@@ -300,7 +300,7 @@ export default function TextTools() {
                 aria-pressed={cat === c}
                 onClick={() => setCat(c)}
                 className={`cursor-pointer rounded-xl border px-3.5 py-1.5 text-sm font-medium transition ${focusRing} ${
-                  cat === c ? "border-blue-500 bg-blue-600/20 text-white" : "border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600/70"
+                  cat === c ? "border-brand bg-brand/20 text-text" : "border-muted bg-border text-text hover:bg-surface/70"
                 }`}
               >
                 {c}
@@ -310,7 +310,7 @@ export default function TextTools() {
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             {/* Tool list */}
-            <nav aria-label="Tools" className="max-h-72 overflow-auto rounded-3xl bg-slate-800 p-2 shadow-2xl lg:max-h-[720px]">
+            <nav aria-label="Tools" className="max-h-72 overflow-auto rounded-3xl bg-surface p-2 shadow-2xl lg:max-h-[720px]">
               {matches.length ? (
                 matches.map((t) => (
                   <button
@@ -319,42 +319,42 @@ export default function TextTools() {
                     onClick={() => pick(t.id)}
                     aria-current={t.id === toolId}
                     className={`block w-full cursor-pointer rounded-xl px-3 py-2.5 text-left transition ${focusRing} ${
-                      t.id === toolId ? "bg-blue-600/20 ring-1 ring-blue-500/60" : "hover:bg-slate-700/70"
+                      t.id === toolId ? "bg-brand/20 ring-1 ring-brand/60" : "hover:bg-border/70"
                     }`}
                   >
                     <span className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-white">{t.name}</span>
-                      <span className="shrink-0 text-xs text-slate-400">{t.cat}</span>
+                      <span className="font-semibold text-text">{t.name}</span>
+                      <span className="shrink-0 text-xs text-muted">{t.cat}</span>
                     </span>
-                    <span className="mt-0.5 block text-sm text-slate-400">{t.desc}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{t.desc}</span>
                   </button>
                 ))
               ) : (
-                <p className="p-4 text-sm text-slate-400">No tool matches "{query}". Try a shorter word, like "case" or "line".</p>
+                <p className="p-4 text-sm text-muted">No tool matches "{query}". Try a shorter word, like "case" or "line".</p>
               )}
             </nav>
 
             {/* Workspace */}
-            <section className="min-w-0 rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-5" aria-labelledby="tool-title">
+            <section className="min-w-0 rounded-3xl bg-surface p-4 shadow-2xl sm:p-5" aria-labelledby="tool-title">
               <h2 id="tool-title" className="text-xl font-bold">{tool.name}</h2>
-              <p className="text-sm text-slate-400">{tool.desc}</p>
+              <p className="text-sm text-muted">{tool.desc}</p>
 
               {tool.params.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-700 bg-slate-900/70 p-3">
+                <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface/70 p-3">
                   {tool.params.map((x) =>
                     x.type === "check" ? (
-                      <label key={x.id} className="flex cursor-pointer items-center gap-2 pb-2 text-sm text-slate-200">
-                        <input type="checkbox" checked={params[x.id]} onChange={(e) => setPv({ ...pv, [x.id]: e.target.checked })} className="h-4 w-4 accent-blue-500" />
+                      <label key={x.id} className="flex cursor-pointer items-center gap-2 pb-2 text-sm text-text">
+                        <input type="checkbox" checked={params[x.id]} onChange={(e) => setPv({ ...pv, [x.id]: e.target.checked })} className="h-4 w-4 accent-brand" />
                         {x.label}
                       </label>
                     ) : (
-                      <label key={x.id} className="text-xs font-medium text-slate-300">
+                      <label key={x.id} className="text-xs font-medium text-text">
                         {x.label}
                         <input
                           type={x.type === "number" ? "number" : "text"}
                           value={params[x.id]}
                           onChange={(e) => setPv({ ...pv, [x.id]: e.target.value })}
-                          className="mt-1 block w-44 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 font-mono text-sm text-white outline-none focus:border-blue-500"
+                          className="mt-1 block w-44 rounded-xl border border-muted bg-border px-3 py-2 font-mono text-sm text-text outline-none focus:border-brand"
                         />
                       </label>
                     ),
@@ -365,48 +365,48 @@ export default function TextTools() {
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label htmlFor="tt-input" className="text-sm font-medium text-slate-300">Your text</label>
-                    <span className="text-xs text-slate-400">{input.length} characters · {words} words</span>
+                    <label htmlFor="tt-input" className="text-sm font-medium text-text">Your text</label>
+                    <span className="text-xs text-muted">{input.length} characters · {words} words</span>
                   </div>
                   <textarea
                     id="tt-input"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={tool.noInput ? "Nothing to type here. Choose the settings above." : "Type or paste your text here…"}
-                    className="h-72 w-full resize-y rounded-2xl border border-slate-700 bg-slate-900 p-4 text-base text-white outline-none placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                    className="h-72 w-full resize-y rounded-2xl border border-border bg-surface p-4 text-base text-text outline-none placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/30"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label htmlFor="tt-output" className="text-sm font-medium text-slate-300">Result</label>
-                    <span className="text-xs text-slate-400">{result.text.length} characters</span>
+                    <label htmlFor="tt-output" className="text-sm font-medium text-text">Result</label>
+                    <span className="text-xs text-muted">{result.text.length} characters</span>
                   </div>
                   <textarea
                     id="tt-output"
                     readOnly
                     value={result.text}
                     aria-live="polite"
-                    className={`h-72 w-full resize-y rounded-2xl border bg-slate-900 p-4 text-base outline-none ${
-                      result.ok ? "border-slate-700 text-slate-100" : "border-red-500/50 text-red-300"
+                    className={`h-72 w-full resize-y rounded-2xl border bg-surface p-4 text-base outline-none ${
+                      result.ok ? "border-border text-text" : "border-danger/50 text-danger"
                     }`}
                   />
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={copy} disabled={!result.ok || !result.text} className={`${btn} border-blue-500 bg-blue-600 text-white hover:bg-blue-700`}>
+                <button type="button" onClick={copy} disabled={!result.ok || !result.text} className={`${btn} border-brand bg-brand text-text hover:bg-accent`}>
                   {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? "Copied" : "Copy result"}
                 </button>
-                <button type="button" onClick={() => setInput(result.text)} disabled={!result.ok || !result.text} className={`${btn} border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600`}>
+                <button type="button" onClick={() => setInput(result.text)} disabled={!result.ok || !result.text} className={`${btn} border-muted bg-border text-text hover:bg-surface`}>
                   <ArrowUp size={16} /> Use result as input
                 </button>
                 {tool.random && (
-                  <button type="button" onClick={() => setNonce((n) => n + 1)} className={`${btn} border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600`}>
+                  <button type="button" onClick={() => setNonce((n) => n + 1)} className={`${btn} border-muted bg-border text-text hover:bg-surface`}>
                     <RotateCcw size={16} /> Shuffle again
                   </button>
                 )}
-                <button type="button" onClick={() => setInput("")} disabled={!input} className={`${btn} border-slate-600 bg-slate-700 text-slate-200 hover:bg-slate-600`}>
+                <button type="button" onClick={() => setInput("")} disabled={!input} className={`${btn} border-muted bg-border text-text hover:bg-surface`}>
                   <Trash2 size={16} /> Clear
                 </button>
               </div>

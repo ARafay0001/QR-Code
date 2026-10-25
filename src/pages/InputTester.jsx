@@ -21,7 +21,7 @@ import Footer from "../components/common/Footer";
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 function Pill({ active, onClick, children, className = "" }) {
   return (
@@ -31,8 +31,8 @@ function Pill({ active, onClick, children, className = "" }) {
       aria-pressed={active}
       className={`cursor-pointer rounded-xl border px-4 py-2 text-sm font-medium transition ${focusRing} ${
         active
-          ? "border-blue-500 bg-blue-600/20 text-white shadow-[0_0_15px_rgba(37,99,235,0.35)]"
-          : "border-slate-600 bg-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-600/70"
+          ? "border-brand bg-brand/20 text-text shadow-[0_0_15px_color-mix(in_srgb,var(--theme-brand)_35%,transparent)]"
+          : "border-muted bg-border text-text hover:border-muted hover:bg-surface/70"
       } ${className}`}
     >
       {children}
@@ -46,7 +46,7 @@ function SmallButton({ onClick, children, icon: Icon, disabled }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex cursor-pointer items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
+      className={`flex cursor-pointer items-center gap-2 rounded-lg border border-muted bg-border px-3 py-1.5 text-xs font-medium text-text transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
     >
       {Icon && <Icon size={14} />}
       {children}
@@ -56,10 +56,10 @@ function SmallButton({ onClick, children, icon: Icon, disabled }) {
 
 function Panel({ title, right, children, className = "" }) {
   return (
-    <div className={`rounded-2xl border border-slate-700 bg-slate-900/70 p-4 ${className}`}>
+    <div className={`rounded-2xl border border-border bg-surface/70 p-4 ${className}`}>
       {(title || right) && (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
           {right}
         </div>
       )}
@@ -68,20 +68,20 @@ function Panel({ title, right, children, className = "" }) {
   );
 }
 
-function Stat({ label, value, sub, accent = "text-white" }) {
+function Stat({ label, value, sub, accent = "text-text" }) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
+    <div className="rounded-xl border border-border bg-surface/70 px-3 py-2.5">
+      <div className="text-[10px] uppercase tracking-wide text-muted">{label}</div>
       <div className={`text-xl font-bold tabular-nums ${accent}`}>{value}</div>
-      {sub && <div className="text-[11px] text-slate-500">{sub}</div>}
+      {sub && <div className="text-[11px] text-muted">{sub}</div>}
     </div>
   );
 }
 
 function Hint({ children }) {
   return (
-    <p className="flex items-start gap-2 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-sm text-blue-100">
-      <Info size={16} className="mt-0.5 shrink-0 text-blue-300" />
+    <p className="flex items-start gap-2 rounded-xl border border-brand/20 bg-brand/10 px-3 py-2 text-sm text-brand">
+      <Info size={16} className="mt-0.5 shrink-0 text-brand" />
       <span>{children}</span>
     </p>
   );
@@ -173,10 +173,10 @@ const KeyCap = memo(function KeyCap({ label, w, down, tested, grid }) {
       <div
         className={`flex h-full w-full select-none items-center justify-center rounded-md border text-[10px] font-semibold transition-colors duration-75 sm:text-xs ${
           down
-            ? "border-blue-300 bg-blue-500 text-white shadow-[0_0_14px_rgba(59,130,246,0.8)]"
+            ? "border-brand bg-brand text-text shadow-[0_0_14px_color-mix(in_srgb,var(--theme-brand)_80%,transparent)]"
             : tested
-              ? "border-green-500/50 bg-green-500/20 text-green-200"
-              : "border-slate-700 bg-slate-800 text-slate-400"
+              ? "border-success/50 bg-success/20 text-success"
+              : "border-border bg-surface text-muted"
         }`}
       >
         {label}
@@ -281,19 +281,19 @@ function KeyboardTester({ active }) {
   return (
     <div className="space-y-4">
       <Hint>
-        Press any key. It lights up <b className="text-white">blue</b> while held and turns{" "}
-        <b className="text-green-300">green</b> once it works. Hold many keys at once to check ghosting. System
+        Press any key. It lights up <b className="text-text">blue</b> while held and turns{" "}
+        <b className="text-success">green</b> once it works. Hold many keys at once to check ghosting. System
         shortcuts such as Ctrl+W, Alt+F4 or the Windows key can't always be captured by a browser.
       </Hint>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Keys tested" value={`${testedInLayout}/${LAYOUT_CODES.size}`} accent="text-green-400" />
-        <Stat label="Held now" value={down.size} accent="text-blue-400" />
-        <Stat label="Max at once" value={maxRollover} sub="rollover" accent="text-cyan-300" />
+        <Stat label="Keys tested" value={`${testedInLayout}/${LAYOUT_CODES.size}`} accent="text-success" />
+        <Stat label="Held now" value={down.size} accent="text-brand" />
+        <Stat label="Max at once" value={maxRollover} sub="rollover" accent="text-brand" />
         <Stat label="Total presses" value={presses} />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-700 bg-slate-900 p-4">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface p-4">
         <div className="flex w-max" style={{ "--u": "2.6rem", gap: "calc(var(--u) * 0.5)" }}>
           <Cluster rows={MAIN_ROWS} down={down} tested={tested} />
           <Cluster rows={NAV_ROWS} down={down} tested={tested} />
@@ -334,20 +334,20 @@ function KeyboardTester({ active }) {
                 ["repeat", last.repeat ? "yes" : "no"],
               ].map(([label, value]) => (
                 <div key={label}>
-                  <dt className="text-[10px] uppercase tracking-wide text-slate-400">{label}</dt>
-                  <dd className="truncate font-mono font-semibold text-white">{value}</dd>
+                  <dt className="text-[10px] uppercase tracking-wide text-muted">{label}</dt>
+                  <dd className="truncate font-mono font-semibold text-text">{value}</dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <p className="text-sm text-slate-400">Press a key to see its details.</p>
+            <p className="text-sm text-muted">Press a key to see its details.</p>
           )}
           {extras.length > 0 && (
-            <div className="mt-4 border-t border-slate-700 pt-3">
-              <p className="text-[10px] uppercase tracking-wide text-slate-400">Extra keys detected (media, macro, etc.)</p>
+            <div className="mt-4 border-t border-border pt-3">
+              <p className="text-[10px] uppercase tracking-wide text-muted">Extra keys detected (media, macro, etc.)</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {extras.map((c) => (
-                  <span key={c} className="rounded-lg border border-green-500/30 bg-green-500/10 px-2 py-1 font-mono text-xs text-green-200">
+                  <span key={c} className="rounded-lg border border-success/30 bg-success/10 px-2 py-1 font-mono text-xs text-success">
                     {c}
                   </span>
                 ))}
@@ -360,14 +360,14 @@ function KeyboardTester({ active }) {
           {log.length ? (
             <ul className="space-y-1.5">
               {log.map((l) => (
-                <li key={l.id} className="flex items-center justify-between rounded-lg bg-slate-800 px-3 py-1.5 text-sm">
-                  <span className="font-mono font-bold text-white">{l.key}</span>
-                  <span className="font-mono text-xs text-slate-400">{l.code}</span>
+                <li key={l.id} className="flex items-center justify-between rounded-lg bg-surface px-3 py-1.5 text-sm">
+                  <span className="font-mono font-bold text-text">{l.key}</span>
+                  <span className="font-mono text-xs text-muted">{l.code}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-400">Nothing yet.</p>
+            <p className="text-sm text-muted">Nothing yet.</p>
           )}
         </Panel>
       </div>
@@ -547,7 +547,7 @@ function MouseTester({ active }) {
     <div className="space-y-4">
       <Hint>
         Move, click and scroll inside the test pad. Browsers only report buttons 1 to 5 (left, middle, right, back,
-        forward). Extra buttons on gaming mice usually act as <b className="text-white">keyboard keys</b> through the
+        forward). Extra buttons on gaming mice usually act as <b className="text-text">keyboard keys</b> through the
         mouse software, so test them in the Keyboard tab. Polling rate is an estimate and works best in Chrome or Edge.
       </Hint>
 
@@ -561,28 +561,28 @@ function MouseTester({ active }) {
                   key={i}
                   className={`rounded-lg border px-3 py-2 ${
                     held.has(i)
-                      ? "border-blue-400 bg-blue-500/30"
+                      ? "border-brand bg-brand/30"
                       : c > 0
-                        ? "border-green-500/40 bg-green-500/10"
-                        : "border-slate-700 bg-slate-800"
+                        ? "border-success/40 bg-success/10"
+                        : "border-border bg-surface"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs text-slate-300">
+                  <div className="flex items-center justify-between text-xs text-text">
                     <span>{BUTTON_NAMES[i] || `Button ${i + 1}`}</span>
-                    {c > 0 && <Check size={12} className="text-green-400" />}
+                    {c > 0 && <Check size={12} className="text-success" />}
                   </div>
-                  <div className="text-lg font-bold tabular-nums text-white">{c}</div>
+                  <div className="text-lg font-bold tabular-nums text-text">{c}</div>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-slate-400">{testedCount} buttons tested</p>
+            <p className="mt-2 text-xs text-muted">{testedCount} buttons tested</p>
           </Panel>
         </div>
 
         <div className="space-y-4">
           <div
             ref={padRef}
-            className="relative h-72 cursor-crosshair select-none overflow-hidden rounded-2xl border-2 border-dashed border-slate-600 bg-slate-900 sm:h-80"
+            className="relative h-72 cursor-crosshair select-none overflow-hidden rounded-2xl border-2 border-dashed border-muted bg-surface sm:h-80"
             style={{ touchAction: "none" }}
           >
             <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
@@ -600,18 +600,18 @@ function MouseTester({ active }) {
               {live.inside && last && <circle cx={last[0]} cy={last[1]} r="7" fill="#38bdf8" />}
             </svg>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-              <MousePointerClick size={32} className="text-slate-600" />
-              <p className="mt-2 text-sm font-medium text-slate-400">Test pad: move, click, double-click and scroll here</p>
+              <MousePointerClick size={32} className="text-muted" />
+              <p className="mt-2 text-sm font-medium text-muted">Test pad: move, click, double-click and scroll here</p>
             </div>
-            <div className="pointer-events-none absolute bottom-2 right-3 font-mono text-xs text-slate-400">
+            <div className="pointer-events-none absolute bottom-2 right-3 font-mono text-xs text-muted">
               {live.inside ? `x ${live.x}  y ${live.y}` : "pointer outside"} · {live.type}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Polling rate" value={live.hz ? `${live.hz} Hz` : "–"} sub={`max ${live.maxHz || 0} Hz`} accent="text-cyan-300" />
-            <Stat label="Speed" value={`${live.speed}`} sub={`px/s · max ${live.maxSpeed}`} accent="text-blue-400" />
-            <Stat label="Clicks / sec" value={live.cps} sub={`max ${live.maxCps}`} accent="text-green-400" />
+            <Stat label="Polling rate" value={live.hz ? `${live.hz} Hz` : "–"} sub={`max ${live.maxHz || 0} Hz`} accent="text-brand" />
+            <Stat label="Speed" value={`${live.speed}`} sub={`px/s · max ${live.maxSpeed}`} accent="text-brand" />
+            <Stat label="Clicks / sec" value={live.cps} sub={`max ${live.maxCps}`} accent="text-success" />
             <Stat label="Double clicks" value={dbl} />
           </div>
 
@@ -702,16 +702,16 @@ function StickPad({ x, y, dz, label, size = 150 }) {
         <circle cx={c + x * r} cy={c + y * r} r="8" fill={outside ? "#38bdf8" : "#64748b"} />
       </svg>
       <div className="text-center">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">{label}</p>
-        <p className="font-mono text-xs text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text">{label}</p>
+        <p className="font-mono text-xs text-muted">
           {x.toFixed(3)}, {y.toFixed(3)}
         </p>
-        {!outside && mag > 0.001 && <p className="text-[10px] text-amber-300">inside deadzone</p>}
+        {!outside && mag > 0.001 && <p className="text-[10px] text-warning">inside deadzone</p>}
       </div>
       <button
         type="button"
         onClick={() => setTrail([])}
-        className="cursor-pointer text-[11px] text-slate-500 hover:text-slate-300"
+        className="cursor-pointer text-[11px] text-muted hover:text-text"
       >
         clear trail
       </button>
@@ -723,16 +723,16 @@ function AxisBar({ index, value, min, max, label }) {
   const pct = Math.abs(value) * 50;
   return (
     <div className="flex items-center gap-3 text-xs">
-      <span className="w-16 shrink-0 text-slate-300">{label || `Axis ${index}`}</span>
-      <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-slate-800">
-        <div className="absolute inset-y-0 left-1/2 w-px bg-slate-600" />
+      <span className="w-16 shrink-0 text-text">{label || `Axis ${index}`}</span>
+      <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-surface">
+        <div className="absolute inset-y-0 left-1/2 w-px bg-surface" />
         <div
-          className="absolute inset-y-0 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
+          className="absolute inset-y-0 rounded-full bg-gradient-to-r from-brand to-accent"
           style={value >= 0 ? { left: "50%", width: `${pct}%` } : { right: "50%", width: `${pct}%` }}
         />
       </div>
-      <span className="w-14 shrink-0 text-right font-mono text-slate-200">{value.toFixed(2)}</span>
-      <span className="hidden w-28 shrink-0 text-right font-mono text-slate-500 sm:block">
+      <span className="w-14 shrink-0 text-right font-mono text-text">{value.toFixed(2)}</span>
+      <span className="hidden w-28 shrink-0 text-right font-mono text-muted sm:block">
         {min?.toFixed(2)} … {max?.toFixed(2)}
       </span>
     </div>
@@ -747,13 +747,13 @@ function ButtonGrid({ buttons, tested, labelFor }) {
           key={i}
           className={`relative overflow-hidden rounded-lg border px-2 py-2 text-center ${
             b.p
-              ? "border-blue-400 bg-blue-500/30 text-white"
+              ? "border-brand bg-brand/30 text-text"
               : tested.includes(i)
-                ? "border-green-500/40 bg-green-500/10 text-green-200"
-                : "border-slate-700 bg-slate-800 text-slate-400"
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-border bg-surface text-muted"
           }`}
         >
-          <div className="absolute inset-x-0 bottom-0 bg-blue-500/30" style={{ height: `${b.v * 100}%` }} />
+          <div className="absolute inset-x-0 bottom-0 bg-brand/30" style={{ height: `${b.v * 100}%` }} />
           <div className="relative text-sm font-bold">{labelFor?.(i) ?? i}</div>
           <div className="relative text-[10px] opacity-70">#{i}</div>
         </div>
@@ -765,12 +765,12 @@ function ButtonGrid({ buttons, tested, labelFor }) {
 function AxisPicker({ label, value, count, onSelect, onDetect, learning, onCancel }) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <span className="w-20 shrink-0 text-slate-300">{label}</span>
+      <span className="w-20 shrink-0 text-text">{label}</span>
       <select
         value={value ? value.axis : ""}
         onChange={(e) => onSelect(e.target.value === "" ? null : Number(e.target.value))}
         aria-label={`${label} axis`}
-        className="rounded-lg border border-slate-600 bg-slate-700 px-2 py-1 text-xs text-white outline-none focus:border-blue-500"
+        className="rounded-lg border border-muted bg-border px-2 py-1 text-xs text-text outline-none focus:border-brand"
       >
         <option value="">Not set</option>
         {Array.from({ length: count }, (_, i) => (
@@ -780,7 +780,7 @@ function AxisPicker({ label, value, count, onSelect, onDetect, learning, onCance
         ))}
       </select>
       {learning ? (
-        <button type="button" onClick={onCancel} className="cursor-pointer rounded-lg bg-amber-500/20 px-2 py-1 text-xs text-amber-200">
+        <button type="button" onClick={onCancel} className="cursor-pointer rounded-lg bg-warning/20 px-2 py-1 text-xs text-warning">
           Move it now… (cancel)
         </button>
       ) : (
@@ -871,11 +871,11 @@ function WheelSVG({ deg }) {
 function PedalBar({ label, pct, color }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative h-36 w-10 overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
+      <div className="relative h-36 w-10 overflow-hidden rounded-lg border border-border bg-surface">
         <div className="absolute inset-x-0 bottom-0 transition-[height] duration-75" style={{ height: `${pct * 100}%`, background: color }} />
       </div>
-      <span className="text-xs text-slate-300">{label}</span>
-      <span className="font-mono text-xs text-slate-400">{Math.round(pct * 100)}%</span>
+      <span className="text-xs text-text">{label}</span>
+      <span className="font-mono text-xs text-muted">{Math.round(pct * 100)}%</span>
     </div>
   );
 }
@@ -999,14 +999,14 @@ function GamepadTester({ active }) {
   if (!pad) {
     return (
       <div className="space-y-4">
-        <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center">
-          <Gamepad2 size={40} className="mx-auto text-slate-500" />
-          <p className="mt-4 font-semibold text-white">No controller detected yet</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-slate-400">
-            Plug in or connect your gamepad, joystick or racing wheel, then <b className="text-slate-200">press any button</b>.
+        <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+          <Gamepad2 size={40} className="mx-auto text-muted" />
+          <p className="mt-4 font-semibold text-text">No controller detected yet</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted">
+            Plug in or connect your gamepad, joystick or racing wheel, then <b className="text-text">press any button</b>.
             Browsers hide controllers until you press something.
           </p>
-          {notice && <p className="mt-3 text-sm text-blue-300">{notice}</p>}
+          {notice && <p className="mt-3 text-sm text-brand">{notice}</p>}
         </div>
         <Hint>Works with Xbox, PlayStation and Switch controllers, flight sticks, and wheels such as Logitech and Thrustmaster. Gamepad support needs HTTPS or localhost.</Hint>
       </div>
@@ -1015,7 +1015,7 @@ function GamepadTester({ active }) {
 
   return (
     <div className="space-y-4">
-      {notice && <p className="text-sm text-blue-300">{notice}</p>}
+      {notice && <p className="text-sm text-brand">{notice}</p>}
 
       <div className="flex flex-wrap items-center gap-2">
         {pads.map((p) => (
@@ -1041,11 +1041,11 @@ function GamepadTester({ active }) {
           </div>
         }
       >
-        <p className="font-semibold text-white">{cleanName(pad.id)}</p>
-        <p className="mt-1 break-all font-mono text-[11px] text-slate-500">{pad.id}</p>
+        <p className="font-semibold text-text">{cleanName(pad.id)}</p>
+        <p className="mt-1 break-all font-mono text-[11px] text-muted">{pad.id}</p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Mapping" value={pad.mapping || "custom"} />
-          <Stat label="Buttons" value={pad.buttons.length} sub={`${pad.tested.length} tested`} accent="text-green-400" />
+          <Stat label="Buttons" value={pad.buttons.length} sub={`${pad.tested.length} tested`} accent="text-success" />
           <Stat label="Axes" value={pad.axes.length} />
           <Stat label="Vibration" value={pad.haptics ? "yes" : "no"} />
         </div>
@@ -1062,14 +1062,14 @@ function GamepadTester({ active }) {
       {mode === "gamepad" && (
         <Panel title="Gamepad">
           {pad.mapping !== "standard" && (
-            <p className="mb-3 text-sm text-amber-300">
+            <p className="mb-3 text-sm text-warning">
               This device doesn't report a standard layout, so buttons may not match the picture. Try Joystick, Steering wheel or Raw.
             </p>
           )}
           <ControllerSVG pad={pad} dz={dz} />
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {["Left X", "Left Y", "Right X", "Right Y"].map((l, i) => (
-              <Stat key={l} label={l} value={(pad.axes[i] ?? 0).toFixed(2)} accent="text-cyan-300" />
+              <Stat key={l} label={l} value={(pad.axes[i] ?? 0).toFixed(2)} accent="text-brand" />
             ))}
           </div>
           <div className="mt-4 flex flex-wrap justify-center gap-8">
@@ -1086,7 +1086,7 @@ function GamepadTester({ active }) {
               <StickPad label="Stick" size={200} x={val(cfg.jx)} y={val(cfg.jy)} dz={dz} />
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-slate-400">Pick which axes are your stick, twist and throttle, or press Detect and move the control.</p>
+              <p className="text-sm text-muted">Pick which axes are your stick, twist and throttle, or press Detect and move the control.</p>
               {picker("Stick X", "jx")}
               {picker("Stick Y", "jy")}
               {picker("Twist", "jtwist")}
@@ -1103,7 +1103,7 @@ function GamepadTester({ active }) {
           <div className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)]">
             <div>
               <WheelSVG deg={(val(cfg.steer) * cfg.range) / 2} />
-              <p className="text-center font-mono text-sm text-slate-300">
+              <p className="text-center font-mono text-sm text-text">
                 {Math.round((val(cfg.steer) * cfg.range) / 2)}° · {Math.round(val(cfg.steer) * 100)}%
               </p>
               <div className="mt-3 flex flex-wrap justify-center gap-6">
@@ -1113,8 +1113,8 @@ function GamepadTester({ active }) {
               </div>
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-slate-400">
-                Wheels report pedals as axes, and the order differs between brands. Press <b className="text-slate-200">Detect</b>, then
+              <p className="text-sm text-muted">
+                Wheels report pedals as axes, and the order differs between brands. Press <b className="text-text">Detect</b>, then
                 press that pedal (or turn the wheel) to assign it.
               </p>
               {picker("Steering", "steer")}
@@ -1122,14 +1122,14 @@ function GamepadTester({ active }) {
               {picker("Brake", "brake")}
               {picker("Clutch", "clutch")}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="w-20 shrink-0 text-sm text-slate-300">Rotation</span>
+                <span className="w-20 shrink-0 text-sm text-text">Rotation</span>
                 {[180, 270, 540, 900, 1080].map((r) => (
                   <Pill key={r} active={cfg.range === r} onClick={() => patchCfg({ range: r })} className="!px-3 !py-1 text-xs">
                     {r}°
                   </Pill>
                 ))}
               </div>
-              <p className="text-xs text-slate-500">Set Rotation to your wheel's lock-to-lock angle (set in its driver) so the degrees shown are accurate.</p>
+              <p className="text-xs text-muted">Set Rotation to your wheel's lock-to-lock angle (set in its driver) so the degrees shown are accurate.</p>
             </div>
           </div>
         </Panel>
@@ -1146,11 +1146,11 @@ function GamepadTester({ active }) {
               value={dz}
               onChange={(e) => setDz(Number(e.target.value))}
               aria-label="Deadzone"
-              className="h-2 flex-1 cursor-pointer accent-blue-500"
+              className="h-2 flex-1 cursor-pointer accent-brand"
             />
-            <span className="w-12 text-right font-mono text-sm text-slate-200">{Math.round(dz * 100)}%</span>
+            <span className="w-12 text-right font-mono text-sm text-text">{Math.round(dz * 100)}%</span>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-muted">
             The dashed circle is the deadzone. If your stick reads values inside it while untouched, that's drift.
           </p>
         </Panel>
@@ -1158,7 +1158,7 @@ function GamepadTester({ active }) {
 
       <Panel
         title="All axes"
-        right={<span className="hidden text-[10px] text-slate-500 sm:block">live · seen min … max</span>}
+        right={<span className="hidden text-[10px] text-muted sm:block">live · seen min … max</span>}
       >
         {pad.axes.length ? (
           <div className="space-y-2">
@@ -1167,7 +1167,7 @@ function GamepadTester({ active }) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-400">This device has no axes.</p>
+          <p className="text-sm text-muted">This device has no axes.</p>
         )}
       </Panel>
 
@@ -1203,24 +1203,24 @@ export default function InputTester() {
   const [tab, setTab] = useState("keyboard");
 
   return (
-    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
+    <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
+      <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
         <Navbar />
       </header>
 
       <main className="flex-1 px-4 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <header className="text-center">
-            {/* <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-300">
+            {/* <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm text-brand">
               <Activity size={16} />
               Free Input Tester
             </div> */}
             <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-6xl">
               Test Every{" "}
-              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Input</span>
+              <span className="bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">Input</span>
               , Instantly
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-slate-400">
+            <p className="mx-auto mt-4 max-w-xl text-muted">
               Check your keyboard, mouse, gamepad, joystick and steering wheel right in the browser. No install and no
               signup. Nothing leaves your device.
             </p>
@@ -1228,21 +1228,21 @@ export default function InputTester() {
 
           <ul className="mx-auto mt-8 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map(([title, text]) => (
-              <li key={title} className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-                <p className="flex items-center gap-2 font-semibold text-white">
-                  <Gauge size={14} className="text-blue-400" />
+              <li key={title} className="rounded-2xl border border-border bg-surface/70 p-4">
+                <p className="flex items-center gap-2 font-semibold text-text">
+                  <Gauge size={14} className="text-brand" />
                   {title}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">{text}</p>
+                <p className="mt-1 text-sm text-muted">{text}</p>
               </li>
             ))}
           </ul>
 
-          <div className="mt-10 rounded-3xl bg-slate-800 p-4 shadow-2xl sm:p-8">
+          <div className="mt-10 rounded-3xl bg-surface p-4 shadow-2xl sm:p-8">
             <div
               role="tablist"
               aria-label="Input tester sections"
-              className="mx-auto mb-8 grid max-w-md grid-cols-3 gap-1 rounded-2xl border border-slate-700 bg-slate-900 p-1"
+              className="mx-auto mb-8 grid max-w-md grid-cols-3 gap-1 rounded-2xl border border-border bg-surface p-1"
             >
               {TABS.map(({ id, label, icon: Icon }) => (
                 <button
@@ -1252,7 +1252,7 @@ export default function InputTester() {
                   aria-selected={tab === id}
                   onClick={() => setTab(id)}
                   className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition ${focusRing} ${
-                    tab === id ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                    tab === id ? "bg-brand text-text shadow-lg" : "text-muted hover:text-text"
                   }`}
                 >
                   <Icon size={16} />

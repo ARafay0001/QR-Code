@@ -328,18 +328,18 @@ function parseGroups(input, n) {
 
 /* -------------------------------- UI bits --------------------------------- */
 
-const card = "rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl";
-const lbl = "text-xs font-semibold uppercase tracking-wide text-slate-500";
-const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/70 px-3.5 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40";
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(244,63,94,.3)] transition hover:scale-[1.03] disabled:opacity-40";
+const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
+const lbl = "text-xs font-semibold uppercase tracking-wide text-muted";
+const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 py-2 text-sm font-semibold text-text transition hover:border-muted hover:text-text disabled:cursor-not-allowed disabled:opacity-40";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-5 py-2.5 text-sm font-semibold text-text shadow-[0_0_24px_rgba(244,63,94,.3)] transition hover:scale-[1.03] disabled:opacity-40";
 const Chip = ({ on, onClick, children }) => (
-  <button onClick={onClick} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${on ? "border-red-500 bg-red-500/15 text-white" : "border-slate-700 text-slate-300 hover:border-slate-500"}`}>{children}</button>
+  <button onClick={onClick} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${on ? "border-danger bg-danger/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
 );
 const Swatches = ({ colors, value, onChange }) => (
   <div className="flex flex-wrap gap-2">
     {colors.map((c) => (
       <button key={c} onClick={() => onChange(c)} aria-label={c} style={{ background: c }}
-        className={`h-7 w-7 rounded-full border-2 transition ${value === c ? "scale-110 border-red-500" : "border-slate-600"}`} />
+        className={`h-7 w-7 rounded-full border-2 transition ${value === c ? "scale-110 border-danger" : "border-muted"}`} />
     ))}
   </div>
 );
@@ -347,7 +347,7 @@ const Swatches = ({ colors, value, onChange }) => (
 function Tb({ icon: Icon, text, onClick, active, disabled }) {
   return (
     <button onClick={onClick} disabled={disabled} title={text}
-      className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-35 ${active ? "bg-red-600 text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}>
+      className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-35 ${active ? "bg-danger text-text" : "text-text hover:bg-text/10 hover:text-text"}`}>
       <Icon size={17} /><span className="hidden sm:inline">{text}</span>
     </button>
   );
@@ -362,18 +362,18 @@ function SortableCard({ pg, thumb, index, selected, onToggle, onOpen, onRotate, 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}
       onClick={() => onToggle(pg.id)} onDoubleClick={() => onOpen(pg.id)}
-      className={`group relative cursor-grab select-none rounded-xl border-2 bg-slate-950/60 p-2 transition active:cursor-grabbing ${selected ? "border-red-500 shadow-[0_0_24px_rgba(244,63,94,.25)]" : "border-slate-800 hover:border-slate-600"}`}>
-      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-white">
-        {thumb ? <img src={thumb} alt={`Page ${index + 1}`} draggable={false} className="max-h-full max-w-full" /> : <Loader2 size={18} className="animate-spin text-slate-400" />}
+      className={`group relative cursor-grab select-none rounded-xl border-2 bg-page/60 p-2 transition active:cursor-grabbing ${selected ? "border-danger shadow-[0_0_24px_rgba(244,63,94,.25)]" : "border-border hover:border-muted"}`}>
+      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-text">
+        {thumb ? <img src={thumb} alt={`Page ${index + 1}`} draggable={false} className="max-h-full max-w-full" /> : <Loader2 size={18} className="animate-spin text-muted" />}
       </div>
-      <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
-        <span className="font-semibold text-slate-300">{index + 1}</span>
+      <div className="mt-2 flex items-center justify-between text-xs text-muted">
+        <span className="font-semibold text-text">{index + 1}</span>
         <span className="flex gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" onPointerDown={(e) => e.stopPropagation()}>
-          <button onClick={(e) => { e.stopPropagation(); onRotate(pg.id); }} aria-label="Rotate page" className="rounded p-1 hover:bg-white/10 hover:text-white"><RotateCw size={14} /></button>
-          <button onClick={(e) => { e.stopPropagation(); onDelete(pg.id); }} aria-label="Delete page" className="rounded p-1 hover:bg-white/10 hover:text-red-400"><Trash2 size={14} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onRotate(pg.id); }} aria-label="Rotate page" className="rounded p-1 hover:bg-text/10 hover:text-text"><RotateCw size={14} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onDelete(pg.id); }} aria-label="Delete page" className="rounded p-1 hover:bg-text/10 hover:text-danger"><Trash2 size={14} /></button>
         </span>
       </div>
-      {selected && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white"><CheckSquare size={12} /></span>}
+      {selected && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-text"><CheckSquare size={12} /></span>}
     </div>
   );
 }
@@ -408,16 +408,16 @@ function SignatureModal({ onSave, onClose, last }) {
     if (src) onSave(src);
   };
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4">
-      <div className={`${card} w-full max-w-lg space-y-4 bg-slate-900 p-5`}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-page/70 p-4">
+      <div className={`${card} w-full max-w-lg space-y-4 bg-surface p-5`}>
         <div className="flex items-center justify-between"><h3 className="text-lg font-bold">Add signature</h3><button onClick={onClose} aria-label="Close"><X size={18} /></button></div>
         <div className="flex gap-2"><Chip on={tab === "draw"} onClick={() => setTab("draw")}>Draw</Chip><Chip on={tab === "type"} onClick={() => setTab("type")}>Type</Chip>{last && <Chip on={false} onClick={() => onSave(last)}>Use last</Chip>}</div>
         {tab === "draw" ? (
           <canvas ref={cv} width={700} height={240} onPointerDown={start} onPointerMove={move} onPointerUp={() => (down.current = false)}
-            className="w-full touch-none rounded-xl bg-white" />
+            className="w-full touch-none rounded-xl bg-text" />
         ) : (
-          <div className="rounded-xl bg-white p-4"><input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type your name"
-            style={{ fontFamily: '"Brush Script MT","Segoe Script",cursive', color }} className="w-full bg-transparent text-5xl outline-none placeholder:text-slate-300" /></div>
+          <div className="rounded-xl bg-text p-4"><input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type your name"
+            style={{ fontFamily: '"Brush Script MT","Segoe Script",cursive', color }} className="w-full bg-transparent text-5xl outline-none placeholder:text-text" /></div>
         )}
         <div className="flex items-center justify-between">
           <Swatches colors={["#111827", "#2563eb", "#dc2626"]} value={color} onChange={setColor} />
@@ -544,7 +544,7 @@ function Viewer({ pg, srcs, c }) {
   return (
     <div ref={wrap} className="flex w-full justify-center">
       <div className="relative shadow-2xl" style={{ width: vw, aspectRatio: `${dw} / ${dh}` }}>
-        <canvas ref={baseRef} className="absolute inset-0 h-full w-full rounded bg-white" />
+        <canvas ref={baseRef} className="absolute inset-0 h-full w-full rounded bg-text" />
         <canvas ref={ovRef} onPointerDown={down} onPointerMove={move} onPointerUp={up} className={`absolute inset-0 h-full w-full touch-none ${cursor}`} />
       </div>
     </div>
@@ -757,10 +757,10 @@ export default function PDFEditor() {
 
   const Empty = (
     <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); }}
-      className="flex flex-col items-center rounded-3xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-6 py-20 text-center transition hover:border-red-500">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-400"><FileText size={30} /></div>
+      className="flex flex-col items-center rounded-3xl border-2 border-dashed border-border bg-surface/60 px-6 py-20 text-center transition hover:border-danger">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10 text-danger"><FileText size={30} /></div>
       <h2 className="mt-6 text-2xl font-bold">Open a PDF to start editing</h2>
-      <p className="mt-2 max-w-md text-slate-400">Drop one or more PDFs (or JPG/PNG images) — they’ll be combined so you can reorder, edit, sign and save.</p>
+      <p className="mt-2 max-w-md text-muted">Drop one or more PDFs (or JPG/PNG images) — they’ll be combined so you can reorder, edit, sign and save.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button onClick={() => fileRef.current.click()} className={btnPrimary}><Upload size={18} />Choose files</button>
         <button onClick={() => mutate(() => [{ id: uid(), srcId: null, srcIndex: 0, w: A4[0], h: A4[1], baseRot: 0, rotation: 0, annots: [], av: 0 }])} className={btn}><FilePlus2 size={18} />Blank page</button>
@@ -771,18 +771,18 @@ export default function PDFEditor() {
   return (
     <>
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-red-600/15 blur-[140px]" />
-        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-violet-600/15 blur-[180px]" />
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[150px]" />
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-danger/15 blur-[140px]" />
+        <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-brand/15 blur-[180px]" />
+        <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
         <Navbar />
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
           <div className="text-center">
-            <span className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400">PDF Editor</span>
+            <span className="rounded-full border border-danger/20 bg-danger/10 px-4 py-2 text-sm font-medium text-danger">PDF Editor</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Edit, Organize &amp; Sign PDFs.</h1>
-            <p className="mx-auto mt-3 max-w-2xl text-slate-400">Merge, split, rotate, delete, annotate, sign, redact and more — all in your browser, nothing uploaded.</p>
+            <p className="mx-auto mt-3 max-w-2xl text-muted">Merge, split, rotate, delete, annotate, sign, redact and more — all in your browser, nothing uploaded.</p>
           </div>
 
           <input ref={fileRef} hidden multiple type="file" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp"
@@ -794,13 +794,13 @@ export default function PDFEditor() {
               <div className="space-y-4">
                 {/* Top bar */}
                 <div className={`${card} flex flex-wrap items-center gap-2 p-2`}>
-                  <div className="flex rounded-xl bg-slate-950/60 p-1">
+                  <div className="flex rounded-xl bg-page/60 p-1">
                     <Tb icon={LayoutGrid} text="Organize" active={mode === "organize"} onClick={() => setMode("organize")} />
                     <Tb icon={Pencil} text="Edit" active={mode === "edit"} onClick={() => { setMode("edit"); if (!editId) setEditId(pages[0].id); }} />
                   </div>
                   <Tb icon={Undo2} text="Undo" onClick={undo} disabled={!hist.current.past.length} />
                   <Tb icon={Redo2} text="Redo" onClick={redo} disabled={!hist.current.future.length} />
-                  <span className="ml-auto text-xs text-slate-500">{pages.length} page{pages.length > 1 ? "s" : ""}</span>
+                  <span className="ml-auto text-xs text-muted">{pages.length} page{pages.length > 1 ? "s" : ""}</span>
                   <button onClick={() => setSaveOpen((o) => !o)} className={btnPrimary}><Download size={16} />Save</button>
                 </div>
 
@@ -812,42 +812,42 @@ export default function PDFEditor() {
                       <Chip on={opt.format === "split"} onClick={() => setOpt({ ...opt, format: "split" })}><Scissors size={13} className="mr-1 inline" />Split into PDFs (ZIP)</Chip>
                       <Chip on={opt.format === "images"} onClick={() => setOpt({ ...opt, format: "images" })}>Images (ZIP)</Chip>
                       {selIds.length > 0 && <>
-                        <span className="mx-1 self-center text-slate-600">|</span>
+                        <span className="mx-1 self-center text-muted">|</span>
                         <Chip on={opt.scope === "all"} onClick={() => setOpt({ ...opt, scope: "all" })}>All pages</Chip>
                         <Chip on={opt.scope === "selected"} onClick={() => setOpt({ ...opt, scope: "selected" })}>Selected ({selIds.length})</Chip>
                       </>}
                     </div>
                     <input value={opt.name} onChange={(e) => setOpt({ ...opt, name: e.target.value })} placeholder="File name"
-                      className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-red-500/50" />
+                      className="w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-danger/50" />
 
                     {opt.format === "split" && (
                       <div className="space-y-3">
                         <div className="flex flex-wrap gap-2">
                           {[["each", "Every page"], ["every", "Every N pages"], ["ranges", "Custom ranges"]].map(([v, l]) => <Chip key={v} on={opt.splitMode === v} onClick={() => setOpt({ ...opt, splitMode: v })}>{l}</Chip>)}
                         </div>
-                        {opt.splitMode === "every" && <input type="number" min={1} value={opt.splitN} onChange={(e) => setOpt({ ...opt, splitN: e.target.value })} className="w-28 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm outline-none" />}
-                        {opt.splitMode === "ranges" && <input value={opt.splitRanges} onChange={(e) => setOpt({ ...opt, splitRanges: e.target.value })} placeholder="e.g. 1-3, 4-6, 7" className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm outline-none focus:border-red-500/50" />}
+                        {opt.splitMode === "every" && <input type="number" min={1} value={opt.splitN} onChange={(e) => setOpt({ ...opt, splitN: e.target.value })} className="w-28 rounded-xl border border-border bg-page/60 px-3 py-2 text-sm outline-none" />}
+                        {opt.splitMode === "ranges" && <input value={opt.splitRanges} onChange={(e) => setOpt({ ...opt, splitRanges: e.target.value })} placeholder="e.g. 1-3, 4-6, 7" className="w-full rounded-xl border border-border bg-page/60 px-4 py-2.5 text-sm outline-none focus:border-danger/50" />}
                       </div>
                     )}
 
                     {opt.format === "pdf" && (
                       <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.wm} onChange={(e) => setOpt({ ...opt, wm: e.target.checked })} className="accent-red-500" />Watermark</label>
+                        <div className="space-y-3 rounded-xl border border-border bg-page/40 p-3">
+                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.wm} onChange={(e) => setOpt({ ...opt, wm: e.target.checked })} className="accent-danger" />Watermark</label>
                           {opt.wm && <>
-                            <input value={opt.wmText} onChange={(e) => setOpt({ ...opt, wmText: e.target.value })} className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm outline-none" />
-                            <input type="range" min={0.05} max={0.6} step={0.05} value={opt.wmOp} onChange={(e) => setOpt({ ...opt, wmOp: +e.target.value })} className="w-full accent-red-500" aria-label="Watermark opacity" />
+                            <input value={opt.wmText} onChange={(e) => setOpt({ ...opt, wmText: e.target.value })} className="w-full rounded-lg border border-border bg-page/60 px-3 py-2 text-sm outline-none" />
+                            <input type="range" min={0.05} max={0.6} step={0.05} value={opt.wmOp} onChange={(e) => setOpt({ ...opt, wmOp: +e.target.value })} className="w-full accent-danger" aria-label="Watermark opacity" />
                           </>}
                         </div>
-                        <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.num} onChange={(e) => setOpt({ ...opt, num: e.target.checked })} className="accent-red-500" />Page numbers</label>
+                        <div className="space-y-3 rounded-xl border border-border bg-page/40 p-3">
+                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.num} onChange={(e) => setOpt({ ...opt, num: e.target.checked })} className="accent-danger" />Page numbers</label>
                           {opt.num && <div className="flex flex-wrap gap-1.5">{[["bc", "Bottom"], ["br", "Right"], ["bl", "Left"], ["tc", "Top"]].map(([v, l]) => <Chip key={v} on={opt.numPos === v} onClick={() => setOpt({ ...opt, numPos: v })}>{l}</Chip>)}</div>}
                         </div>
-                        <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.compress} onChange={(e) => setOpt({ ...opt, compress: e.target.checked })} className="accent-red-500" />Reduce file size</label>
+                        <div className="space-y-3 rounded-xl border border-border bg-page/40 p-3">
+                          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={opt.compress} onChange={(e) => setOpt({ ...opt, compress: e.target.checked })} className="accent-danger" />Reduce file size</label>
                           {opt.compress && <>
                             <div className="flex flex-wrap gap-1.5">{[["low", "Smallest"], ["med", "Balanced"], ["high", "Best"]].map(([v, l]) => <Chip key={v} on={opt.level === v} onClick={() => setOpt({ ...opt, level: v })}>{l}</Chip>)}</div>
-                            <p className="text-xs text-slate-500">Flattens pages to images — text won’t be selectable.</p>
+                            <p className="text-xs text-muted">Flattens pages to images — text won’t be selectable.</p>
                           </>}
                         </div>
                       </div>
@@ -862,17 +862,17 @@ export default function PDFEditor() {
                     <div className={`${card} flex items-center gap-1 overflow-x-auto p-1.5`}>
                       <Tb icon={Plus} text="Add files" onClick={() => fileRef.current.click()} />
                       <Tb icon={FilePlus2} text="Blank page" onClick={insertBlank} />
-                      <span className="mx-1 h-6 w-px shrink-0 bg-slate-700" />
+                      <span className="mx-1 h-6 w-px shrink-0 bg-border" />
                       <Tb icon={RotateCcw} text="Left" onClick={() => rotate(selIds, -90)} disabled={!selIds.length} />
                       <Tb icon={RotateCw} text="Right" onClick={() => rotate(selIds, 90)} disabled={!selIds.length} />
                       <Tb icon={Copy} text="Duplicate" onClick={duplicate} disabled={!selIds.length} />
                       <Tb icon={Trash2} text="Delete" onClick={() => remove(selIds)} disabled={!selIds.length} />
-                      <span className="mx-1 h-6 w-px shrink-0 bg-slate-700" />
+                      <span className="mx-1 h-6 w-px shrink-0 bg-border" />
                       <Tb icon={CheckSquare} text={selIds.length === pages.length ? "Clear" : "Select all"} onClick={() => setSel(selIds.length === pages.length ? new Set() : new Set(pages.map((p) => p.id)))} />
                       <input value={rangeIn} onChange={(e) => selectByRange(e.target.value)} placeholder="Select: 1,3-6"
-                        className="ml-auto w-32 shrink-0 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-1.5 text-sm outline-none focus:border-red-500/50" />
+                        className="ml-auto w-32 shrink-0 rounded-lg border border-border bg-page/60 px-3 py-1.5 text-sm outline-none focus:border-danger/50" />
                     </div>
-                    <p className="px-1 text-xs text-slate-500">Click pages to select · drag to reorder · double-click to edit a page.</p>
+                    <p className="px-1 text-xs text-muted">Click pages to select · drag to reorder · double-click to edit a page.</p>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                       <SortableContext items={pages.map((p) => p.id)} strategy={rectSortingStrategy}>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -898,31 +898,31 @@ export default function PDFEditor() {
                         <Swatches colors={kind === "highlight" ? HL : INK} value={selA?.color || (kind === "highlight" ? style.hl : style.color)} onChange={(c) => setProp("color", c)} />
                       )}
                       {["draw", "rect", "ellipse", "line"].includes(kind) && (
-                        <label className="flex items-center gap-2 text-xs text-slate-400">Thickness
-                          <input type="range" min={1} max={20} value={selA?.width ?? style.width} onPointerDown={snapshot} onChange={(e) => setProp("width", +e.target.value, false)} className="w-28 accent-red-500" /></label>
+                        <label className="flex items-center gap-2 text-xs text-muted">Thickness
+                          <input type="range" min={1} max={20} value={selA?.width ?? style.width} onPointerDown={snapshot} onChange={(e) => setProp("width", +e.target.value, false)} className="w-28 accent-danger" /></label>
                       )}
                       {kind === "text" && <>
-                        <label className="flex items-center gap-2 text-xs text-slate-400">Size
-                          <input type="range" min={8} max={96} value={Math.round(selA?.size ?? style.size)} onPointerDown={snapshot} onChange={(e) => setProp("size", +e.target.value, false)} className="w-28 accent-red-500" /></label>
+                        <label className="flex items-center gap-2 text-xs text-muted">Size
+                          <input type="range" min={8} max={96} value={Math.round(selA?.size ?? style.size)} onPointerDown={snapshot} onChange={(e) => setProp("size", +e.target.value, false)} className="w-28 accent-danger" /></label>
                         <div className="flex gap-1.5">{[["helvetica", "Sans"], ["times", "Serif"], ["courier", "Mono"]].map(([v, l]) => <Chip key={v} on={(selA?.font ?? style.font) === v} onClick={() => setProp("font", v)}>{l}</Chip>)}</div>
                       </>}
                       {selA?.type === "text" && (
                         <textarea ref={textRef} rows={2} value={selA.text} onFocus={snapshot}
                           onChange={(e) => updateAnnots(editPage.id, (l) => l.map((a) => (a.id === selA.id ? { ...a, text: e.target.value } : a)), false)}
-                          placeholder="Type text…" className="min-w-[220px] flex-1 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm outline-none focus:border-red-500/50" />
+                          placeholder="Type text…" className="min-w-[220px] flex-1 rounded-lg border border-border bg-page/60 px-3 py-2 text-sm outline-none focus:border-danger/50" />
                       )}
-                      {kind === "redact" && <span className="text-xs text-amber-400">Redacted pages are flattened on save so the hidden text is truly removed.</span>}
-                      {kind === "whiteout" && <span className="text-xs text-slate-500">Covers content visually (text underneath stays in the file). Use Redact to remove it.</span>}
-                      {kind === "select" && !selA && <span className="text-xs text-slate-500">Click an item to move, resize (corner handle) or edit it.</span>}
-                      {selA && <button className={btn + " ml-auto !text-red-400"} onClick={() => { updateAnnots(editPage.id, (l) => l.filter((a) => a.id !== selA.id)); setSelAnn(null); }}><Trash2 size={14} />Delete</button>}
+                      {kind === "redact" && <span className="text-xs text-warning">Redacted pages are flattened on save so the hidden text is truly removed.</span>}
+                      {kind === "whiteout" && <span className="text-xs text-muted">Covers content visually (text underneath stays in the file). Use Redact to remove it.</span>}
+                      {kind === "select" && !selA && <span className="text-xs text-muted">Click an item to move, resize (corner handle) or edit it.</span>}
+                      {selA && <button className={btn + " ml-auto text-danger"} onClick={() => { updateAnnots(editPage.id, (l) => l.filter((a) => a.id !== selA.id)); setSelAnn(null); }}><Trash2 size={14} />Delete</button>}
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-[120px_1fr]">
                       <div className={`${card} hidden max-h-[75vh] space-y-2 overflow-y-auto p-2 lg:block`}>
                         {pages.map((p, i) => (
-                          <button key={p.id} onClick={() => goto(i)} className={`block w-full rounded-lg border-2 bg-white p-0.5 ${p.id === editPage.id ? "border-red-500" : "border-transparent"}`}>
+                          <button key={p.id} onClick={() => goto(i)} className={`block w-full rounded-lg border-2 bg-text p-0.5 ${p.id === editPage.id ? "border-danger" : "border-transparent"}`}>
                             {thumbs[p.id]?.url ? <img src={thumbs[p.id].url} alt={`Page ${i + 1}`} className="w-full" /> : <div className="aspect-[3/4]" />}
-                            <span className="block text-center text-[10px] text-slate-600">{i + 1}</span>
+                            <span className="block text-center text-[10px] text-muted">{i + 1}</span>
                           </button>
                         ))}
                       </div>
@@ -930,7 +930,7 @@ export default function PDFEditor() {
                         <Viewer pg={editPage} srcs={srcs.current} c={ctrl} />
                         <div className="mt-4 flex items-center justify-center gap-3 text-sm">
                           <button className={btn} onClick={() => goto(editIdx - 1)} disabled={editIdx <= 0} aria-label="Previous page"><ChevronLeft size={16} /></button>
-                          <span className="text-slate-400">Page {editIdx + 1} of {pages.length}</span>
+                          <span className="text-muted">Page {editIdx + 1} of {pages.length}</span>
                           <button className={btn} onClick={() => goto(editIdx + 1)} disabled={editIdx >= pages.length - 1} aria-label="Next page"><ChevronRight size={16} /></button>
                           <button className={btn} onClick={() => rotate([editPage.id], 90)}><RotateCw size={15} />Rotate</button>
                         </div>
@@ -946,8 +946,8 @@ export default function PDFEditor() {
       </div>
 
       {toast.msg && (
-        <div className="fixed bottom-5 left-1/2 z-[90] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-full border border-slate-700 bg-slate-900/95 px-5 py-3 text-sm shadow-2xl backdrop-blur">
-          {toast.busy && <Loader2 size={16} className="shrink-0 animate-spin text-red-400" />}{toast.msg}
+        <div className="fixed bottom-5 left-1/2 z-[90] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-surface/95 px-5 py-3 text-sm shadow-2xl backdrop-blur">
+          {toast.busy && <Loader2 size={16} className="shrink-0 animate-spin text-danger" />}{toast.msg}
         </div>
       )}
       {sigOpen && <SignatureModal last={lastSig} onClose={() => setSigOpen(false)} onSave={(src) => { setLastSig(src); setSigOpen(false); addImageAnn(src); }} />}

@@ -15,7 +15,7 @@ export default function SectionTitle({
         {title}
       </h2>
 
-      <p className="mt-5 text-lg text-slate-400">
+      <p className="mt-5 text-lg text-muted">
         {subtitle}
       </p>
 

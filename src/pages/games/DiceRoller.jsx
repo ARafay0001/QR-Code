@@ -354,25 +354,25 @@ export default function DiceRoller() {
     <>
       <Navbar />
       <style>{CSS}</style>
-      <main className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
-        <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-violet-600/10 blur-[120px]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-blue-500/10 blur-[120px]" />
+      <main className="relative min-h-screen overflow-hidden bg-page text-text">
+        <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
 
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
           <header className="mx-auto max-w-2xl text-center">
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-violet-300">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-brand/20 bg-brand/10 text-brand">
               <Dices size={28} />
             </span>
             <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">Dice roller</h1>
-            <p className="mt-4 text-base leading-7 text-slate-400 sm:text-lg">
+            <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
               Dice thrown onto the table and seen from above. The face pointing up is your result.
             </p>
           </header>
 
-          <section className="mt-12 grid gap-8 rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-black/10 backdrop-blur sm:p-8 lg:grid-cols-[0.8fr_1.2fr] lg:p-10">
+          <section className="mt-12 grid gap-8 rounded-3xl border border-border bg-surface/70 p-5 shadow-2xl shadow-page/10 backdrop-blur sm:p-8 lg:grid-cols-[0.8fr_1.2fr] lg:p-10">
             {/* Controls */}
             <div>
-              <p className="text-sm font-semibold text-slate-200">Dice type</p>
+              <p className="text-sm font-semibold text-text">Dice type</p>
               <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Dice type">
                 {MODES.map((item) => (
                   <button
@@ -383,8 +383,8 @@ export default function DiceRoller() {
                     onClick={() => setMode(item.value)}
                     className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
                       mode === item.value
-                        ? "border-violet-400/50 bg-violet-500/15 text-violet-200"
-                        : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white"
+                        ? "border-brand/50 bg-brand/15 text-brand"
+                        : "border-border text-muted hover:border-muted hover:text-text"
                     }`}
                   >
                     {item.label}
@@ -394,7 +394,7 @@ export default function DiceRoller() {
 
               {mode === "custom" && (
                 <div className="mt-5">
-                  <label htmlFor="custom-sides" className="text-sm font-semibold text-slate-200">
+                  <label htmlFor="custom-sides" className="text-sm font-semibold text-text">
                     Sides per die
                   </label>
                   <input
@@ -405,12 +405,12 @@ export default function DiceRoller() {
                     value={customSides}
                     disabled={rolling}
                     onChange={(e) => setCustomSides(clamp(Math.floor(Number(e.target.value) || 2), 2, 100))}
-                    className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white disabled:opacity-60"
+                    className="mt-2 w-full rounded-xl border border-border bg-page px-4 py-3 text-text disabled:opacity-60"
                   />
                 </div>
               )}
 
-              <p className="mt-5 text-sm font-semibold text-slate-200">
+              <p className="mt-5 text-sm font-semibold text-text">
                 {mode === "coin" ? "Number of coins" : "Number of dice"}
               </p>
               <div className="mt-2 flex items-center gap-3">
@@ -419,11 +419,11 @@ export default function DiceRoller() {
                   aria-label="Fewer"
                   disabled={rolling || count <= 1}
                   onClick={() => setCount((c) => clamp(c - 1, 1, maxCount))}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-700 text-slate-300 transition hover:border-slate-500 disabled:opacity-40"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-text transition hover:border-muted disabled:opacity-40"
                 >
                   <Minus size={18} />
                 </button>
-                <span className="flex h-11 min-w-16 flex-1 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-lg font-bold">
+                <span className="flex h-11 min-w-16 flex-1 items-center justify-center rounded-xl border border-border bg-page text-lg font-bold">
                   {count}
                 </span>
                 <button
@@ -431,16 +431,16 @@ export default function DiceRoller() {
                   aria-label="More"
                   disabled={rolling || count >= maxCount}
                   onClick={() => setCount((c) => clamp(c + 1, 1, maxCount))}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-700 text-slate-300 transition hover:border-slate-500 disabled:opacity-40"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-border text-text transition hover:border-muted disabled:opacity-40"
                 >
                   <Plus size={18} />
                 </button>
               </div>
-              <p className="mt-2 text-xs text-slate-500">Choose from 1 to {maxCount}.</p>
+              <p className="mt-2 text-xs text-muted">Choose from 1 to {maxCount}.</p>
 
               {mode !== "coin" && (
                 <>
-                  <p className="mt-5 text-sm font-semibold text-slate-200">Dice color</p>
+                  <p className="mt-5 text-sm font-semibold text-text">Dice color</p>
                   <div className="mt-2 flex gap-2.5" role="group" aria-label="Dice color">
                     {Object.entries(THEMES).map(([key, t]) => (
                       <button
@@ -451,7 +451,7 @@ export default function DiceRoller() {
                         aria-pressed={themeKey === key}
                         onClick={() => setThemeKey(key)}
                         className={`h-9 w-9 rounded-full border-2 transition ${
-                          themeKey === key ? "scale-110 border-white" : "border-slate-700 hover:border-slate-400"
+                          themeKey === key ? "scale-110 border-text" : "border-border hover:border-muted"
                         }`}
                         style={{ background: t.swatch }}
                       />
@@ -465,7 +465,7 @@ export default function DiceRoller() {
                   type="button"
                   onClick={roll}
                   disabled={rolling}
-                  className="primary-btn inline-flex flex-1 items-center justify-center gap-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="primary-btn inline-flex flex-1 items-center justify-center gap-2 text-text disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Dices size={19} className={rolling ? "animate-pulse" : ""} />
                   {rolling ? "Rolling…" : mode === "coin" ? "Flip" : "Roll dice"}
@@ -474,7 +474,7 @@ export default function DiceRoller() {
                   type="button"
                   onClick={() => setMuted((m) => !m)}
                   aria-label={muted ? "Unmute sound" : "Mute sound"}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-700 text-slate-300 transition hover:border-slate-500"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-border text-text transition hover:border-muted"
                 >
                   {muted ? <VolumeX size={19} /> : <Volume2 size={19} />}
                 </button>
@@ -484,7 +484,7 @@ export default function DiceRoller() {
             {/* Table */}
             <div>
               <div
-                className="relative flex min-h-80 items-center justify-center overflow-hidden rounded-3xl border border-emerald-900/60 p-6"
+                className="relative flex min-h-80 items-center justify-center overflow-hidden rounded-3xl border border-brand/60 p-6"
                 style={{
                   background:
                     "radial-gradient(ellipse at 50% 35%, #0f5132 0%, #0a3b26 55%, #062416 100%)",
@@ -496,7 +496,7 @@ export default function DiceRoller() {
                   {dice.map((die, i) => (
                     <div key={i} className="relative flex h-28 w-28 items-center justify-center">
                       <div
-                        className="absolute h-20 w-20 rounded-2xl bg-black blur-md"
+                        className="absolute h-20 w-20 rounded-2xl bg-page blur-md"
                         style={{
                           opacity: rollId ? undefined : 0.5,
                           animation: rollId
@@ -537,47 +537,47 @@ export default function DiceRoller() {
                       {values.map((v, i) => (
                         <span
                           key={i}
-                          className="rounded-xl border border-violet-400/30 bg-violet-500/10 px-3.5 py-1.5 text-lg font-black"
+                          className="rounded-xl border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-lg font-black"
                         >
                           {v}
                         </span>
                       ))}
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-muted">
                       {mode === "coin" ? (
                         <>
-                          <span className="font-bold text-white">{heads}</span> heads ·{" "}
-                          <span className="font-bold text-white">{values.length - heads}</span> tails
+                          <span className="font-bold text-text">{heads}</span> heads ·{" "}
+                          <span className="font-bold text-text">{values.length - heads}</span> tails
                         </>
                       ) : values.length > 1 ? (
                         <>
-                          Total: <span className="text-2xl font-black text-white">{total}</span>
+                          Total: <span className="text-2xl font-black text-text">{total}</span>
                         </>
                       ) : null}
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted">
                     {rolling ? "The dice are tumbling…" : "Press roll to throw the dice."}
                   </p>
                 )}
               </div>
 
               {history.length > 0 && (
-                <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="mt-6 rounded-2xl border border-border bg-page/60 p-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-slate-300">Recent rolls</p>
+                    <p className="text-sm font-semibold text-text">Recent rolls</p>
                     <button
                       type="button"
                       onClick={() => setHistory([])}
-                      className="flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-300"
+                      className="flex items-center gap-1.5 text-xs text-muted transition hover:text-text"
                     >
                       <Trash2 size={13} /> Clear
                     </button>
                   </div>
-                  <ul className="mt-3 space-y-1.5 text-sm text-slate-400">
+                  <ul className="mt-3 space-y-1.5 text-sm text-muted">
                     {history.map((item, i) => (
-                      <li key={`${i}-${item}`} className={i === 0 ? "text-slate-200" : ""}>
+                      <li key={`${i}-${item}`} className={i === 0 ? "text-text" : ""}>
                         {item}
                       </li>
                     ))}
@@ -587,7 +587,7 @@ export default function DiceRoller() {
             </div>
           </section>
 
-          <p className="mt-6 text-center text-xs text-slate-500">
+          <p className="mt-6 text-center text-xs text-muted">
             Results are generated in your browser and are for fun.
           </p>
         </div>
