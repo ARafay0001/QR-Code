@@ -1,0 +1,39 @@
+# Toolited
+
+Toolited is a collection of free browser-based utilities for working with PDFs,
+images, calculations, text, and everyday tasks. Tools run in the browser where
+possible; each tool page describes its supported features and file handling.
+
+## Main pages
+
+- [Home](https://toolited.com/): Browse the available online tools.
+- [About](https://toolited.com/about): About Toolited.
+- [Contact](https://toolited.com/contact): Contact and feedback.
+- [Privacy policy](https://toolited.com/privacy-policy): Privacy and data handling.
+- [All pages](https://toolited.com/sitemap.xml): XML sitemap.
+- [AI resource catalog](https://toolited.com/ai-catalog.json): Machine-readable catalog.
+
+## Tools
+
+- [PDF tools](https://toolited.com/pdf-tools): Edit, compress, and convert PDFs.
+- [Compress PDF](https://toolited.com/pdf-tools/compress): Reduce PDF file size.
+- [PDF editor](https://toolited.com/pdf-tools/pdf-editor): Edit, organize, and annotate PDF pages.
+- [Image to PDF](https://toolited.com/pdf-tools/image-to-pdf): Combine images into a PDF.
+- [PDF to Word](https://toolited.com/pdf-tools/pdf-to-word): Convert PDF content to Word.
+- [PDF to Excel](https://toolited.com/pdf-tools/pdf-to-excel): Extract PDF tables to spreadsheets.
+- [QR code generator](https://toolited.com/qr-generator): Create and download styled QR codes.
+- [Image compressor](https://toolited.com/image-compressor): Compress images in the browser.
+- [Video compressor](https://toolited.com/video-compressor): Compress video files in the browser.
+- [Background remover](https://toolited.com/background-remover): Remove image backgrounds.
+- [Image and video compressor](https://toolited.com/image-video-compressor): Choose an image or video compressor.
+- [WebP to image](https://toolited.com/webp-to-image): Convert WebP images to JPG or PNG.
+- [Image to vector](https://toolited.com/image-to-vector): Trace images into SVG artwork.
+- [Unit converter](https://toolited.com/unit-converter): Convert measurements across unit categories.
+- [Scientific calculator](https://toolited.com/scientific-calculator): Perform scientific calculations.
+- [All calculators](https://toolited.com/all-calculators): Browse calculators for everyday use.
+- [Text tools](https://toolited.com/text-tool): Transform, clean, encode, and count text.
+- [Typing tutor](https://toolited.com/typing-tutor): Practice typing.
+- [Input tester](https://toolited.com/input-tester): Test keyboard, mouse, and gamepad input.
+- [Games](https://toolited.com/games): Dice roller and customizable spin wheel.
+- [Dice roller](https://toolited.com/games/dice-roller): Roll virtual dice.
+- [Spin wheel](https://toolited.com/games/spin-wheel): Make a customizable random selection.

@@ -11,7 +11,12 @@
       content="Use free browser-based PDF tools, scientific and everyday calculators, WebP and SVG image converters, typing practice, and input testers."
     />
     <link rel="canonical" href="https://toolited.com/" />
-   <link rel="icon" type="image/svg+xml" href="/logoMini.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logoMini.svg" />
+    <link
+      rel="alternate"
+      type="application/ai-catalog+json"
+      href="/ai-catalog.json"
+    />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -42,14 +47,46 @@
       content="https://toolited.com/preview.png.jpg"
     />
     <meta name="twitter:image:alt" content="Toolited online tools" />
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8FP08QDLG6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-8FP08QDLG6');
-</script>
+    <script>
+      window.addEventListener(
+        "load",
+        () => {
+          let started = false;
+          let timer;
+          const events = ["pointerdown", "keydown", "touchstart"];
+          const initializeAnalytics = () => {
+            if (started) return;
+            started = true;
+            window.clearTimeout(timer);
+            events.forEach((event) =>
+              window.removeEventListener(event, initializeAnalytics),
+            );
+
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () {
+              window.dataLayer.push(arguments);
+            };
+            window.gtag("js", new Date());
+            window.gtag("config", "G-8FP08QDLG6");
+
+            const script = document.createElement("script");
+            script.async = true;
+            script.src =
+              "https://www.googletagmanager.com/gtag/js?id=G-8FP08QDLG6";
+            document.head.appendChild(script);
+          };
+
+          events.forEach((event) =>
+            window.addEventListener(event, initializeAnalytics, {
+              once: true,
+              passive: true,
+            }),
+          );
+          timer = window.setTimeout(initializeAnalytics, 10000);
+        },
+        { once: true },
+      );
+    </script>
     <script id="route-json-ld" type="application/ld+json">
       {
         "@context": "https://schema.org",

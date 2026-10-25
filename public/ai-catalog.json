@@ -1,0 +1,28 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Toolited",
+    "documentationUrl": "https://toolited.com/"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:toolited.com:online-tools",
+      "displayName": "Toolited Online Tools",
+      "type": "text/html",
+      "url": "https://toolited.com/",
+      "description": "A directory of free browser-based tools for PDFs, images, calculations, text, and everyday tasks. These are interactive web tools, not autonomous agent APIs.",
+      "tags": ["online tools", "PDF", "image", "calculator", "text"],
+      "capabilities": [
+        "PDF utilities",
+        "Image utilities",
+        "Calculators",
+        "Text utilities"
+      ],
+      "representativeQueries": [
+        "Find free browser-based tools for compressing or converting PDFs and images.",
+        "Find a free online calculator or unit converter.",
+        "Find browser-based tools for text transformation and typing practice."
+      ]
+    }
+  ]
+}

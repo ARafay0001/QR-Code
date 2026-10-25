@@ -539,7 +539,7 @@ export default function BackgroundRemover() {
               ) : (
                 <span className="flex items-center gap-3 rounded-full bg-slate-800/80 px-4 py-2 text-slate-300">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                  Preparing AI… {modelProgress}%
+                  Preparing AI… {modelProgress}% (only for the first time this usually takes &lt;1 minute)
                 </span>
               )}
             </div>
