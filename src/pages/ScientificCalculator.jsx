@@ -4,23 +4,105 @@ import { X, Smartphone, Monitor, ExternalLink } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
+
+
+const Article = {
+  title: "How to Use an Online Scientific Calculator",
+
+  intro:
+    "A scientific calculator goes beyond basic arithmetic. It handles trigonometry, logarithms, powers, roots, fractions, equations, statistics, and more. Toolited's free online scientific calculator brings these functions into your browser, so you can solve homework, engineering, and everyday math problems on a phone, tablet, or computer without installing anything.",
+
+  sections: [
+    {
+      heading: "What can a scientific calculator do?",
+      paragraphs: [
+        "A scientific calculator is built for problems that a standard calculator cannot solve in one step. You can type a full expression, check it on screen, and then get the result, instead of working out each part separately.",
+      ],
+      bullets: [
+        "Calculate sin, cos, tan, and their inverse and hyperbolic versions in degrees, radians, or gradians.",
+        "Work with logarithms, natural logs, powers, roots, factorials, permutations, and combinations.",
+        "Enter and display fractions and mixed numbers in natural, stacked form.",
+        "Solve quadratic and cubic equations, and systems with two or three unknowns.",
+        "Compute definite integrals, derivatives, and summations.",
+        "Work with matrices, statistics tables, and regression.",
+        "Convert between number bases (decimal, binary, octal, hexadecimal) and between common units.",
+        "Insert physical constants such as the speed of light or the gas constant.",
+      ],
+    },
+    {
+      heading: "How to use the calculator step by step",
+      paragraphs: [
+        "Type your expression using the on-screen keys or your keyboard, then press equals. Use brackets to control the order of operations, and use the arrow keys to move through the expression and fix mistakes.",
+        "Many keys have a second function printed above them. Press SHIFT to use the yellow function, or ALPHA to use the red letter, which is handy for storing values in variables like A, B, or X.",
+        "Before you start trigonometry, open SETUP and check that the angle unit matches your problem. Mixing up degrees and radians is the most common cause of wrong answers.",
+      ],
+    },
+    {
+      heading: "Tips for getting accurate results",
+      paragraphs: [
+        "Check the angle unit first, add brackets whenever an expression could be read in more than one way, and use the Ans key to reuse your last result instead of retyping it.",
+        "For repeated calculations with different numbers, use the CALC function: enter the expression once with variables, and the calculator asks you for the values each time.",
+      ],
+    },
+    {
+      heading: "Using it on a phone or in a separate window",
+      paragraphs: [
+        "On a phone, the calculator uses a compact portrait layout. On a desktop, it opens in a wide landscape layout, and you can switch between the two at any time. You can also pop the calculator out into its own small window and keep it next to your notes, spreadsheet, or document while you work.",
+      ],
+    },
+    {
+      heading: "Is an online calculator accurate enough for study and work?",
+      paragraphs: [
+        "It is suitable for homework, revision, and general technical work. For exams, always check what your institution allows, and for safety-critical or financial decisions, verify important results with a second method.",
+      ],
+    },
+  ],
+
+  relatedTools: [
+    { label: "Percentage Calculator", href: "/percentage-calculator" },
+    { label: "Unit Converter", href: "/unit-converter" },
+    { label: "Age Calculator", href: "/age-calculator" },
+    { label: "Compress PDF", href: "/pdf-tools/compress" },
+  ],
+};
 
 const FAQ = [
   {
-    question: "Can I switch between degrees and radians?",
+    question: "Is this scientific calculator free to use?",
     answer:
-      "Yes. Open Setup on the calculator and select the angle unit you need. The indicator on the display shows whether calculations currently use radians, degrees, or gradians.",
+      "Yes. You can use it as often as you like without creating an account or installing an app.",
   },
   {
-    question: "Does the calculator support fractions and advanced functions?",
+    question: "What functions does it support?",
     answer:
-      "Yes. Use the calculator's fraction templates, trigonometric and logarithmic functions, combinations, permutations, constants, integrals, summations, and equation-solving tools.",
+      "It supports trigonometric, logarithmic, power, and root functions, factorials, fractions, integrals, derivatives, summations, and the equation, matrix, statistics, table, and number-base modes. It also includes physical constants and unit conversion.",
   },
   {
-    question: "Can I use my keyboard to enter calculations?",
+    question: "How do I switch between degrees and radians?",
     answer:
-      "Yes. Type digits and common operators, use Enter to evaluate, and use Backspace or the arrow keys to edit. The on-screen guide lists supported keyboard shortcuts.",
+      "Press SHIFT and then MODE to open SETUP, then choose Degree, Radian, or Gradian under the angle unit. The current unit is shown at the top of the screen.",
+  },
+  {
+    question: "Can I solve equations with this calculator?",
+    answer:
+      "Yes. Open the Equation mode to solve quadratic and cubic equations or systems with two or three unknowns. You can also type an equation with X and use SOLVE for a single unknown.",
+  },
+  {
+    question: "Does it work on my phone?",
+    answer:
+      "Yes. On mobile it uses a portrait layout designed for smaller screens. On desktop you can choose between portrait and landscape.",
+  },
+  {
+    question: "Can I keep the calculator open while I work in another window?",
+    answer:
+      "Yes. On desktop, use the Pop out button to open the calculator in its own small window. Browsers that support floating windows keep it on top of your other work.",
+  },
+  {
+    question: "Are my calculations stored or uploaded?",
+    answer:
+      "The calculator runs in your browser, so your expressions and results are processed on your device.",
   },
 ];
 
@@ -1625,12 +1707,13 @@ export default function ScientificCalculator() {
           <p>Paste works: Ctrl+V (or the Paste button) puts text like 2*3, sqrt(16), pi, asin(0.5) on the display. Paste several lines, or lines like "2^10 =&gt; 1024", to get a test table with ✓ / ✗.</p>
           <p>Keyboard works too: digits, + − * / ( ) ^, Enter, Backspace, Esc, arrows, and s c t l n r for sin cos tan log ln √.</p>
         </div>
-        <ToolFAQ
-          faqs={FAQ}
-          description="Get quick guidance on angle modes, advanced functions, and keyboard input for scientific calculations."
-        />
+      
       </main>
-
+      <ToolArticle {...Article} />
+                    <ToolFAQ
+                      faqs={FAQ}
+                     description="Free online scientific calculator for trigonometry, logs, fractions, equations, matrices, statistics, and unit conversion. Works on phone and desktop, with a pop-out window."
+                    />
       <Footer />
     </div>
   );

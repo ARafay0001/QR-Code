@@ -5,6 +5,8 @@ import {
 
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
 
 /* ========================================================================== */
 /*  npm i exceljs pdfjs-dist tesseract.js                                     */
@@ -21,6 +23,162 @@ import Footer from "../../components/common/Footer";
 /* ========================================================================== */
 /* ENGINE START  (pure functions: PDF text geometry -> tables)                */
 /* ========================================================================== */
+
+const Article = {
+  title: "How to Convert PDF Tables to Excel Online",
+
+  intro:
+    "Tables locked inside a PDF are frustrating: you can't sort them, add formulas, or paste them into a spreadsheet without everything landing in one column. Toolited's PDF to Excel converter finds the tables in your PDF and rebuilds them as an editable Excel (XLSX) or CSV file, with numbers converted to real numbers you can calculate with. It runs in your browser, so your document stays on your device.",
+
+  sections: [
+    {
+      heading: "What does a PDF to Excel converter do?",
+      paragraphs: [
+        "A PDF doesn't store tables as rows and columns. It only stores pieces of text at fixed positions on the page. A PDF to Excel converter looks at where that text sits, works out which pieces line up into columns and rows, and writes them into spreadsheet cells.",
+        "The result is a real .xlsx file you can open in Microsoft Excel, Google Sheets, LibreOffice, or Numbers, then sort, filter, and use in formulas, pivot tables, and charts.",
+      ],
+      bullets: [
+        "Tables detected from aligned columns and rows of text.",
+        "Numbers, negatives in brackets, and percentages converted to real values.",
+        "Wrapped cell text and merged header cells recognized.",
+        "A styled header row, table borders, frozen header, and automatic column widths.",
+        "Scanned pages read with OCR.",
+        "Export to Excel (.xlsx) or CSV.",
+      ],
+    },
+    {
+      heading: "How to convert a PDF to Excel",
+      paragraphs: [
+        "You can convert a file in a few steps and adjust the options to suit your document.",
+      ],
+      bullets: [
+        "Open the PDF to Excel tool and choose your PDF, or drag and drop it onto the page.",
+        "If the PDF is password protected, enter the password to unlock it.",
+        "Choose the pages to convert: all pages or a custom range such as 1-3, 5, 8-10.",
+        "Pick what to extract (tables only, or tables plus other text) and how sheets are arranged.",
+        "Click Convert, preview the sheets, and download your Excel or CSV file.",
+      ],
+    },
+    {
+      heading: "Numbers that work in Excel, not just text",
+      paragraphs: [
+        "Copying a table from a PDF often gives you text that looks like numbers but won't add up. This converter turns values such as 1,234.50, (45), and 12% into real numbers, so totals, averages, and formulas work straight away. Negative numbers in brackets become negative values, and percentages keep their percent format.",
+        "Values that should stay as text, such as codes with leading zeros like 007, are kept as they are. If you would rather keep every value as plain text, you can turn number conversion off.",
+      ],
+    },
+    {
+      heading: "Choosing how your sheets are arranged",
+      paragraphs: [
+        "Different documents suit different layouts, so you can choose how the tables are placed in the workbook.",
+      ],
+      bullets: [
+        "One sheet per page: each PDF page becomes its own sheet, handy for reports.",
+        "One sheet per table: every detected table gets a separate sheet, ideal for clean data.",
+        "Everything on one sheet: all tables are stacked together. Tables that continue across pages are joined into one, and repeated header rows are removed.",
+      ],
+    },
+    {
+      heading: "Can you convert a scanned PDF to Excel?",
+      paragraphs: [
+        "A scanned PDF is a picture of a page, so there is no text to read. The converter uses OCR (optical character recognition) to recognize the words in the image, then applies the same table detection to rebuild rows and columns.",
+        "Auto-detect runs OCR only on pages without selectable text, which keeps normal PDFs fast. You can also run it on every page and pick the document language, including English, Urdu, Arabic, Hindi, Spanish, French, German, and more. Clear, straight, high-resolution scans give the best results, and you should always check scanned numbers before relying on them.",
+      ],
+    },
+    {
+      heading: "How to get the best results from your tables",
+      paragraphs: [
+        "Table detection works best on PDFs created digitally, such as exports from accounting software, bank statements, reports, or Word and Excel files saved as PDF. Heavily designed layouts and photographed pages are harder.",
+        "If columns end up merged together, switch column detection to \"Tight columns\". If a single cell gets split across several columns, try \"Wide gaps only\". Preview the result before using it, and spot-check totals against the original PDF.",
+      ],
+    },
+    {
+      heading: "Is it safe to convert a PDF to Excel online?",
+      paragraphs: [
+        "Privacy depends on how a tool handles your file. Many online converters upload documents to a server. Toolited's PDF to Excel converter processes the file in your browser, so your financial statements, invoices, and reports stay on your device while they are converted.",
+        "Even so, check a tool's privacy information before working with sensitive data, and avoid confidential files on shared or public computers.",
+      ],
+    },
+    {
+      heading: "When should you convert PDF to Excel?",
+      paragraphs: [
+        "Convert a PDF to Excel whenever the data inside it needs to be analyzed, sorted, or reused.",
+      ],
+      bullets: [
+        "Turning bank or credit card statements into data you can sort and total.",
+        "Moving invoices, price lists, and order tables into a spreadsheet.",
+        "Extracting financial reports, schedules, or results tables for analysis.",
+        "Importing data into accounting software, databases, or other tools through CSV.",
+        "Digitizing printed or scanned tables.",
+      ],
+    },
+  ],
+
+  relatedTools: [
+    { label: "PDF to Word", href: "/pdf-tools/pdf-to-word" },
+    { label: "Compress PDF", href: "/pdf-tools/compress" },
+    { label: "PDF Editor", href: "/pdf-tools/pdf-editor" },
+    { label: "Image to PDF", href: "/pdf-tools/image-to-pdf" },
+  ],
+};
+
+const FAQ = [
+  {
+    question: "How do I convert a PDF to Excel?",
+    answer:
+      "Choose your PDF, select the pages and options you want, and click Convert. The tool detects the tables and creates an Excel (.xlsx) or CSV file that you can download and open in Excel, Google Sheets, or LibreOffice.",
+  },
+  {
+    question: "Will the numbers work in formulas?",
+    answer:
+      "Yes. Values such as 1,234.50, (45), and 12% are converted to real numbers, so you can sum, sort, and use them in formulas straight away. Codes with leading zeros, like 007, stay as text so they aren't changed.",
+  },
+  {
+    question: "Can I convert a scanned PDF to Excel?",
+    answer:
+      "Yes. Scanned pages are read with OCR and then run through the same table detection. Auto-detect applies OCR only to pages without selectable text, or you can use it on every page. Clear, high-resolution scans work best, and OCR numbers should be double-checked.",
+  },
+  {
+    question: "Are my PDF files uploaded to a server?",
+    answer:
+      "No. The conversion runs in your browser, so your file stays on your device while it is processed. This applies to the tools on this page.",
+  },
+  {
+    question: "Why are some columns merged or split incorrectly?",
+    answer:
+      "Tables in a PDF are only text at fixed positions, so the tool has to guess where columns begin and end. If columns are merged together, try \"Tight columns\". If one cell is split into several, try \"Wide gaps only\". Previewing the result helps you pick the right setting.",
+  },
+  {
+    question: "Can I choose how the sheets are arranged?",
+    answer:
+      "Yes. You can create one sheet per PDF page, one sheet per table, or put everything on a single sheet. On a single sheet, tables that continue across pages are joined and repeated header rows are removed.",
+  },
+  {
+    question: "Should I choose XLSX or CSV?",
+    answer:
+      "Choose XLSX if you want formatting, such as a styled header, borders, frozen header row, merged cells, and several sheets. Choose CSV for a simple, plain file that is easy to import into databases, accounting tools, or other software.",
+  },
+  {
+    question: "Can I convert a password-protected PDF?",
+    answer:
+      "Yes, if you know the password. Enter it when prompted and the tool will unlock the file for conversion. It cannot open a protected PDF without the correct password.",
+  },
+  {
+    question: "Can I convert only some pages of a PDF?",
+    answer:
+      "Yes. Choose a custom page range, such as 1-3, 5, or 8-10, to convert only the pages you need instead of the whole document.",
+  },
+  {
+    question: "Does it work on tables without visible lines?",
+    answer:
+      "Yes. Tables are detected from how the text lines up into rows and columns, not from drawn borders, so tables without grid lines usually work too. Very irregular layouts may need a different column detection setting or some cleanup in Excel.",
+  },
+  {
+    question: "Can I use the PDF to Excel converter on my phone?",
+    answer:
+      "Yes. The tool works on phones and tablets, though large or scanned PDFs convert faster and are easier to check on a computer.",
+  },
+];
+
 
 const RTL_RE = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 
@@ -876,7 +1034,11 @@ export default function PdfToExcel() {
             )}
           </div>
         </main>
-
+      <ToolArticle {...Article} />
+                    <ToolFAQ
+                      faqs={FAQ}
+                      description="Convert PDF tables to Excel (XLSX) or CSV online for free. Detects tables, turns numbers into real values, reads scans with OCR, and runs in your browser."
+                    />
         <Footer />
       </div>
     </>

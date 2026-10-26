@@ -1,6 +1,7 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
+
 import { Link } from "react-router-dom";
 import {
   Shrink,
@@ -8,6 +9,50 @@ import {
   Image,
   ArrowRight,
 } from "lucide-react";
+
+import ToolArticle from "../components/common/ToolArticle";
+
+const pdfArticle = {
+  title: "How to Work with PDF Files Online",
+
+  intro:
+    "PDF files are useful for sharing documents while keeping their layout consistent across devices. Toolited brings together PDF editing, compression, and conversion tools so you can choose the right workflow for your document.",
+
+  sections: [
+    {
+      heading: "What can you do with PDF files?",
+      paragraphs: [
+        "Different PDF tasks solve different problems. You may need to reduce a large document before sending it, combine a document with images, or convert its contents into an editable format.",
+      ],
+      bullets: [
+        "Compress a PDF to reduce its file size.",
+        "Edit a PDF when you need to make document changes.",
+        "Convert images into a PDF for easier sharing.",
+        "Convert PDF documents to Word or Excel when supported by the selected tool.",
+      ],
+    },
+    {
+      heading: "How to choose the right PDF tool",
+      paragraphs: [
+        "Start by identifying what you need to change. If the document is too large to email, use a compressor. If you need to work with its text or tables in another application, choose the appropriate conversion tool.",
+        "After processing, open the resulting file and check that its text, layout, images, and formatting meet your needs.",
+      ],
+    },
+    {
+      heading: "Are online PDF tools safe to use?",
+      paragraphs: [
+        "File privacy depends on how the particular tool processes documents. Check its privacy information before uploading sensitive files, and verify whether processing takes place in your browser or on a remote server.",
+      ],
+    },
+  ],
+
+  relatedTools: [
+    { label: "Compress PDF", href: "/pdf-tools/compress" },
+    { label: "PDF Editor", href: "/pdf-tools/pdf-editor" },
+    { label: "Image to PDF", href: "/pdf-tools/image-to-pdf" },
+    { label: "Image Compressor", href: "/image-compressor" },
+  ],
+};
 
 const FAQ = [
   {
@@ -122,7 +167,7 @@ export default function PDFTools() {
             })}
 
           </div>
-
+<ToolArticle {...pdfArticle} />
           <ToolFAQ
             faqs={FAQ}
             description="Find the right PDF workflow, from reducing file size to editing and converting documents."
