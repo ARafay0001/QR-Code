@@ -10,6 +10,7 @@ import {
   Upload, Plus, RotateCw, RotateCcw, Trash2, Copy, FilePlus2, Undo2, Redo2, Download,
   MousePointer2, Type, Highlighter, Pencil, Square, Circle, Minus, Eraser, EyeOff, PenTool,
   ImagePlus, LayoutGrid, FileText, Loader2, ChevronLeft, ChevronRight, X, CheckSquare, Scissors,
+  Pipette, TextCursorInput,
 } from "lucide-react";
 
 import Navbar from "../../components/common/Navbar";
@@ -22,23 +23,44 @@ import Footer from "../../components/common/Footer";
 /*  Data model: every page = { id, srcId, srcIndex, w, h, baseRot, rotation, */
 /*  annots[] }. Annotation coordinates are normalised (0..1) against the     */
 /*  UNROTATED page, so they rotate together with the page automatically.     */
+/*                                                                            */
+/*  NEW                                                                       */
+/*   - Edit text : click any real text on the page (not scans) and change it. */
+/*                 Stored as a "text" annot with a `cover` rectangle that     */
+/*                 hides the original using the sampled background colour.    */
+/*   - Eraser    : square eraser, colour auto-matches the page background.    */
+/*   - Eyedropper: pick any colour from the page for every coloured tool.     */
 /* ========================================================================== */
 
 const A4 = [595.28, 841.89];
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 const INK = ["#dc2626", "#2563eb", "#16a34a", "#111827", "#f59e0b", "#ffffff"];
 const HL = ["#fde047", "#86efac", "#f9a8d4", "#93c5fd"];
+const COVER = ["#ffffff", "#f8fafc", "#fef9c3", "#e5e7eb", "#111827"];
 const FONT_CSS = { helvetica: "Helvetica, Arial, sans-serif", times: "'Times New Roman', Times, serif", courier: "'Courier New', monospace" };
-const PDF_FONT = { helvetica: StandardFonts.Helvetica, times: StandardFonts.TimesRoman, courier: StandardFonts.Courier };
+const PDF_FONT = {
+  helvetica: StandardFonts.Helvetica, "helvetica-b": StandardFonts.HelveticaBold, "helvetica-i": StandardFonts.HelveticaOblique, "helvetica-bi": StandardFonts.HelveticaBoldOblique,
+  times: StandardFonts.TimesRoman, "times-b": StandardFonts.TimesRomanBold, "times-i": StandardFonts.TimesRomanItalic, "times-bi": StandardFonts.TimesRomanBoldItalic,
+  courier: StandardFonts.Courier, "courier-b": StandardFonts.CourierBold, "courier-i": StandardFonts.CourierOblique, "courier-bi": StandardFonts.CourierBoldOblique,
+};
+const fkey = (a) => a.font + (a.bold || a.italic ? "-" + (a.bold ? "b" : "") + (a.italic ? "i" : "") : "");
+const cssFont = (a, s = 1) => `${a.italic ? "italic " : ""}${a.bold ? "bold " : ""}${a.size * s}px ${FONT_CSS[a.font]}`;
 const BOX = ["highlight", "rect", "ellipse", "whiteout", "redact", "image"];
+const SAMP = 2; // scale of the off-screen canvas used for colour sampling
 
 const norm = (d) => ((d % 360) + 360) % 360;
 const totRot = (p) => norm(p.baseRot + p.rotation);
 const dispSize = (p) => (totRot(p) % 180 ? [p.h, p.w] : [p.w, p.h]);
-const latin = (t) => t.replace(/[^\u0020-\u00FF]/g, "?");
+const latin = (t) => t.replace(/[^\u0020-\u007E\u00A0-\u00FF\u2018\u2019\u201C\u201D\u2013\u2014\u2022\u2026\u20AC]/g, "?");
 const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255); };
+const toHex = (r, g, b) => "#" + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
 let AV = 0;
 const tick = () => new Promise((r) => setTimeout(r, 0));
+const mulM = (m, n) => [
+  m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+  m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+  m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
+];
 
 /* ------------------------------- pdf.js ----------------------------------- */
 
@@ -92,7 +114,7 @@ const dataUrlBytes = (u) => Uint8Array.from(atob(u.split(",")[1]), (c) => c.char
 
 const mctx = document.createElement("canvas").getContext("2d");
 function textSize(a) {
-  mctx.font = `${a.size}px ${FONT_CSS[a.font]}`;
+  mctx.font = cssFont(a);
   const lines = a.text.split("\n");
   return { w: Math.max(...lines.map((l) => mctx.measureText(l || " ").width)), h: lines.length * a.size * 1.2 };
 }
@@ -125,10 +147,13 @@ function hit(a, pg, u, v, tol) {
   return px >= b.u * pg.w - tol && px <= (b.u + b.w) * pg.w + tol && py >= b.v * pg.h - tol && py <= (b.v + b.h) * pg.h + tol;
 }
 
+const inCover = (a, pg, u, v) =>
+  !!a.cover && u >= a.cover.u && u <= a.cover.u + a.cover.w && v >= a.cover.v && v <= a.cover.v + a.cover.h;
+
 function moveAnnot(a, du, dv) {
   if (a.type === "line") return { ...a, u1: a.u1 + du, u2: a.u2 + du, v1: a.v1 + dv, v2: a.v2 + dv };
   if (a.type === "draw") return { ...a, pts: a.pts.map(([x, y]) => [x + du, y + dv]) };
-  return { ...a, u: a.u + du, v: a.v + dv };
+  return { ...a, u: a.u + du, v: a.v + dv }; // for edited text the cover stays put
 }
 
 /* ------------------------------ rendering --------------------------------- */
@@ -151,7 +176,7 @@ function drawAnnots(ctx, pg, s, selId, live) {
     ctx.fillStyle = a.color;
     ctx.lineWidth = (a.width || 1) * s;
     if (a.type === "highlight") { ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.5; ctx.fillRect(x, y, w, h); }
-    else if (a.type === "whiteout") { ctx.fillStyle = "#fff"; ctx.fillRect(x, y, w, h); }
+    else if (a.type === "whiteout") { ctx.fillStyle = a.color || "#fff"; ctx.fillRect(x, y, w, h); }
     else if (a.type === "redact") { ctx.fillStyle = "#000"; ctx.fillRect(x, y, w, h); }
     else if (a.type === "rect") ctx.strokeRect(x, y, w, h);
     else if (a.type === "ellipse") { ctx.beginPath(); ctx.ellipse(x + w / 2, y + h / 2, Math.abs(w / 2), Math.abs(h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
@@ -163,7 +188,12 @@ function drawAnnots(ctx, pg, s, selId, live) {
       ctx.stroke();
     } else if (a.type === "image") { const im = imgStore.get(a.src); if (im) ctx.drawImage(im, x, y, w, h); }
     else if (a.type === "text") {
-      ctx.font = `${a.size * s}px ${FONT_CSS[a.font]}`;
+      if (a.cover) {
+        ctx.fillStyle = a.cover.color;
+        ctx.fillRect(a.cover.u * Wp, a.cover.v * Hp, a.cover.w * Wp, a.cover.h * Hp);
+        ctx.fillStyle = a.color;
+      }
+      ctx.font = cssFont(a, s);
       ctx.textBaseline = "alphabetic";
       a.text.split("\n").forEach((l, i) => ctx.fillText(l, x, y + a.size * s * 0.8 + i * a.size * s * 1.2));
     }
@@ -211,6 +241,136 @@ async function renderPage(pg, srcs, scale, annots = true) {
   return c;
 }
 
+/* ------------------- colour sampling (eraser / edit text) ------------------ */
+
+const sampCache = new Map();
+/* un-rotated, annotation-free render of the page, so coordinates are plain PDF points * SAMP */
+async function sampleCanvas(pg, srcs) {
+  const key = pg.srcId ? `${pg.srcId}|${pg.srcIndex}` : null;
+  if (key && sampCache.has(key)) return sampCache.get(key);
+  const cv = await renderBase({ ...pg, baseRot: 0, rotation: 0 }, srcs, SAMP);
+  if (key) {
+    if (sampCache.size > 4) sampCache.delete(sampCache.keys().next().value);
+    sampCache.set(key, cv);
+  }
+  return cv;
+}
+
+function pixelsOf(cv, rects) {
+  const ctx = cv.getContext("2d"), out = [];
+  for (const [x, y, w, h] of rects) {
+    const x0 = Math.max(0, Math.floor(x)), y0 = Math.max(0, Math.floor(y));
+    const x1 = Math.min(cv.width, Math.ceil(x + w)), y1 = Math.min(cv.height, Math.ceil(y + h));
+    if (x1 - x0 > 0 && y1 - y0 > 0) out.push(ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data);
+  }
+  return out;
+}
+
+function modeColor(chunks) {
+  const bins = new Map();
+  for (const d of chunks) {
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 200) continue;
+      const k = ((d[i] >> 4) << 8) | ((d[i + 1] >> 4) << 4) | (d[i + 2] >> 4);
+      const e = bins.get(k);
+      if (e) { e[0]++; e[1] += d[i]; e[2] += d[i + 1]; e[3] += d[i + 2]; }
+      else bins.set(k, [1, d[i], d[i + 1], d[i + 2]]);
+    }
+  }
+  let best = null;
+  bins.forEach((e) => { if (!best || e[0] > best[0]) best = e; });
+  return best ? [best[1] / best[0], best[2] / best[0], best[3] / best[0]] : null;
+}
+
+/* background = most common colour in the box, text colour = average of the pixels furthest from it */
+function analyzeBox(cv, b) {
+  const chunks = pixelsOf(cv, [[b.x * SAMP, b.y * SAMP, b.w * SAMP, b.h * SAMP]]);
+  const bg = modeColor(chunks) || [255, 255, 255];
+  const dist = (d, i) => Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]);
+  let md = 0;
+  for (const d of chunks) for (let i = 0; i < d.length; i += 4) md = Math.max(md, dist(d, i));
+  let fg = [0, 0, 0];
+  if (md >= 60) {
+    let n = 0, r = 0, g = 0, bl = 0;
+    for (const d of chunks) for (let i = 0; i < d.length; i += 4) if (dist(d, i) >= md * 0.7) { n++; r += d[i]; g += d[i + 1]; bl += d[i + 2]; }
+    if (n) fg = [r / n, g / n, bl / n];
+  }
+  return { bg: toHex(...bg), fg: toHex(...fg) };
+}
+
+/* colour of the page just OUTSIDE a rectangle (what an eraser should paint with) */
+function ringColor(cv, b) {
+  const S = SAMP, m = 3 * S, x = b.x * S, y = b.y * S, w = b.w * S, h = b.h * S;
+  const rects = [[x - m, y - m, w + 2 * m, m], [x - m, y + h, w + 2 * m, m], [x - m, y, m, h], [x + w, y, m, h]];
+  const c = modeColor(pixelsOf(cv, rects)) || modeColor(pixelsOf(cv, [[x, y, w, h]]));
+  return c ? toHex(...c) : null;
+}
+
+/* ------------------------ existing-text extraction ------------------------- */
+
+const textCache = new Map();
+
+async function loadTextLines(pg, srcs) {
+  if (!pg.srcId) return [];
+  const key = `${pg.srcId}|${pg.srcIndex}`;
+  if (textCache.has(key)) return textCache.get(key);
+  const page = await srcs.get(pg.srcId).doc.getPage(pg.srcIndex + 1);
+  const vp = page.getViewport({ scale: 1, rotation: 0 });
+  const tc = await page.getTextContent();
+  const fontOf = (fn) => {
+    let name = "", b = false, i = false;
+    const gen = tc.styles?.[fn]?.fontFamily || "";
+    try {
+      if (page.commonObjs.has(fn)) { const f = page.commonObjs.get(fn); name = f.name || ""; b = !!(f.bold || f.black); i = !!f.italic; }
+    } catch { /* not resolved: fall back to generic family */ }
+    if (/bold|black|heavy|semibold|demi/i.test(name)) b = true;
+    if (/italic|oblique/i.test(name)) i = true;
+    const n = name.replace(/^[A-Z]{6}\+/, "");
+    let font = "helvetica";
+    if (/courier|mono|consolas|menlo|monaco/i.test(n) || /mono/i.test(gen)) font = "courier";
+    else if ((/times|georgia|garamond|palatino|cambria|minion|serif/i.test(n) && !/sans/i.test(n)) || (/serif/i.test(gen) && !/sans/i.test(gen))) font = "times";
+    return { b, i, font };
+  };
+  const items = [];
+  for (const it of tc.items) {
+    if (typeof it.str !== "string" || !it.str.trim()) continue;
+    const t = mulM(vp.transform, it.transform);
+    const fs = Math.hypot(t[2], t[3]);
+    if (!(fs >= 3) || Math.abs(t[1]) > Math.abs(t[0]) * 0.3) continue; // skip tiny / rotated text
+    items.push({ s: it.str, x: t[4], y: t[5], w: Math.abs(it.width), fs, ...fontOf(it.fontName) });
+  }
+  items.sort((a, b) => a.y - b.y || a.x - b.x);
+  const lines = [];
+  for (const it of items) {
+    let L = null;
+    for (let k = lines.length - 1; k >= 0 && k >= lines.length - 8; k--) {
+      if (Math.abs(lines[k].y - it.y) <= Math.max(lines[k].fs, it.fs) * 0.3) { L = lines[k]; break; }
+    }
+    if (L) L.items.push(it); else lines.push({ y: it.y, fs: it.fs, items: [it] });
+  }
+  const segs = [];
+  for (const l of lines) {
+    l.items.sort((a, b) => a.x - b.x);
+    let cur = null;
+    for (const it of l.items) {
+      const gap = cur ? it.x - (cur.x + cur.w) : 0;
+      if (cur && gap < cur.fs * 0.8 && gap > -cur.fs * 0.5) {
+        if (gap > cur.fs * 0.12 && !/\s$/.test(cur.s) && !/^\s/.test(it.s)) cur.s += " ";
+        cur.s += it.s;
+        cur.w = it.x + it.w - cur.x;
+      } else {
+        if (cur) segs.push(cur);
+        cur = { s: it.s, x: it.x, y: it.y, w: it.w, fs: it.fs, b: it.b, i: it.i, font: it.font };
+      }
+    }
+    if (cur) segs.push(cur);
+  }
+  textCache.set(key, segs);
+  return segs;
+}
+
+const segBox = (g) => ({ x: g.x - 1, y: g.y - g.fs * 0.95, w: g.w + 2, h: g.fs * 1.25 });
+
 /* -------------------------------- export ---------------------------------- */
 
 const dispToUnrot = (a, b, tot) =>
@@ -234,7 +394,7 @@ async function drawVector(out, page, pg, getFont, embedCache) {
   for (const a of pg.annots) {
     const col = a.color ? hexRgb(a.color) : undefined;
     if (a.type === "highlight") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, color: col, opacity: 0.5, blendMode: BlendMode.Multiply });
-    else if (a.type === "whiteout") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, color: rgb(1, 1, 1) });
+    else if (a.type === "whiteout") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, color: col || rgb(1, 1, 1) });
     else if (a.type === "rect") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, borderColor: col, borderWidth: a.width });
     else if (a.type === "ellipse") page.drawEllipse({ x: X(a.u + a.w / 2), y: Y(a.v + a.h / 2), xScale: (a.w * W) / 2, yScale: (a.h * H) / 2, borderColor: col, borderWidth: a.width });
     else if (a.type === "line") page.drawLine({ start: { x: X(a.u1), y: Y(a.v1) }, end: { x: X(a.u2), y: Y(a.v2) }, thickness: a.width, color: col, lineCap: LineCapStyle.Round });
@@ -246,7 +406,8 @@ async function drawVector(out, page, pg, getFont, embedCache) {
       if (!img) { img = await out.embedPng(dataUrlBytes(a.src)); embedCache.set(a.src, img); }
       page.drawImage(img, { x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H });
     } else if (a.type === "text") {
-      const font = await getFont(a.font);
+      if (a.cover) page.drawRectangle({ x: X(a.cover.u), y: Y(a.cover.v + a.cover.h), width: a.cover.w * W, height: a.cover.h * H, color: hexRgb(a.cover.color) });
+      const font = await getFont(fkey(a));
       latin(a.text).split("\n").forEach((l, i) =>
         page.drawText(l, { x: X(a.u), y: Y(a.v) - a.size * 0.8 - i * a.size * 1.2, size: a.size, font, color: col }));
     }
@@ -261,7 +422,7 @@ async function buildPdf(list, srcs, o = {}, onProgress = () => {}) {
     if (!docs.has(id)) docs.set(id, await PDFDocument.load(srcs.get(id).bytes, { ignoreEncryption: true }));
     return docs.get(id);
   };
-  const raster = (pg) => o.compress || pg.annots.some((a) => a.type === "redact");
+  const raster = (pg) => o.compress || pg.annots.some((a) => a.type === "redact" || (o.flatten && (a.type === "whiteout" || a.cover)));
 
   // Copy every vector page of each source in one go (keeps shared resources → smaller files)
   const per = new Map();
@@ -343,6 +504,29 @@ const Swatches = ({ colors, value, onChange }) => (
     ))}
   </div>
 );
+
+/* swatches + custom colour wheel + eyedropper (picks a colour from the page) */
+function ColorPicker({ colors, value, onChange, onLive, onStart, picking, onEyedrop }) {
+  const isHex = typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Swatches colors={colors} value={value} onChange={onChange} />
+      {isHex && !colors.some((c) => c.toLowerCase() === value.toLowerCase()) && (
+        <span title={value} style={{ background: value }} className="h-7 w-7 scale-110 rounded-full border-2 border-danger" />
+      )}
+      <label title="Custom colour" style={{ background: "conic-gradient(#ef4444,#eab308,#22c55e,#06b6d4,#3b82f6,#d946ef,#ef4444)" }}
+        className="relative h-7 w-7 cursor-pointer overflow-hidden rounded-full border-2 border-muted">
+        <input type="color" value={isHex ? value : "#000000"} onFocus={onStart} onChange={(e) => onLive(e.target.value)}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label="Custom colour" />
+      </label>
+      <button onClick={onEyedrop} title="Pick a colour from the page" aria-label="Pick a colour from the page"
+        className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition ${picking ? "border-danger bg-danger text-text" : "border-muted text-text hover:border-text"}`}>
+        <Pipette size={14} />
+      </button>
+      {picking && <span className="text-xs text-muted">Click anywhere on the page · Esc to cancel</span>}
+    </div>
+  );
+}
 
 function Tb({ icon: Icon, text, onClick, active, disabled }) {
   return (
@@ -435,8 +619,10 @@ function SignatureModal({ onSave, onClose, last }) {
 
 function Viewer({ pg, srcs, c }) {
   const wrap = useRef(null), baseRef = useRef(null), ovRef = useRef(null), live = useRef(null), drag = useRef(null);
-  const [vw, setVw] = useState(700), [ready, setReady] = useState(0);
+  const tlRef = useRef([]), hoverRef = useRef(-1);
+  const [vw, setVw] = useState(700), [ready, setReady] = useState(0), [tl, setTl] = useState([]);
   const [dw, dh] = dispSize(pg), tot = totRot(pg), dpr = Math.min(2, window.devicePixelRatio || 1);
+  tlRef.current = tl;
 
   useEffect(() => {
     const el = wrap.current, fit = () => setVw(Math.max(240, Math.min(el.clientWidth, 860)));
@@ -459,6 +645,19 @@ function Viewer({ pg, srcs, c }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pg.id, tot, pg.srcId, pg.srcIndex, vw]);
 
+  /* load the page's real text when the "Edit text" tool is active */
+  useEffect(() => {
+    if (c.tool !== "edittext") { hoverRef.current = -1; return; }
+    let off = false;
+    loadTextLines(pg, srcs).then((l) => {
+      if (off) return;
+      setTl(l);
+      if (!l.length) c.note("No editable text on this page — it looks like a scan or image. Use the Eraser and Text tools instead.");
+    }).catch(() => { if (!off) { setTl([]); c.note("Couldn't read the text on this page."); } });
+    return () => { off = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.tool, pg.id, pg.srcId, pg.srcIndex]);
+
   const paint = () => {
     const o = ovRef.current;
     if (!o || !o.width) return;
@@ -466,8 +665,24 @@ function Viewer({ pg, srcs, c }) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, o.width, o.height);
     drawAnnots(ctx, pg, o.width / dw, c.selAnn, live.current);
+    if (c.tool === "edittext" && !c.picking) {
+      const s = o.width / dw, Wp = pg.w * s, Hp = pg.h * s;
+      ctx.save();
+      applyRot(ctx, tot, Wp, Hp);
+      ctx.lineWidth = dpr;
+      tlRef.current.forEach((g, i) => {
+        const b = segBox(g), cu = (g.x + g.w / 2) / pg.w, cvv = g.y / pg.h;
+        if (pg.annots.some((a) => inCover(a, pg, cu, cvv))) return; // already edited
+        const hv = i === hoverRef.current;
+        ctx.fillStyle = hv ? "rgba(59,130,246,.28)" : "rgba(59,130,246,.07)";
+        ctx.strokeStyle = hv ? "#3b82f6" : "rgba(59,130,246,.45)";
+        ctx.fillRect(b.x * s, b.y * s, b.w * s, b.h * s);
+        ctx.strokeRect(b.x * s, b.y * s, b.w * s, b.h * s);
+      });
+      ctx.restore();
+    }
   };
-  useEffect(paint, [pg.annots, c.selAnn, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(paint, [pg.annots, c.selAnn, ready, c.tool, c.picking, tl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toU = (e) => {
     const r = ovRef.current.getBoundingClientRect(), a = (e.clientX - r.left) / r.width, b = (e.clientY - r.top) / r.height;
@@ -475,9 +690,52 @@ function Viewer({ pg, srcs, c }) {
     return { u, v };
   };
   const ptsPerPx = dw / vw;
-  const mk = (type, extra) => ({ id: uid(), type, color: type === "highlight" ? c.style.hl : c.style.color, width: c.style.width, ...extra });
+  const mk = (type, extra) => ({
+    id: uid(), type, width: c.style.width,
+    color: type === "highlight" ? c.style.hl : type === "whiteout" ? (c.style.cover || "#ffffff") : c.style.color,
+    ...extra,
+  });
+
+  const hitSeg = (u, v) => {
+    const px = u * pg.w, py = v * pg.h;
+    return tlRef.current.findIndex((s) => px >= s.x - 2 && px <= s.x + s.w + 2 && py >= s.y - s.fs * 0.95 && py <= s.y + s.fs * 0.3);
+  };
+
+  /* replace a piece of real PDF text: cover the original with the sampled background and put editable text on top */
+  const startEdit = async (g) => {
+    let bg = "#ffffff", fg = "#000000";
+    const box = segBox(g);
+    try { const cv = await sampleCanvas(pg, srcs); const r = analyzeBox(cv, box); bg = r.bg; fg = r.fg; } catch { /* keep defaults */ }
+    const a = {
+      id: uid(), type: "text", u: g.x / pg.w, v: (g.y - g.fs * 0.8) / pg.h, text: g.s, size: g.fs,
+      font: g.font, bold: g.b, italic: g.i, color: fg, width: 1,
+      cover: { u: box.x / pg.w, v: box.y / pg.h, w: box.w / pg.w, h: box.h / pg.h, color: bg },
+    };
+    c.addAnn(pg.id, a);
+    c.setSelAnn(a.id);
+    c.setTool("select");
+    c.setFocusText(true);
+  };
+
+  /* eraser: paint with the colour just outside the box (unless the user picked a colour) */
+  const autoCover = async (L) => {
+    try {
+      const cv = await sampleCanvas(pg, srcs);
+      const col = ringColor(cv, { x: L.u * pg.w, y: L.v * pg.h, w: L.w * pg.w, h: L.h * pg.h });
+      if (col) c.updateAnnots(pg.id, (l) => l.map((a) => (a.id === L.id ? { ...a, color: col } : a)), false);
+    } catch { /* keep white */ }
+  };
+
+  const pickAt = (e) => {
+    const cvs = baseRef.current, r = cvs.getBoundingClientRect();
+    const sx = Math.min(cvs.width - 1, Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * cvs.width)));
+    const sy = Math.min(cvs.height - 1, Math.max(0, Math.floor(((e.clientY - r.top) / r.height) * cvs.height)));
+    const d = cvs.getContext("2d").getImageData(sx, sy, 1, 1).data;
+    c.onPick(toHex(d[0], d[1], d[2]));
+  };
 
   const down = (e) => {
+    if (c.picking) { pickAt(e); return; }
     const { u, v } = toU(e), tool = c.tool;
     ovRef.current.setPointerCapture(e.pointerId);
     if (tool === "select") {
@@ -495,9 +753,16 @@ function Viewer({ pg, srcs, c }) {
       if (found) { c.snapshot(); drag.current = { mode: "move", id: found.id, last: { u, v } }; }
       return;
     }
+    if (tool === "edittext") {
+      const ex = [...pg.annots].reverse().find((a) => a.type === "text" && (hit(a, pg, u, v, 4 * ptsPerPx) || inCover(a, pg, u, v)));
+      if (ex) { c.setSelAnn(ex.id); c.setTool("select"); c.setFocusText(true); return; }
+      const i = hitSeg(u, v);
+      if (i >= 0) startEdit(tlRef.current[i]);
+      return;
+    }
     c.setSelAnn(null);
     if (tool === "text") {
-      const a = mk("text", { u, v, text: "Text", size: c.style.size, font: c.style.font });
+      const a = mk("text", { u, v, text: "Text", size: c.style.size, font: c.style.font, bold: c.style.bold, italic: c.style.italic });
       c.addAnn(pg.id, a);
       c.setSelAnn(a.id);
       c.setTool("select");
@@ -509,6 +774,11 @@ function Viewer({ pg, srcs, c }) {
   };
 
   const move = (e) => {
+    if (c.tool === "edittext" && !c.picking) {
+      const { u, v } = toU(e), i = hitSeg(u, v);
+      if (i !== hoverRef.current) { hoverRef.current = i; paint(); }
+      return;
+    }
     const { u, v } = toU(e), d = drag.current, L = live.current;
     if (d?.mode === "move") {
       const du = u - d.last.u, dv = v - d.last.v;
@@ -538,9 +808,10 @@ function Viewer({ pg, srcs, c }) {
     const tiny = BOX.includes(L.type) ? L.w < 0.005 || L.h < 0.005 : L.type === "line" && Math.hypot((L.u2 - L.u1) * pg.w, (L.v2 - L.v1) * pg.h) < 3;
     if (tiny) return paint();
     c.addAnn(pg.id, L);
+    if (L.type === "whiteout" && !c.style.cover) autoCover(L);
   };
 
-  const cursor = c.tool === "select" ? "cursor-default" : c.tool === "text" ? "cursor-text" : "cursor-crosshair";
+  const cursor = c.picking ? "cursor-crosshair" : c.tool === "select" ? "cursor-default" : c.tool === "text" || c.tool === "edittext" ? "cursor-text" : "cursor-crosshair";
   return (
     <div ref={wrap} className="flex w-full justify-center">
       <div className="relative shadow-2xl" style={{ width: vw, aspectRatio: `${dw} / ${dh}` }}>
@@ -559,7 +830,8 @@ export default function PDFEditor() {
   const [mode, setMode] = useState("organize");
   const [editId, setEditId] = useState(null);
   const [tool, setTool] = useState("select");
-  const [style, setStyle] = useState({ color: "#dc2626", hl: HL[0], width: 3, size: 18, font: "helvetica" });
+  const [style, setStyle] = useState({ color: "#dc2626", hl: HL[0], cover: null, width: 3, size: 18, font: "helvetica", bold: false, italic: false });
+  const [picking, setPicking] = useState(false);
   const [selAnn, setSelAnn] = useState(null);
   const [focusText, setFocusText] = useState(false);
   const [thumbs, setThumbs] = useState({});
@@ -569,7 +841,7 @@ export default function PDFEditor() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [rangeIn, setRangeIn] = useState("");
   const [opt, setOpt] = useState({
-    name: "document", format: "pdf", scope: "all", compress: false, level: "med",
+    name: "document", format: "pdf", scope: "all", compress: false, level: "med", flatten: false,
     wm: false, wmText: "CONFIDENTIAL", wmOp: 0.2, num: false, numPos: "bc",
     splitMode: "each", splitN: 2, splitRanges: "",
   });
@@ -606,7 +878,7 @@ export default function PDFEditor() {
         else continue;
         const id = uid();
         let doc;
-        try { doc = await pdfjs.getDocument({ data: bytes.slice(0) }).promise; }
+        try { doc = await pdfjs.getDocument({ data: bytes.slice(0), fontExtraProperties: true }).promise; }
         catch (e) { note(e?.name === "PasswordException" ? `“${f.name}” is password-protected and can't be opened.` : `Couldn't read “${f.name}”.`); continue; }
         srcs.current.set(id, { id, name: f.name, bytes, doc });
         for (let i = 0; i < doc.numPages; i++) {
@@ -666,7 +938,7 @@ export default function PDFEditor() {
 
   const editPage = pages.find((p) => p.id === editId) || pages[0] || null;
   const editIdx = editPage ? pages.indexOf(editPage) : -1;
-  const openEdit = (id) => { setEditId(id); setMode("edit"); setSelAnn(null); setTool("select"); };
+  const openEdit = (id) => { setEditId(id); setMode("edit"); setSelAnn(null); setTool("select"); setPicking(false); };
   const goto = (i) => { if (pages[i]) { setEditId(pages[i].id); setSelAnn(null); } };
 
   const addImageAnn = async (src) => {
@@ -677,6 +949,7 @@ export default function PDFEditor() {
     setTool("select");
   };
   const pickTool = (t) => {
+    setPicking(false);
     if (t === "sig") return setSigOpen(true);
     if (t === "image") return imgRef.current.click();
     setTool(t);
@@ -686,14 +959,19 @@ export default function PDFEditor() {
   const selA = editPage?.annots.find((a) => a.id === selAnn);
   const kind = selA?.type || tool;
   const setProp = (k, v, rec = true) => {
-    setStyle((s) => ({ ...s, [k]: v, ...(k === "color" && kind === "highlight" ? { hl: v } : {}) }));
+    setStyle((s) => {
+      if (k === "color") return kind === "highlight" ? { ...s, hl: v } : kind === "whiteout" ? { ...s, cover: v } : { ...s, color: v };
+      return { ...s, [k]: v };
+    });
     if (selA) updateAnnots(editPage.id, (l) => l.map((a) => (a.id === selA.id ? { ...a, [k]: v } : a)), rec);
   };
+  const onPick = (hex) => { setProp("color", hex); setPicking(false); };
 
   useEffect(() => { if (focusText && textRef.current) { textRef.current.focus(); textRef.current.select(); setFocusText(false); } }, [focusText, selAnn]);
 
   useEffect(() => {
     const onKey = (e) => {
+      if (e.key === "Escape") { setPicking(false); return; }
       const tag = e.target.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       const mod = e.ctrlKey || e.metaKey;
@@ -727,7 +1005,7 @@ export default function PDFEditor() {
         else groups = parseGroups(opt.splitRanges, list.length);
         if (!groups.length) return note("Enter at least one page range.");
         for (let g = 0; g < groups.length; g++) {
-          const bytes = await buildPdf(groups[g].map((n) => list[n - 1]), srcs.current, {}, (m) => note(`Part ${g + 1}/${groups.length}: ${m}`, true));
+          const bytes = await buildPdf(groups[g].map((n) => list[n - 1]), srcs.current, { flatten: opt.flatten }, (m) => note(`Part ${g + 1}/${groups.length}: ${m}`, true));
           zip.file(`${name}-part-${g + 1}.pdf`, bytes);
         }
         download(await zip.generateAsync({ type: "blob" }), `${name}-split.zip`);
@@ -735,6 +1013,7 @@ export default function PDFEditor() {
         const lv = { low: { scale: 1, q: 0.55 }, med: { scale: 1.4, q: 0.75 }, high: { scale: 2, q: 0.9 } }[opt.level];
         const bytes = await buildPdf(list, srcs.current, {
           compress: opt.compress ? lv : null,
+          flatten: opt.flatten,
           wm: opt.wm && opt.wmText.trim() ? { text: opt.wmText.trim(), opacity: opt.wmOp } : null,
           num: opt.num ? opt.numPos : null,
         }, (m) => note(m, true));
@@ -750,10 +1029,12 @@ export default function PDFEditor() {
 
   /* --------------------------------- JSX --------------------------------- */
 
-  const ctrl = { tool, setTool, style, selAnn, setSelAnn, snapshot, addAnn, updateAnnots, setFocusText };
-  const TOOLS = [["select", MousePointer2, "Select"], ["text", Type, "Text"], ["highlight", Highlighter, "Highlight"], ["draw", Pencil, "Draw"],
-    ["rect", Square, "Rectangle"], ["ellipse", Circle, "Ellipse"], ["line", Minus, "Line"], ["whiteout", Eraser, "Whiteout"],
+  const ctrl = { tool, setTool, style, selAnn, setSelAnn, snapshot, addAnn, updateAnnots, setFocusText, picking, onPick, note };
+  const TOOLS = [["select", MousePointer2, "Select"], ["edittext", TextCursorInput, "Edit text"], ["text", Type, "Text"], ["highlight", Highlighter, "Highlight"], ["draw", Pencil, "Draw"],
+    ["rect", Square, "Rectangle"], ["ellipse", Circle, "Ellipse"], ["line", Minus, "Line"], ["whiteout", Eraser, "Eraser"],
     ["redact", EyeOff, "Redact"], ["sig", PenTool, "Sign"], ["image", ImagePlus, "Image"]];
+  const COLOR_KINDS = ["text", "highlight", "draw", "rect", "ellipse", "line", "whiteout"];
+  const pickVal = selA?.color || (kind === "highlight" ? style.hl : kind === "whiteout" ? style.cover : style.color);
 
   const Empty = (
     <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); }}
@@ -782,7 +1063,7 @@ export default function PDFEditor() {
           <div className="text-center">
             <span className="rounded-full border border-danger/20 bg-danger/10 px-4 py-2 text-sm font-medium text-danger">PDF Editor</span>
             <h1 className="mt-5 text-4xl font-black sm:text-5xl">Edit, Organize &amp; Sign PDFs.</h1>
-            <p className="mx-auto mt-3 max-w-2xl text-muted">Merge, split, rotate, delete, annotate, sign, redact and more — all in your browser, nothing uploaded.</p>
+            <p className="mx-auto mt-3 max-w-2xl text-muted">Merge, split, rotate, delete, edit text, annotate, sign, redact and more — all in your browser, nothing uploaded.</p>
           </div>
 
           <input ref={fileRef} hidden multiple type="file" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp"
@@ -852,6 +1133,13 @@ export default function PDFEditor() {
                         </div>
                       </div>
                     )}
+                    {opt.format !== "images" && (
+                      <label className="flex cursor-pointer items-start gap-2 text-sm">
+                        <input type="checkbox" checked={opt.flatten} onChange={(e) => setOpt({ ...opt, flatten: e.target.checked })} className="mt-0.5 accent-danger" />
+                        <span><span className="font-semibold">Permanently remove erased / replaced text</span>
+                          <span className="block text-xs text-muted">Edited-text and Eraser areas are only covered by default, so the original text can still be copied from the file. Turn this on to flatten those pages (their text becomes an image).</span></span>
+                      </label>
+                    )}
                     <button onClick={exportDoc} disabled={toast.busy} className={btnPrimary + " w-full"}>Download</button>
                   </div>
                 )}
@@ -894,8 +1182,20 @@ export default function PDFEditor() {
                     </div>
 
                     <div className={`${card} flex flex-wrap items-center gap-x-6 gap-y-3 p-3`}>
-                      {["text", "highlight", "draw", "rect", "ellipse", "line"].includes(kind) && (
-                        <Swatches colors={kind === "highlight" ? HL : INK} value={selA?.color || (kind === "highlight" ? style.hl : style.color)} onChange={(c) => setProp("color", c)} />
+                      {COLOR_KINDS.includes(kind) && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <ColorPicker
+                            colors={kind === "highlight" ? HL : kind === "whiteout" ? COVER : INK}
+                            value={pickVal}
+                            onChange={(col) => setProp("color", col)}
+                            onLive={(col) => setProp("color", col, false)}
+                            onStart={() => { if (selA) snapshot(); }}
+                            picking={picking}
+                            onEyedrop={() => setPicking((p) => !p)} />
+                          {kind === "whiteout" && !selA && (
+                            <Chip on={!style.cover} onClick={() => setStyle((s) => ({ ...s, cover: null }))}>Auto-match page</Chip>
+                          )}
+                        </div>
                       )}
                       {["draw", "rect", "ellipse", "line"].includes(kind) && (
                         <label className="flex items-center gap-2 text-xs text-muted">Thickness
@@ -905,14 +1205,20 @@ export default function PDFEditor() {
                         <label className="flex items-center gap-2 text-xs text-muted">Size
                           <input type="range" min={8} max={96} value={Math.round(selA?.size ?? style.size)} onPointerDown={snapshot} onChange={(e) => setProp("size", +e.target.value, false)} className="w-28 accent-danger" /></label>
                         <div className="flex gap-1.5">{[["helvetica", "Sans"], ["times", "Serif"], ["courier", "Mono"]].map(([v, l]) => <Chip key={v} on={(selA?.font ?? style.font) === v} onClick={() => setProp("font", v)}>{l}</Chip>)}</div>
+                        <div className="flex gap-1.5">
+                          <Chip on={!!(selA?.bold ?? style.bold)} onClick={() => setProp("bold", !(selA?.bold ?? style.bold))}><b>B</b></Chip>
+                          <Chip on={!!(selA?.italic ?? style.italic)} onClick={() => setProp("italic", !(selA?.italic ?? style.italic))}><i>I</i></Chip>
+                        </div>
                       </>}
                       {selA?.type === "text" && (
                         <textarea ref={textRef} rows={2} value={selA.text} onFocus={snapshot}
                           onChange={(e) => updateAnnots(editPage.id, (l) => l.map((a) => (a.id === selA.id ? { ...a, text: e.target.value } : a)), false)}
                           placeholder="Type text…" className="min-w-[220px] flex-1 rounded-lg border border-border bg-page/60 px-3 py-2 text-sm outline-none focus:border-danger/50" />
                       )}
+                      {kind === "edittext" && <span className="text-xs text-muted">Click any text on the page to change it. Works on real (selectable) text only — scanned pages have none. Delete the edit to bring the original back.</span>}
+                      {kind === "text" && selA?.cover && <span className="text-xs text-muted">Edited text: the original is covered with the page’s background colour (see “Permanently remove…” when saving).</span>}
                       {kind === "redact" && <span className="text-xs text-warning">Redacted pages are flattened on save so the hidden text is truly removed.</span>}
-                      {kind === "whiteout" && <span className="text-xs text-muted">Covers content visually (text underneath stays in the file). Use Redact to remove it.</span>}
+                      {kind === "whiteout" && <span className="text-xs text-muted">Square eraser: drag a box. It fills with the page’s own background colour automatically — or choose a colour / use the eyedropper. Use Redact to remove text for good.</span>}
                       {kind === "select" && !selA && <span className="text-xs text-muted">Click an item to move, resize (corner handle) or edit it.</span>}
                       {selA && <button className={btn + " ml-auto text-danger"} onClick={() => { updateAnnots(editPage.id, (l) => l.filter((a) => a.id !== selA.id)); setSelAnn(null); }}><Trash2 size={14} />Delete</button>}
                     </div>
