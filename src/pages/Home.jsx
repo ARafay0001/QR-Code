@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Sparkles,
   Ruler,
+  Banknote,
   Search,
   SlidersHorizontal,
   Download,
@@ -79,6 +80,16 @@ const products = [
     href: "/unit-converter",
     category: "Utilities",
     features: ["Convert every unit", "One Click"],
+  },
+  {
+    title: "Currency Converter",
+    description:
+      "Convert amounts between more than 160 world currencies using regularly updated exchange rates.",
+    icon: Banknote,
+    status: "live",
+    href: "/currency-converter",
+    category: "Utilities",
+    features: ["160+ currencies", "Popular currency conversions", "Rate update times"],
   },
   {
     title: "Scientific Calculator",

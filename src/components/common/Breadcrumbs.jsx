@@ -8,6 +8,7 @@ const LABELS = {
   "qr-generator": "QR Generator",
   "image-compressor": "Image Compressor",
   "unit-converter": "Unit Converter",
+  "currency-converter": "Currency Converter",
   "video-compressor": "Video Compressor",
   "background-remover": "Background Remover",
   "pdf-tools": "PDF Tools",

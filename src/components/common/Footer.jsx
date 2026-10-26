@@ -36,6 +36,7 @@ export default function Footer() {
               <li><Link to="/pdf-tools" className="transition hover:text-text">PDF tools</Link></li>
               <li><Link to="/webp-to-image" className="transition hover:text-text">WebP image converter</Link></li>
               <li><Link to="/unit-converter" className="transition hover:text-text">Unit converter</Link></li>
+              <li><Link to="/currency-converter" className="transition hover:text-text">Currency converter</Link></li>
             </ul>
           </div>
 

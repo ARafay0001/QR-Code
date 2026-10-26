@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RotateCw, Shuffle, Trash2, Trophy, Volume2, VolumeX } from "lucide-react";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
 
 const PALETTE = [
   "#ef4444",
@@ -18,6 +20,105 @@ const PALETTE = [
   "#f43f5e",
 ];
 
+const Article = {
+  title: "How to Use a Spin the Wheel Decision Maker",
+ 
+  intro:
+    "When you cannot decide between options, or when you need a fair way to pick a winner, a spinning wheel takes the pressure off. Toolited's spin the wheel lets you type your own choices, spins with a ticking pointer for at least 8 seconds, and announces the winner with a celebration. It works for meals, games, giveaways, classroom activities and more.",
+ 
+  sections: [
+    {
+      heading: "What is a spin the wheel tool?",
+      paragraphs: [
+        "A spin the wheel tool puts your options on the segments of a colorful wheel. When you spin it, the wheel turns, slows down and stops with the pointer on one segment. That segment is the winner.",
+        "It turns a decision into a quick, fun moment that everyone can watch, which makes the result feel fair and easy to accept.",
+      ],
+    },
+    {
+      heading: "How to use the wheel",
+      paragraphs: ["Setting up and spinning the wheel takes less than a minute."],
+      bullets: [
+        "Choose a preset such as Numbers, Colors, Yes / No or What to eat, or pick Custom.",
+        "Type your options in the box, one per line. You can use between 2 and 20 options.",
+        "Use the shuffle button to mix the order of the segments if you like.",
+        "Press the spin button, or click the SPIN button in the center of the wheel.",
+        "Watch the wheel spin for at least 8 seconds and read the winner when it stops.",
+        "Spin again, or remove the winner from the wheel to pick the next one.",
+      ],
+    },
+    {
+      heading: "How does the wheel choose a winner?",
+      paragraphs: [
+        "When you press spin, the tool picks one option at random in your browser, with every option having an equal chance. The wheel animation is then played so it comes to rest on that result.",
+        "The spin lasts from 8 to about 10 seconds, with a ticking pointer and flashing lights to build suspense. It is meant for fun and everyday decisions, not for lotteries or gambling.",
+      ],
+    },
+    {
+      heading: "Ideas for using a decision wheel",
+      paragraphs: ["A random wheel is handy far beyond choosing dinner."],
+      bullets: [
+        "Picking what to eat, where to go or which movie to watch.",
+        "Choosing a winner for a giveaway or a prize draw among friends.",
+        "Selecting students to answer questions or present in class.",
+        "Deciding who does a chore, who pays the bill or who goes first.",
+        "Running team games, truth or dare, and party challenges.",
+        "Making a quick choice when you are stuck between a few good options.",
+      ],
+    },
+    {
+      heading: "Tips for a better wheel",
+      paragraphs: [
+        "Keep option names short so they are easy to read on the wheel. Names are shortened when they are very long, and the font gets smaller as you add more segments, so around 8 to 12 options gives the clearest result.",
+        "To pick several winners in a row, use the option to remove the winner from the wheel after each spin, so the same name does not come up twice.",
+      ],
+    },
+  ],
+ 
+  relatedTools: [
+    { label: "Dice Roller", href: "/games/dice-roller" },
+    { label: "Text Tool", href: "/text-tool" },
+    { label: "Typing Tutor", href: "/typing-tutor" },
+    { label: "Unit Converter", href: "/unit-converter" },
+  ],
+};
+ 
+const FAQ = [
+  {
+    question: "Is the spin the wheel fair?",
+    answer:
+      "Yes. Every option has an equal chance of winning, and the result is chosen at random in your browser each time you spin. It is fair for games and everyday decisions, but it should not be used for lotteries or gambling.",
+  },
+  {
+    question: "How many options can I put on the wheel?",
+    answer:
+      "You can add between 2 and 20 options, one per line. For the clearest wheel, around 8 to 12 options works best.",
+  },
+  {
+    question: "How long does the wheel spin for?",
+    answer:
+      "Every spin lasts at least 8 seconds, and up to about 10 seconds, so the wheel builds suspense and slows down gradually before it stops.",
+  },
+  {
+    question: "Can I use my own names and choices?",
+    answer:
+      "Yes. Select Custom and type your own options, one per line. You can also start from a preset such as Numbers, Colors, Yes / No or What to eat and edit it.",
+  },
+  {
+    question: "How do I pick more than one winner?",
+    answer:
+      "After a spin, use the button to remove the winner from the wheel, then spin again. Repeat this to pick as many different winners as you need.",
+  },
+  {
+    question: "Does the wheel make sound?",
+    answer:
+      "Yes. The pointer ticks as it passes each segment, and a short tune plays when the winner is chosen. You can turn the sound off with the speaker button.",
+  },
+  {
+    question: "Is it free, and does it work on a phone?",
+    answer:
+      "It is free, needs no account, and the wheel adapts to phones, tablets and computers.",
+  },
+];
 const PRESETS = {
   numbers: { label: "Numbers", items: Array.from({ length: 12 }, (_, i) => `${i + 1}`) },
   colors: { label: "Colors", items: ["Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Pink"] },
@@ -628,6 +729,11 @@ export default function SpinWheel() {
           </p>
         </div>
       </main>
+       <ToolArticle {...Article} />
+                    <ToolFAQ
+                      faqs={FAQ}
+                  description="Spin the wheel with your own options and let it pick a winner. Add up to 20 choices for food, games, giveaways and more."
+                    />
       <Footer />
     </>
   );

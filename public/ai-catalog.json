@@ -23,6 +23,23 @@
         "Find a free online calculator or unit converter.",
         "Find browser-based tools for text transformation and typing practice."
       ]
+    },
+    {
+      "identifier": "urn:air:toolited.com:currency-converter",
+      "displayName": "Toolited Currency Converter",
+      "type": "text/html",
+      "url": "https://toolited.com/currency-converter",
+      "description": "Convert amounts between more than 160 world currencies with regularly updated exchange rates.",
+      "tags": ["currency converter", "exchange rates", "finance"],
+      "capabilities": [
+        "Convert between world currencies",
+        "Compare popular currency conversions",
+        "View exchange-rate update times"
+      ],
+      "representativeQueries": [
+        "Convert an amount between two currencies.",
+        "Check the exchange rate between popular world currencies."
+      ]
     }
   ]
 }

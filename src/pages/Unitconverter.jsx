@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Ruler,
   Weight,
+  ChevronDown,
   Thermometer,
   Beaker,
   Square,
@@ -686,49 +688,257 @@ function CategorySidebar({ categories, activeId, onSelect, query, setQuery }) {
 /*  Unit select (supports grouped volume/weight units for Cooking)          */
 /* -------------------------------------------------------------------------- */
 
-function UnitSelect({ units, value, onChange }) {
-  const hasGroups = units.some((u) => u.kind);
+function ThemedDropdown({ id, label, options, value, onChange, className = "" }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [menuStyle, setMenuStyle] = useState({ maxHeight: 240 });
+  const dropdownRef = useRef(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+  const searchRef = useRef(null);
+  const optionRefs = useRef([]);
+  const selectedIndex = Math.max(options.findIndex((option) => option.value === value), 0);
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredOptions = options.filter((option) =>
+    `${option.label} ${option.value}`.toLowerCase().includes(normalizedSearch),
+  );
+  const filteredGroups = [];
+  filteredOptions.forEach((option, index) => {
+    const group = option.group ?? "";
+    let currentGroup = filteredGroups[filteredGroups.length - 1];
+    if (!currentGroup || currentGroup.label !== group) {
+      currentGroup = { label: group, options: [] };
+      filteredGroups.push(currentGroup);
+    }
+    currentGroup.options.push({ ...option, index });
+  });
 
-  if (!hasGroups) {
-    return (
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none transition-colors focus:border-brand/50 sm:text-base"
-      >
-        {units.map((u) => (
-          <option key={u.id} value={u.id} className="bg-surface">
-            {u.label} ({u.symbol})
-          </option>
-        ))}
-      </select>
-    );
-  }
+  useEffect(() => {
+    if (open) searchRef.current?.focus({ preventScroll: true });
+  }, [open]);
 
-  const volumeUnits = units.filter((u) => u.kind === "volume");
-  const weightUnits = units.filter((u) => u.kind === "weight");
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+
+    const positionMenu = () => {
+      const bounds = triggerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+      const viewportHeight = document.documentElement.clientHeight;
+      const gap = 8;
+      const spaceBelow = viewportHeight - bounds.bottom - gap;
+      const spaceAbove = bounds.top - gap;
+      const openAbove = spaceBelow < 260 && spaceAbove > spaceBelow;
+      const availableHeight = Math.max(
+        120,
+        Math.min(240, openAbove ? spaceAbove : spaceBelow),
+      );
+
+      setMenuStyle({
+        position: "fixed",
+        left: bounds.left,
+        width: bounds.width,
+        top: openAbove ? undefined : bounds.bottom + gap,
+        bottom: openAbove ? viewportHeight - bounds.top + gap : undefined,
+        maxHeight: availableHeight,
+        zIndex: 1000,
+      });
+    };
+
+    positionMenu();
+    window.addEventListener("resize", positionMenu);
+    window.addEventListener("scroll", positionMenu, true);
+    return () => {
+      window.removeEventListener("resize", positionMenu);
+      window.removeEventListener("scroll", positionMenu, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (
+        !dropdownRef.current?.contains(event.target) &&
+        !menuRef.current?.contains(event.target)
+      ) {
+        setOpen(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, [open]);
+
+  const closeDropdown = () => {
+    setOpen(false);
+    setSearch("");
+    triggerRef.current?.focus({ preventScroll: true });
+  };
+
+  const handleOptionKeyDown = (event, index) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeDropdown();
+      return;
+    }
+
+    let nextIndex;
+    if (event.key === "ArrowDown") nextIndex = Math.min(index + 1, filteredOptions.length - 1);
+    else if (event.key === "ArrowUp") nextIndex = Math.max(index - 1, 0);
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = filteredOptions.length - 1;
+    else return;
+
+    event.preventDefault();
+    setActiveIndex(nextIndex);
+    optionRefs.current[nextIndex]?.focus();
+  };
+
+  const handleSearchKeyDown = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeDropdown();
+    } else if (event.key === "ArrowDown" && filteredOptions.length > 0) {
+      event.preventDefault();
+      setActiveIndex(0);
+      optionRefs.current[0]?.focus();
+    } else if (event.key === "ArrowUp" && filteredOptions.length > 0) {
+      event.preventDefault();
+      const lastIndex = filteredOptions.length - 1;
+      setActiveIndex(lastIndex);
+      optionRefs.current[lastIndex]?.focus();
+    }
+  };
 
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none transition-colors focus:border-brand/50 sm:text-base"
+    <div
+      ref={dropdownRef}
+      className={`themed-dropdown relative min-w-0 ${className}`}
     >
-      <optgroup label="Volume" className="bg-surface">
-        {volumeUnits.map((u) => (
-          <option key={u.id} value={u.id} className="bg-surface">
-            {u.label} ({u.symbol})
-          </option>
-        ))}
-      </optgroup>
-      <optgroup label="Weight" className="bg-surface">
-        {weightUnits.map((u) => (
-          <option key={u.id} value={u.id} className="bg-surface">
-            {u.label} ({u.symbol})
-          </option>
-        ))}
-      </optgroup>
-    </select>
+      <button
+        ref={triggerRef}
+        id={id}
+        type="button"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={`${id}-listbox`}
+        onClick={() => {
+          if (open) closeDropdown();
+          else {
+            setSearch("");
+            setActiveIndex(selectedIndex);
+            setOpen(true);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setSearch("");
+            setActiveIndex(
+              event.key === "ArrowUp" ? options.length - 1 : selectedIndex,
+            );
+            setOpen(true);
+          }
+        }}
+        className="themed-dropdown-trigger flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-page px-4 py-3 text-left text-text transition-colors hover:border-brand/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
+      >
+        <span className="truncate">
+          {options[selectedIndex]?.label ?? value}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          size={18}
+          className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          className="themed-dropdown-menu overflow-hidden rounded-xl border border-border bg-surface shadow-2xl shadow-black/30"
+          style={menuStyle}
+        >
+          <div className="border-b border-border p-2">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-page px-3">
+              <Search aria-hidden="true" size={16} className="shrink-0 text-muted" />
+              <input
+                ref={searchRef}
+                type="search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setActiveIndex(0);
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder={`Search ${label.toLowerCase()}`}
+                aria-label={`Search ${label.toLowerCase()}`}
+                aria-controls={`${id}-listbox`}
+                className="themed-dropdown-search min-w-0 flex-1 bg-transparent py-2 text-sm text-text placeholder:text-muted"
+              />
+            </div>
+          </div>
+          <div
+            id={`${id}-listbox`}
+            role="listbox"
+            aria-label={label}
+            className="themed-scroll max-h-60 overflow-y-auto p-1.5"
+            style={{ maxHeight: Math.max(80, menuStyle.maxHeight - 58) }}
+          >
+            {filteredGroups.map((group) => (
+              <div key={group.label || "options"}>
+                {group.label && (
+                  <div role="presentation" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                    {group.label}
+                  </div>
+                )}
+                {group.options.map((option) => (
+                  <button
+                    key={option.value}
+                    ref={(element) => { optionRefs.current[option.index] = element; }}
+                    id={`${id}-option-${option.value}`}
+                    type="button"
+                    role="option"
+                    aria-selected={value === option.value}
+                    tabIndex={activeIndex === option.index ? 0 : -1}
+                    onClick={() => {
+                      onChange(option.value);
+                      closeDropdown();
+                    }}
+                    onKeyDown={(event) => handleOptionKeyDown(event, option.index)}
+                    className="themed-dropdown-option flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm text-text transition-colors"
+                  >
+                    <span>{option.label}</span>
+                    {value === option.value && <span aria-hidden="true" className="text-brand">✓</span>}
+                  </button>
+                ))}
+              </div>
+            ))}
+            {filteredOptions.length === 0 && (
+              <p className="px-3 py-4 text-center text-sm text-muted">
+                No options match “{search}”.
+              </p>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+function UnitSelect({ id, label, units, value, onChange }) {
+  return (
+    <ThemedDropdown
+      id={id}
+      label={label}
+      options={units.map((unit) => ({
+        value: unit.id,
+        label: `${unit.label} (${unit.symbol})`,
+        group: unit.kind === "volume" ? "Volume" : unit.kind === "weight" ? "Weight" : "",
+      }))}
+      value={value}
+      onChange={onChange}
+    />
   );
 }
 
@@ -975,17 +1185,17 @@ function ConverterPanel({ category }) {
           <label className="text-xs font-semibold uppercase tracking-wide text-muted">
             Ingredient
           </label>
-          <select
+          <ThemedDropdown
+            id="ingredient-selector"
+            label="Ingredient"
+            className="mt-2.5 w-full max-w-xs"
+            options={INGREDIENTS.map((ingredient) => ({
+              value: ingredient.id,
+              label: ingredient.label,
+            }))}
             value={ingredientId}
-            onChange={(e) => setIngredientId(e.target.value)}
-            className="mt-2.5 w-full max-w-xs appearance-none rounded-xl border border-border bg-page/60 px-3.5 py-2.5 text-sm font-semibold text-text outline-none focus:border-brand/50"
-          >
-            {INGREDIENTS.map((i) => (
-              <option key={i.id} value={i.id} className="bg-surface">
-                {i.label}
-              </option>
-            ))}
-          </select>
+            onChange={setIngredientId}
+          />
           <p className="mt-3 text-xs text-muted">
             Weight-to-volume conversions are approximate — they vary by brand and how
             ingredients are packed or sifted.
@@ -1004,7 +1214,7 @@ function ConverterPanel({ category }) {
             <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               From
             </label>
-            <UnitSelect units={category.units} value={fromId} onChange={setFromId} />
+            <UnitSelect id="from-unit" label="From unit" units={category.units} value={fromId} onChange={setFromId} />
             <input
               type="number"
               inputMode="decimal"
@@ -1031,7 +1241,7 @@ function ConverterPanel({ category }) {
             <label className="text-xs font-semibold uppercase tracking-wide text-muted">
               To
             </label>
-            <UnitSelect units={category.units} value={toId} onChange={setToId} />
+            <UnitSelect id="to-unit" label="To unit" units={category.units} value={toId} onChange={setToId} />
             <div className="relative">
               <div className="w-full truncate rounded-xl border border-border bg-page/60 px-4 py-3 text-lg font-bold text-text sm:text-xl">
                 {result === null ? (

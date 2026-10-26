@@ -2,7 +2,113 @@ import { useEffect, useRef, useState } from "react";
 import { Dices, Minus, Plus, Trash2, Volume2, VolumeX } from "lucide-react";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
 
+
+
+const Article = {
+  title: "How to Roll Dice Online: D6, D20, Custom Dice and Coin Flips",
+ 
+  intro:
+    "Whether you are playing a board game without your dice, running a tabletop role-playing session, settling a friendly argument, or teaching probability, a reliable online dice roller saves time. Toolited's dice roller throws 3D dice onto a table, shows the result on the top face, and adds up the total for you. You can also roll a D20 or a custom die, or flip coins.",
+ 
+  sections: [
+    {
+      heading: "What can you roll with this dice roller?",
+      paragraphs: [
+        "Different games need different dice, so the roller lets you switch between several types in one click.",
+      ],
+      bullets: [
+        "Classic d6: up to 6 six-sided dice with real pips, thrown onto the table in 3D.",
+        "D20: the twenty-sided die used in many tabletop role-playing games.",
+        "Custom die: choose any number of sides from 2 to 100, such as a d4, d8, d10, d12 or d100.",
+        "Coin flip: toss one or more coins and see the count of heads and tails.",
+      ],
+    },
+    {
+      heading: "How to roll the dice",
+      paragraphs: ["Rolling takes only a few steps."],
+      bullets: [
+        "Pick the dice type: classic d6, D20, coin flip or custom die.",
+        "Set how many dice or coins you want to roll.",
+        "Choose a dice color if you like.",
+        "Press the roll button and watch the dice tumble, bounce and land.",
+        "Read the value on the top face of each die and the total underneath.",
+      ],
+    },
+    {
+      heading: "How are the results decided?",
+      paragraphs: [
+        "Each roll picks a random result in your browser, and the animation is then played so the die lands on that result. Every face has an equal chance of coming up, so a six is exactly as likely as a one.",
+        "The roller is designed for games, learning and everyday decisions. It is not meant for gambling or for security uses such as generating passwords.",
+      ],
+    },
+    {
+      heading: "Common uses for an online dice roller",
+      paragraphs: ["People use a digital dice roller in many everyday situations."],
+      bullets: [
+        "Playing Ludo, Monopoly, Snakes and Ladders and other board games when the dice are missing.",
+        "Rolling a D20 or other polyhedral dice for Dungeons & Dragons and similar tabletop games.",
+        "Deciding who goes first, who pays, or who does a chore.",
+        "Teaching probability, averages and chance in the classroom.",
+        "Flipping a coin to make a quick yes or no choice.",
+      ],
+    },
+    {
+      heading: "Understanding dice probability",
+      paragraphs: [
+        "With a single six-sided die, each number from 1 to 6 has a one in six chance. When you roll two dice and add them together, the totals are no longer equally likely. A total of 7 is the most common result, because six different combinations make it, while 2 and 12 can each be made only one way.",
+        "The same idea applies to larger groups of dice. The more dice you add, the more the totals cluster around the middle of the possible range.",
+      ],
+    },
+  ],
+ 
+  relatedTools: [
+    { label: "Spin the Wheel", href: "/games/spin-wheel" },
+    { label: "Scientific Calculator", href: "/scientific-calculator" },
+    { label: "Typing Tutor", href: "/typing-tutor" },
+    { label: "Currency Converter", href: "/currency-converter" },
+  ],
+};
+ 
+const FAQ = [
+  {
+    question: "Is the online dice roller really random?",
+    answer:
+      "Yes. Each roll chooses a random result in your browser and every side has an equal chance. It is fair for games and everyday decisions, but it should not be used for gambling or security purposes.",
+  },
+  {
+    question: "What types of dice can I roll?",
+    answer:
+      "You can roll classic six-sided dice, a twenty-sided D20, a custom die with 2 to 100 sides, and coins for heads or tails.",
+  },
+  {
+    question: "How many dice can I roll at once?",
+    answer:
+      "You can roll up to 6 classic dice at once, or up to 10 dice or coins in the other modes. The total is added up for you when you roll more than one die.",
+  },
+  {
+    question: "Can I use it for Dungeons & Dragons?",
+    answer:
+      "Yes. Use the D20 for attack and skill checks, or the custom die to roll a d4, d6, d8, d10, d12 or d100. Roll several dice together and the tool shows each result and the total.",
+  },
+  {
+    question: "Why does the result show on the top face of the die?",
+    answer:
+      "The table is viewed from above, just like a real roll, so the face pointing up is the result. This makes it easy to read the number the same way you would with a physical die.",
+  },
+  {
+    question: "Does the dice roller make sound?",
+    answer:
+      "Yes. Dice thud softly as they bounce on the table. You can switch the sound off with the speaker button at any time.",
+  },
+  {
+    question: "Is the dice roller free, and does it work on a phone?",
+    answer:
+      "It is free, needs no account, and the page adapts to phones, tablets and computers.",
+  },
+];
 const MODES = [
   { value: "d6", label: "Classic d6" },
   { value: "d20", label: "D20", sides: 20 },
@@ -592,6 +698,11 @@ export default function DiceRoller() {
           </p>
         </div>
       </main>
+            <ToolArticle {...Article} />
+                    <ToolFAQ
+                      faqs={FAQ}
+                    description="Roll 3D dice online. Throw a classic d6, D20 or custom die, or flip a coin, and see the result on the top face."
+                    />
       <Footer />
     </>
   );

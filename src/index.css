@@ -57,6 +57,21 @@ textarea {
   font: inherit;
 }
 
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+select option:checked {
+  background-color: var(--theme-brand);
+  color: var(--theme-on-brand);
+}
+
 button:not(:disabled),
 a {
   -webkit-tap-highlight-color: transparent;
@@ -97,6 +112,24 @@ svg {
 .themed-scroll::-webkit-scrollbar-thumb:hover,
 .themed-scroll *::-webkit-scrollbar-thumb:hover {
   background: var(--theme-brand);
+}
+
+.themed-dropdown-menu {
+  scrollbar-color: var(--theme-muted) var(--theme-page);
+  scrollbar-width: thin;
+}
+
+.themed-dropdown-option:hover,
+.themed-dropdown-option:focus-visible,
+.themed-dropdown-option[aria-selected="true"] {
+  background-color: color-mix(in srgb, var(--theme-brand) 16%, transparent);
+  color: var(--theme-text);
+}
+
+.themed-dropdown-search:focus,
+.themed-dropdown-search:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 @supports (-moz-appearance: none) {

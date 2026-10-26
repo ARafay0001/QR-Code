@@ -35,6 +35,22 @@ const PAGE_METADATA = {
     description:
       "Convert measurements across length, weight, temperature, volume, area, speed, time, data, and other unit categories.",
   },
+  "/currency-converter": {
+    title: "Free Currency Converter: Convert 160+ Currencies | Toolited",
+    description:
+      "Convert amounts between more than 160 world currencies with regularly updated exchange rates. Compare popular currencies and check when rates were last updated.",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: "Toolited Currency Converter",
+      description:
+        "Convert amounts between more than 160 world currencies with regularly updated exchange rates.",
+      url: `${SITE_ORIGIN}/currency-converter`,
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Any",
+      isAccessibleForFree: true,
+    },
+  },
   "/video-compressor": {
     title: "Free Online Video Compressor | Toolited",
     description:
@@ -191,18 +207,23 @@ export default function RouteMetadata() {
     }
 
     document.getElementById("route-json-ld")?.remove();
-    if (normalizedPath === "/") {
-      const structuredData = document.createElement("script");
-      structuredData.id = "route-json-ld";
-      structuredData.type = "application/ld+json";
-      structuredData.textContent = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: "Toolited",
-        url: `${SITE_ORIGIN}/`,
-        description,
-      });
-      document.head.appendChild(structuredData);
+    const structuredData =
+      page?.structuredData ??
+      (normalizedPath === "/"
+        ? {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Toolited",
+            url: `${SITE_ORIGIN}/`,
+            description,
+          }
+        : null);
+    if (structuredData) {
+      const script = document.createElement("script");
+      script.id = "route-json-ld";
+      script.type = "application/ld+json";
+      script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
     }
   }, [pathname]);
 
