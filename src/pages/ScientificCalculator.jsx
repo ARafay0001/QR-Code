@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Smartphone, Monitor, ExternalLink } from "lucide-react";
+import { X, Smartphone, Monitor, ExternalLink, ClipboardPaste } from "lucide-react";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -141,7 +141,7 @@ const CONSTS = [
 const CONSTMAP = Object.fromEntries(CONSTS.map((c) => [c[0], c[2]]));
 const NAMES = [...FUNCS, "Ans", "Ran#", ...INFIX, ...CONSTS.map((c) => c[0])].sort(byLen);
 const BLOCKS = [...FUNCS.map((f) => f + "("), "Ans", "Ran#", ...INFIX, ...CONSTS.map((c) => c[0]), "⁻¹"].sort(byLen);
-const AFTER = ["+", "-", "×", "÷", "^", "²", "³", "⁻¹", "!", "%", "⁄", "nPr", "nCr", "ˣ√"];
+const AFTER = ["⟅⟆", "+", "-", "×", "÷", "^", "²", "³", "⁻¹", "!", "%", "⁄", "nPr", "nCr", "ˣ√"];
 const VARS = "ABCDEFXYM";
 
 /* -------------------------------- parser --------------------------------- */
@@ -257,6 +257,8 @@ function lex(s, base = 10) {
     if (c === "⟨" || c === "⟪") { t.push(O("("), O("(")); i++; continue; }
     if (c === "⦙") { t.push(O(")"), O("+"), O("("), O("(")); i++; continue; }
     if (c === "¦") { t.push(O(")"), O("÷"), O("(")); i++; continue; }
+    if (c === "⟅") { t.push(O("^"), O("(")); i++; continue; }
+    if (c === "⟆") { t.push(O(")")); i++; continue; }
     if (c === "⟩") { t.push(O(")"), O(")")); i++; continue; }
     if (c === "⟫") { t.push(O(")"), O(")"), O(")")); i++; continue; }
     if ("+-×÷^()!,²³%⁄⌟".includes(c)) { t.push({ k: "o", v: c }); i++; continue; }
@@ -554,10 +556,39 @@ function toFrac(v) {
   const sg = Math.sign(v), a = Math.abs(v);
   for (let q = 2; q <= 9999; q++) {
     const p = Math.round(a * q);
-    if (Math.abs(a - p / q) < 1e-9 * Math.max(1, a)) return { n: sg * p, d: q };
+    if (Math.abs(a - p / q) < 1e-12 * Math.max(1, a)) return { n: sg * p, d: q };
   }
   return null;
 }
+
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+
+/* Exact form of a result: fraction, multiple of π, or k√m / q. Returns null when none fits. */
+function toExact(v) {
+  if (isB(v) || !Number.isFinite(v) || v === 0 || Number.isInteger(v)) return null;
+  const sg = v < 0 ? -1 : 1, a = Math.abs(v);
+  const close = (x) => Math.abs(a - x) < 1e-11 * Math.max(1, a);
+  const f = toFrac(a);
+  if (f) return { sg, kind: "n", a: f.n, d: f.d };
+  for (let q = 1; q <= 360; q++) {
+    const p = Math.round((a / PI) * q);
+    if (p > 0 && p <= 1000 && close((p * PI) / q)) { const g = gcd(p, q); return { sg, kind: "pi", a: p / g, d: q / g }; }
+  }
+  for (let q = 1; q <= 100; q++) {
+    const N = Math.round(a * a * q * q);
+    if (N < 2 || N > 1e6) continue;
+    let k = 1, m = N;
+    for (let i = 2; i * i <= m; i++) while (m % (i * i) === 0) { m /= i * i; k *= i; }
+    if (m > 1 && close((k * Math.sqrt(m)) / q)) { const g = gcd(k, q); return { sg, kind: "rad", a: k / g, m, d: q / g }; }
+  }
+  return null;
+}
+
+const exactStr = (x) => {
+  const c = x.a === 1 ? "" : x.a;
+  const top = x.kind === "n" ? String(x.a) : x.kind === "pi" ? c + "π" : c + "√" + x.m;
+  return `${x.sg < 0 ? "-" : ""}${top}${x.d > 1 ? "/" + x.d : ""}`;
+};
 
 /* ---------------------------------- keys ---------------------------------- */
 /* Layout follows the real calculator: l = main, sl = SHIFT (yellow),
@@ -572,7 +603,7 @@ const ROW1 = [
   { id: "calc", l: "CALC", sl: "SOLVE", al: "=", act: "calc" },
   { id: "int", l: "∫ₐᵇ▫", sl: "d/dx", tpl: "int", sins: "d/dx(" },
   { id: "inv", l: "x⁻¹", sl: "x!", ins: "⁻¹", sins: "!" },
-  { id: "lgb", l: "logₐ▫", sl: "Σ", ins: "logb(", stpl: "sum" },
+  { id: "lgb", l: "logₐ▫", sl: "Σ", ins: "logb(", tpl: "logb", stpl: "sum" },
 ];
 const DPAD = [
   { id: "up", l: "▲", act: "up", c: "pad", cls: "col-start-2 row-start-1" },
@@ -585,7 +616,7 @@ const ROWS = [
     { id: "fr", l: "▫⁄▫", sl: "▫▫⁄▫", tpl: "frac", stpl: "mixed" },
     { id: "sqrt", l: "√▫", sl: "∛", ins: "√(", sins: "∛(" },
     { id: "sq", l: "x²", sl: "x³", bl: "DEC", bv: 10, ins: "²", sins: "³" },
-    { id: "pow", l: "x▫", sl: "ˣ√", bl: "HEX", bv: 16, ins: "^", sins: "ˣ√" },
+    { id: "pow", l: "x▫", sl: "ˣ√", bl: "HEX", bv: 16, ins: "^", tpl: "pow", sins: "ˣ√" },
     { id: "log", l: "log", sl: "10ˣ", bl: "BIN", bv: 2, ins: "log(", sins: "10^(" },
     { id: "ln", l: "ln", sl: "eˣ", bl: "OCT", bv: 8, ins: "ln(", sins: "e^(" },
   ],
@@ -644,15 +675,26 @@ const KS = {
   eq: "bg-gradient-to-b from-[#526d8c] to-[#293e59] text-text ring-1 ring-[#26384d]",
 };
 
-const Frac = ({ n, d }) => (
-  <span className="inline-flex items-center gap-1 align-middle text-xl leading-none sm:text-2xl">
-    {n < 0 && "−"}
-    <span className="inline-flex flex-col items-center leading-tight">
-      <span className="border-b-2 border-current px-1">{Math.abs(n)}</span>
-      <span>{d}</span>
-    </span>
+const Rad = ({ k, m }) => (
+  <span className="inline-flex items-baseline">
+    {k !== 1 && k}<span>√</span><span className="border-t-2 border-current">{m}</span>
   </span>
 );
+
+const Exact = ({ x }) => {
+  const top = x.kind === "n" ? x.a : x.kind === "pi" ? <>{x.a !== 1 && x.a}π</> : <Rad k={x.a} m={x.m} />;
+  return (
+    <span className="inline-flex items-center gap-1 align-middle text-xl leading-none sm:text-2xl">
+      {x.sg < 0 && "−"}
+      {x.d === 1 ? top : (
+        <span className="inline-flex flex-col items-center leading-tight">
+          <span className="border-b-2 border-current px-1">{top}</span>
+          <span>{x.d}</span>
+        </span>
+      )}
+    </span>
+  );
+};
 
 const Overlay = ({ title, onClose, children }) => (
   <div className="absolute inset-0 z-20 overflow-auto rounded-[1.5rem] bg-[#e7ebef] p-3 text-[#202832] sm:rounded-[2rem] sm:p-5">
@@ -940,37 +982,61 @@ function ToolPanel({ mode, angle, onMenu, onSetup }) {
 
 /* ------------------- natural-display templates & helpers ------------------ */
 
-const DELIMS = ["⟨", "¦", "⟩", "⟪", "⦙", "⟫"];
+const DELIMS = ["⟨", "¦", "⟩", "⟪", "⦙", "⟫", "⟅", "⟆"];
 
 function tplRange(s, idx) {
   const st = [], rs = [];
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
-    if (c === "⟨" || c === "⟪") st.push(i);
-    else if ((c === "⟩" || c === "⟫") && st.length) rs.push({ o: st.pop(), c: i });
+    if (c === "⟨" || c === "⟪" || c === "⟅") st.push(i);
+    else if ((c === "⟩" || c === "⟫" || c === "⟆") && st.length) rs.push({ o: st.pop(), c: i });
   }
   return rs.filter((r) => r.o <= idx && idx <= r.c).sort((a, b) => a.c - a.o - (b.c - b.o))[0];
+}
+
+function tplSlots(s, pos) {
+  const st = [];
+  let best = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "⟨" || c === "⟪") st.push({ o: i, seps: [] });
+    else if ((c === "¦" || c === "⦙") && st.length) st[st.length - 1].seps.push(i);
+    else if ((c === "⟩" || c === "⟫") && st.length) {
+      const t = st.pop();
+      t.c = i;
+      if (t.o < pos && pos <= t.c && (!best || t.c - t.o < best.c - best.o)) best = t;
+    }
+  }
+  return best;
 }
 
 /* Draws stacked fractions, mixed numbers and ∫ / Σ templates inside the LCD */
 function renderExpr(s, pos, show, ovr) {
   let kk = 0;
   const Cur = () => <span key={`c${kk++}`} className={`inline-block animate-pulse bg-current ${ovr ? "h-[3px] w-3 translate-y-2" : "h-4 w-[2px] translate-y-0.5"}`} />;
-  const box = (r) => (<>{r.empty && <span className="mx-px inline-block h-3 w-2 border border-dashed border-current opacity-60" />}{r.nodes}</>);
+  /* empty slots show a dashed box; data-e = cursor position when the box (or its padding) is clicked */
+  const box = (r) => (<>{r.empty && <span data-e={r.i} className="mx-px inline-block h-4 w-3 translate-y-0.5 border border-dashed border-current opacity-60" />}{r.nodes}</>);
+  const slot = (r, cls = "") => <span data-e={r.i} className={cls}>{box(r)}</span>;
   const fracEl = (n, d) => (
     <span key={`f${kk++}`} className="mx-0.5 inline-flex flex-col items-center align-middle leading-tight">
-      <span className="border-b-2 border-current px-1">{box(n)}</span>
-      <span className="px-1">{box(d)}</span>
+      {slot(n, "border-b-2 border-current px-1")}
+      {slot(d, "px-1")}
     </span>
   );
   const seq = (i, stop) => {
     const nodes = [], start = i;
-    let text = "", depth = 0;
-    const flush = () => { if (text) { nodes.push(<span key={`t${kk++}`}>{text.replace(/-/g, "−")}</span>); text = ""; } };
+    let text = "", ts = i, depth = 0, skip = -1;
+    const flush = () => {
+      if (!text) return;
+      const t0 = ts;
+      nodes.push(<span key={`t${kk++}`}>{[...text].map((ch, j) => <span key={j} data-p={t0 + j}>{ch === "-" ? "−" : ch}</span>)}</span>);
+      text = "";
+    };
     while (i < s.length) {
       const c = s[i];
-      if (depth === 0 && stop && stop(c)) break;
-      if (show && i === pos) { flush(); nodes.push(Cur()); }
+      /* template separators always end a slot, even if a "(" inside it is still open */
+      if (stop && stop(c) && (depth === 0 || DELIMS.includes(c))) break;
+      if (show && i === pos && i !== skip) { flush(); nodes.push(Cur()); }
       if (c === "⟨") {
         flush();
         const n = seq(i + 1, (x) => x === "¦"), d = seq(n.i + 1, (x) => x === "⟩");
@@ -979,8 +1045,49 @@ function renderExpr(s, pos, show, ovr) {
       if (c === "⟪") {
         flush();
         const w = seq(i + 1, (x) => x === "⦙"), n = seq(w.i + 1, (x) => x === "¦"), d = seq(n.i + 1, (x) => x === "⟫");
-        nodes.push(<span key={`m${kk++}`} className="inline-flex items-center align-middle">{box(w)}{fracEl(n, d)}</span>);
+        nodes.push(<span key={`m${kk++}`} className="inline-flex items-center align-middle">{slot(w)}{fracEl(n, d)}</span>);
         i = d.i + 1; continue;
+      }
+      if (s.startsWith("logb(", i)) {
+        flush();
+        const a = seq(i + 5, (x) => x === ","), f = seq(a.i + 1, (x) => x === ")");
+        nodes.push(
+          <span key={`l${kk++}`} className="inline-flex items-baseline">
+            <span>log</span>{slot(a, "translate-y-1 text-[0.65em]")}(<span data-e={f.i}>{box(f)}</span>)
+          </span>
+        );
+        i = f.i + 1; continue;
+      }
+      if (s.startsWith("√(", i) || s.startsWith("∛(", i)) {
+        flush();
+        const f = seq(i + 2, (x) => x === ")" || DELIMS.includes(x));
+        nodes.push(
+          <span key={`r${kk++}`} className="inline-flex items-baseline">
+            {c === "∛" && <sup className="text-[0.6em]">3</sup>}<span>√</span>{slot(f, "border-t-2 border-current px-0.5")}
+          </span>
+        );
+        i = s[f.i] === ")" ? f.i + 1 : f.i; continue;
+      }
+      if (c === "⟅") {
+        flush();
+        const e = seq(i + 1, (x) => x === "⟆");
+        nodes.push(<span key={`w${kk++}`} className="relative -top-2 text-[0.75em]">{slot(e)}</span>);
+        i = s[e.i] === "⟆" ? e.i + 1 : e.i; continue;
+      }
+      if (c === "^") {
+        flush();
+        let cnt = 0;
+        const e = seq(i + 1, (x) => { const first = cnt++ === 0; return !(/[\d.ᴇπ(A-FXYMe]/.test(x) || (first && (x === "-" || x === "+"))); });
+        nodes.push(<span key={`p${kk++}`} className="relative -top-2 text-[0.75em]">{slot(e)}</span>);
+        i = e.i; skip = e.i; continue;
+      }
+      if (c === "(" && s[i + 1] === ")") {
+        flush();
+        nodes.push(<span key={`q${kk++}`} data-p={i}>(</span>);
+        if (show && pos === i + 1) nodes.push(Cur());
+        nodes.push(<span key={`z${kk++}`} data-e={i + 1} className="mx-px inline-block h-4 w-3 translate-y-0.5 border border-dashed border-current opacity-60" />);
+        nodes.push(<span key={`y${kk++}`} data-p={i + 1}>)</span>);
+        i += 2; continue;
       }
       if (s.startsWith("∫ₐᵇ(", i) || s.startsWith("Σₐᵇ(", i)) {
         flush();
@@ -995,13 +1102,14 @@ function renderExpr(s, pos, show, ovr) {
         );
         i = f.i + 1; continue;
       }
+      if (!text) ts = i;
       text += c;
       if (c === "(") depth++; else if (c === ")" && depth > 0) depth--;
       i++;
     }
-    if (show && i === pos) { flush(); nodes.push(Cur()); }
+    if (show && i === pos && i !== skip) { flush(); nodes.push(Cur()); }
     flush();
-    return { nodes, i, empty: i === start };
+    return { nodes, i, empty: i === start, start };
   };
   return seq(0, null).nodes;
 }
@@ -1182,11 +1290,14 @@ export default function ScientificCalculator() {
   const showErr = (e) => { setErr(e.message === "Syntax" ? "Syntax ERROR" : "Math ERROR"); setRes(null); setFresh(false); };
 
   const insert = (txt, neg, back = 0) => {
+    if (txt === ")" && !fresh && s[pos] === ")") { setPos(pos + 1); return; }
     let bs = s, p = pos;
     if (fresh) {
       if (!neg && AFTER.includes(txt)) { bs = "Ans"; p = 3; } else { bs = ""; p = 0; }
       setFresh(false);
     }
+    /* "sin(", "√(", "(" … close themselves when typed at the end of an expression or slot */
+    if (txt.endsWith("(") && (p === bs.length || ")⟩¦⦙⟫,".includes(bs[p]))) { txt += ")"; back = 1; }
     if (txt === "ᴇ" && !/[\d.]$/.test(bs.slice(0, p))) txt = "1ᴇ";
     if (ovr && p < bs.length && !DELIMS.includes(bs[p])) {
       const ob = BLOCKS.find((x) => bs.startsWith(x, p));
@@ -1198,6 +1309,8 @@ export default function ScientificCalculator() {
   };
 
   const insertTpl = (kind) => {
+    if (kind === "pow") { insert("⟅⟆", false, 1); return; }
+    if (kind === "logb") { insert("logb(,)", false, 2); return; }
     if (kind === "int" || kind === "sum") { insert(kind === "int" ? "∫ₐᵇ(,,)" : "Σₐᵇ(,,)", false, 3); return; }
     let bs = s, p = pos;
     if (fresh) { bs = ""; p = 0; setFresh(false); }
@@ -1296,42 +1409,63 @@ export default function ScientificCalculator() {
         if (!p) { setPos(0); break; }
         if (DELIMS.includes(s[p - 1])) {
           const r = tplRange(s, p - 1);
-          if (r && s.slice(r.o + 1, r.c).replace(/[⟨⟩¦⟪⟫⦙]/g, "") === "") { setS(s.slice(0, r.o) + s.slice(r.c + 1)); setPos(r.o); }
+          if (r && s.slice(r.o + 1, r.c).replace(/[⟨⟩¦⟪⟫⦙⟅⟆]/g, "") === "") { setS(s.slice(0, r.o) + s.slice(r.c + 1)); setPos(r.o); }
           else setPos(p - 1);
           break;
         }
         const blk = BLOCKS.find((x) => s.slice(0, p).endsWith(x));
-        if (blk === "∫ₐᵇ(" || blk === "Σₐᵇ(") {
+        if (blk === "∫ₐᵇ(" || blk === "Σₐᵇ(" || blk === "logb(") {
           const st = p - blk.length;
           let d = 0, e = -1;
           for (let q = p; q < s.length; q++) { if (s[q] === "(") d++; else if (s[q] === ")") { if (d === 0) { e = q; break; } d--; } }
           const inner = e >= 0 ? s.slice(p, e) : s.slice(p);
-          if (inner === ",,") { setS(s.slice(0, st) + s.slice(e >= 0 ? e + 1 : s.length)); setPos(st); } else setPos(st);
+          if (inner === ",," || inner === ",") { setS(s.slice(0, st) + s.slice(e >= 0 ? e + 1 : s.length)); setPos(st); } else setPos(st);
           break;
         }
         const n = blk ? blk.length : 1;
-        setS(s.slice(0, p - n) + s.slice(p));
+        const tail = s.slice(p - n, p).endsWith("(") && s[p] === ")" ? 1 : 0;
+        setS(s.slice(0, p - n) + s.slice(p + tail));
         setPos(p - n);
         break;
       }
       case "left": {
         if (fresh) { setFresh(false); setRes(null); setPos(s.length); break; }
+        const t = tplSlots(s, pos);
+        if (t) {
+          const i = t.seps.filter((x) => x < pos).length, start = i === 0 ? t.o + 1 : t.seps[i - 1] + 1;
+          if (pos === start) { setPos(s[t.o] === "⟪" && i === 1 ? t.seps[0] : t.o); break; }
+        }
         const blk = BLOCKS.find((x) => s.slice(0, pos).endsWith(x));
         setPos(Math.max(0, pos - (blk ? blk.length : 1)));
         break;
       }
       case "right": {
         if (fresh) { setFresh(false); setRes(null); setPos(s.length); break; }
+        const t = tplSlots(s, pos);
+        if (t) {
+          const i = t.seps.filter((x) => x < pos).length, end = i < t.seps.length ? t.seps[i] : t.c;
+          if (pos === end) { setPos(s[t.o] === "⟪" && i === 0 ? t.seps[0] + 1 : t.c + 1); break; }
+        }
         const blk = BLOCKS.find((x) => s.startsWith(x, pos));
         setPos(Math.min(s.length, pos + (blk ? blk.length : 1)));
         break;
       }
-      case "up": if (hist.length) loadHist(hi === -1 ? hist.length - 1 : Math.max(0, hi - 1)); break;
-      case "down":
+      case "up": case "down": {
+        const t = fresh ? null : tplSlots(s, pos);
+        if (t) {
+          const n = t.seps.length, i = t.seps.filter((x) => x < pos).length, j = i + (k.act === "down" ? 1 : -1);
+          if (j >= (s[t.o] === "⟪" ? 1 : 0) && j <= n) {
+            const st = (x) => (x === 0 ? t.o + 1 : t.seps[x - 1] + 1), en = (x) => (x < n ? t.seps[x] : t.c);
+            setPos(Math.min(en(j), st(j) + Math.max(0, pos - st(i))));
+            break;
+          }
+        }
+        if (k.act === "up") { if (hist.length) loadHist(hi === -1 ? hist.length - 1 : Math.max(0, hi - 1)); break; }
         if (hi === -1) break;
         if (hi + 1 >= hist.length) { setS(""); setPos(0); setHi(-1); setRes(null); }
         else loadHist(hi + 1);
         break;
+      }
       case "eq": equals(); break;
       case "calc": if (shift) solve(); else calcKey(); break;
       case "ssd": if (res && mode === "calc") { setDms(false); setEng(null); setFrac((f) => !f); } break;
@@ -1403,12 +1537,38 @@ export default function ScientificCalculator() {
     } catch (e) { return e.message === "Syntax" ? "Syntax ERROR" : "Math ERROR"; }
   };
 
+  const evalEx = (raw) => {
+    if (mode !== "calc" || fmt.type !== "norm") return "";
+    try { const x = toExact(calc(normalizeInput(raw))); return x ? exactStr(x) : ""; } catch (e) { return ""; }
+  };
+
   /* paste: one line goes onto the display; several lines (or "expr => expected") become a test table */
   const pasteText = (text) => {
     const lines = String(text).split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (!lines.length) return;
     if (lines.length === 1 && !SPLIT.test(lines[0])) { insert(normalizeInput(lines[0], mode === "base")); return; }
     setBatch(lines.map((l) => { const [src, exp] = l.split(SPLIT); return { src: src.trim(), exp: exp === undefined ? undefined : exp.trim() }; }));
+  };
+
+  const pasteBtn = async () => {
+    let t = "";
+    try { t = await navigator.clipboard.readText(); }
+    catch (e) { t = window.prompt('Paste an expression, or several lines like "1÷3 => 1/3"') || ""; }
+    pasteText(t);
+  };
+
+  const clickExpr = (e) => {
+    const el = e.target.closest("[data-p],[data-e]");
+    let p = s.length;
+    if (el && el.dataset.p !== undefined) {
+      const r = el.getBoundingClientRect();
+      p = +el.dataset.p + (e.clientX > r.left + r.width / 2 ? 1 : 0);
+    } else if (el) p = +el.dataset.e;
+    for (const b of BLOCKS) {           /* never land inside "sin(" or "Ans" */
+      let j = s.indexOf(b);
+      while (j !== -1) { if (p > j && p < j + b.length) { p = p - j < b.length / 2 ? j : j + b.length; break; } j = s.indexOf(b, j + 1); }
+    }
+    setFresh(false); setRes(null); setErr(""); setPos(Math.min(p, s.length));
   };
 
   const overlay = setup || menu || prompt || constOpen || convOpen || clrOpen;
@@ -1437,7 +1597,8 @@ export default function ScientificCalculator() {
   });
 
   /* display */
-  const fr = frac && res ? toFrac(res.v) : null;
+  /* "frac" now means "show decimal": S⇔D flips it, every new input resets it to exact */
+  const fr = !frac && res && mode === "calc" && !dms && eng === null && fmt.type === "norm" ? toExact(res.v) : null;
   let shown = "";
   if (res) {
     if (mode === "base") shown = fmtBase(res.v, base);
@@ -1445,7 +1606,10 @@ export default function ScientificCalculator() {
     else if (eng !== null) shown = fmtEng(res.v, eng);
     else shown = fmtNum(res.v, fmt);
   }
-  const rows = batch ? batch.map((r) => { const got = evalLine(r.src); return { ...r, got, ok: r.exp === undefined ? null : cleanCmp(r.exp) === cleanCmp(got) }; }) : null;
+  const rows = batch ? batch.map((r) => {
+    const got = evalLine(r.src), ex = evalEx(r.src);
+    return { ...r, got, ex, ok: r.exp === undefined ? null : [got, ex].some((g) => g && cleanCmp(r.exp) === cleanCmp(g)) };
+  }) : null;
   const angTag = { deg: "D", rad: "R", gra: "G" }[angle];
   const tags = [
     shift && "S", alpha && "A", sto && "STO", hyp && "hyp", vars.M && "M",
@@ -1510,6 +1674,9 @@ export default function ScientificCalculator() {
             </button>
           )}
          
+          <button onClick={pasteBtn} className={tbtn} title="Paste an expression or a list of tests">
+            <ClipboardPaste size={13} />Paste
+          </button>
           {wide && !pip && (
             <button onClick={popOut} className={tbtn} title="Open the calculator in its own small window">
               <ExternalLink size={13} />Pop out
@@ -1527,14 +1694,14 @@ export default function ScientificCalculator() {
             <div className={`relative flex min-w-0 flex-col rounded-md bg-[#dce8cc] px-3 py-1.5 font-mono text-[#202a1c] shadow-[inset_0_2px_7px_rgba(0,0,0,.28)] ${land ? "h-28" : "h-32"}`}>
               {off && <div className="absolute inset-0 z-10 rounded-md bg-[#8f9b86]" />}
               <div className="flex h-4 gap-2 text-[10px] font-bold">{tags.map((t) => <span key={t}>{t}</span>)}</div>
-              <div className="min-h-0 flex-1 overflow-y-auto break-all text-sm leading-snug sm:text-base">
+              <div onClick={clickExpr} className="min-h-0 flex-1 cursor-text overflow-y-auto break-all text-sm leading-snug sm:text-base">
                 {renderExpr(s, pos, !fresh, ovr)}
               </div>
               <div className="flex min-h-[2rem] items-end justify-end break-all text-right text-xl font-semibold sm:text-2xl">
                 {err ? <span className="text-lg">{err}</span> : res ? (
                   <>
                     {res.label}
-                    {fr ? <Frac n={fr.n} d={fr.d} /> : shown.replace(/-/g, "−")}
+                    {fr ? <Exact x={fr} /> : shown.replace(/-/g, "−")}
                   </>
                 ) : ""}
               </div>
@@ -1684,7 +1851,7 @@ export default function ScientificCalculator() {
                   {rows.map((r, i) => (
                     <tr key={i} className={r.ok === false ? "text-brand" : "text-text"}>
                       <td className="break-all pr-3">{r.src}</td>
-                      <td className="break-all pr-3">{r.got.replace(/-/g, "−")}</td>
+                      <td className="break-all pr-3">{r.got.replace(/-/g, "−")}{r.ex && <span className="text-muted"> = {r.ex}</span>}</td>
                       <td className="break-all pr-3">{r.exp ?? ""}</td>
                       <td>{r.ok === true ? "✓" : r.ok === false ? "✗" : ""}</td>
                     </tr>
@@ -1699,7 +1866,7 @@ export default function ScientificCalculator() {
         <div className="mx-auto mt-5 max-w-[820px] space-y-2 px-1 text-xs text-muted sm:mt-6 sm:space-y-1.5">
           <p><span className="font-semibold text-[#c08d1b]">SHIFT</span> then a key uses the yellow function. <span className="font-semibold text-[#b83f46]">ALPHA</span> then a key uses the red letter. <span className="font-semibold text-text">SHIFT + MODE</span> opens SETUP, MODE opens the menu.</p>
           <p>Angle unit: the little letter at the top of the screen shows it (R = radian, D = degree, G = gradian). Change it in SETUP. For sin(π/2) = 1 use Radian.</p>
-          <p>Fractions: type the top number, press a⁄b, then the bottom number. Store a value: SHIFT + RCL (STO), then ALPHA and a letter. ▲ ▼ browse history.</p>
+          <p>Fractions: press ▫⁄▫, type the numerator, press ▼ for the denominator, then ▶ to leave the fraction. ▲ goes back up. Results show exactly (⅓, √2⁄2, π⁄2); S⇔D switches to decimal. Store a value: SHIFT + RCL (STO), then ALPHA and a letter. ▲ ▼ browse history outside a fraction.</p>
           <p>CALC asks for the variables in your expression. SOLVE: type an equation with ALPHA + CALC for "=", e.g. X² − 4 = 0, then SHIFT + CALC. ∫ and Σ use X, e.g. ∫(X², 0, 3).</p>
           <p>Templates: ▫⁄▫ and ∫ₐᵇ▫ draw natural fractions and integrals; fill each box and move between them with ◀ ▶. SHIFT + 7 CONST (constants), SHIFT + 8 CONV (unit conversion), SHIFT + 9 CLR, SHIFT + DEL INS (insert/overwrite), SHIFT + AC OFF (press ON to wake).</p>
           <p>Very large or very small results (for example 171! or 10^400) are shown as mantissa × 10 to a power instead of an error.</p>
