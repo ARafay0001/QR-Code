@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Check, Copy, RotateCcw, Search, Trash2, Type, X } from "lucide-react";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 
 /* -------------------------------------------------------------------------- */
@@ -253,9 +252,6 @@ export default function TextTools() {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
-      <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
-        <Navbar />
-      </header>
 
       <main className="flex-1 px-4 py-6 sm:py-8">
         <div className="mx-auto w-full max-w-7xl">

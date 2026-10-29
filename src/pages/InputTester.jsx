@@ -11,7 +11,6 @@ import {
   RotateCcw,
   Vibrate,
 } from "lucide-react";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 
 /* -------------------------------------------------------------------------- */
@@ -1204,9 +1203,6 @@ export default function InputTester() {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
-      <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
-        <Navbar />
-      </header>
 
       <main className="flex-1 px-4 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl">

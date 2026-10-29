@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import RouteMetadata from "./components/common/RouteMetadata";
 import ScrollToTop from "./components/common/ScrollToTop";
+import Navbar from "./components/common/Navbar";
 import Home from "./pages/Home";
 import "./App.css";
 const QRGenerator = lazy(() => import("./pages/QRGenerator"));
@@ -33,6 +34,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AllCalculators = lazy(() => import("./pages/Allcalculators"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const InvoiceGenerator = lazy(() => import("./pages/InvoiceGenerator"));
 
 function PageLoading() {
   
@@ -60,6 +62,7 @@ export default function App() {
     <BrowserRouter>
       <RouteMetadata />
       <ScrollToTop />
+      <Navbar />
       <Suspense fallback={<PageLoading />}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -80,21 +83,17 @@ export default function App() {
           <Route path="/image-to-vector" element={<ImageToVector />} />
           <Route path="/typing-tutor" element={<TypingTutor />} />
           <Route path="/all-calculators" element={<AllCalculators />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route
-            path="/scientific-calculator"
-            element={<ScientificCalculator />}
-          />
+          <Route path="/scientific-calculator" element={<ScientificCalculator />} />
           <Route path="/input-tester" element={<InputTester />} />
           <Route path="/text-tool" element={<TextTool />} />
 
-          {/* Games */}
           <Route path="/games" element={<Games />} />
           <Route path="/games/dice-roller" element={<DiceRoller />} />
           <Route path="/games/spin-wheel" element={<SpinWheel />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

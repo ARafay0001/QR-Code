@@ -1,4 +1,3 @@
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
 
@@ -109,9 +108,8 @@ const tools = [
 export default function PDFTools() {
   return (
     <>
-      <Navbar />
 
-      <div className="relative min-h-screen overflow-hidden bg-page text-text">
+      <div className="relative min-h-screen overflow-x-clip bg-page text-text">
 
         {/* Background Glow */}
         <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />

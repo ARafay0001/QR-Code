@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import imageCompression from "browser-image-compression";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
 
@@ -457,7 +456,6 @@ export default function ImageCompressor() {
       </div>
 
       <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
-        <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
           {/* Hero */}

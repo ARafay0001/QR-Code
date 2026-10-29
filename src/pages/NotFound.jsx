@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, RotateCcw, Gamepad2 } from "lucide-react";
-import Navbar from "../components/common/Navbar";
 
 const GRAVITY = 0.28;
 const GAME_MIN_WIDTH = 760;
@@ -452,7 +451,6 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-br from-page via-surface to-page text-text">
-      <Navbar />
 
       {/* Background glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">

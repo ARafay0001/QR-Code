@@ -1,4 +1,3 @@
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { Link } from "react-router-dom";
 import { Dices, RotateCw, ArrowRight } from "lucide-react";
@@ -23,7 +22,6 @@ const games = [
 export default function Games() {
   return (
     <>
-      <Navbar />
 
       <div className="relative min-h-screen overflow-hidden bg-page text-text">
         {/* Background Glow */}

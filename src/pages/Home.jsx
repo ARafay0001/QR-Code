@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
 import Button from "../components/ui/Button";
@@ -672,10 +671,6 @@ export default function Home() {
         <div className="absolute bottom-0 left-1/2 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-brand/10 blur-[110px] sm:h-[400px] sm:w-[400px] sm:blur-[150px]" />
       </div>
 
-      {/* Sticky navbar */}
-      <div className="sticky top-0 z-50 border-b border-text/5 bg-page/70 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60">
-        <Navbar />
-      </div>
 
       <main>
         <Hero />

@@ -214,7 +214,7 @@ export default function Navbar() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 px-3 py-3 sm:px-5 sm:py-5">
+    <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 px-3 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60 sm:px-5 sm:py-5">
       <nav
         aria-label="Primary navigation"
         className={`relative mx-auto flex max-w-7xl items-center justify-between rounded-full border px-3 py-2.5 backdrop-blur-xl transition-all duration-300 sm:px-4 ${

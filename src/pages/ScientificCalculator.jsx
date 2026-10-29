@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Smartphone, Monitor, ExternalLink, ClipboardPaste } from "lucide-react";
 
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
@@ -61,10 +60,10 @@ const Article = {
   ],
 
   relatedTools: [
-    { label: "Percentage Calculator", href: "/percentage-calculator" },
-    { label: "Unit Converter", href: "/unit-converter" },
-    { label: "Age Calculator", href: "/age-calculator" },
-    { label: "Compress PDF", href: "/pdf-tools/compress" },
+    { label: "Percentage Calculator", href: "/all-calculators" },
+    { label: "Unit Converter", href: "/all-calculators" },
+    { label: "Age Calculator", href: "/all-calculators" },
+    { label: "Unit Convertor", href: "/unit-converter" },
   ],
 };
 
@@ -1817,8 +1816,7 @@ export default function ScientificCalculator() {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
-      <Navbar />
+    <div className="min-h-screen w-full overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
 
       <main className="mx-auto w-full max-w-4xl px-2 py-4 sm:px-6 sm:py-6">
         <div className="px-1 text-center">

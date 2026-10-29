@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
 import {
@@ -353,7 +352,6 @@ export default function VideoCompressor() {
       </div>
 
       <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
-        <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
           {/* Hero */}

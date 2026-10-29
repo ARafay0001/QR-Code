@@ -1,7 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
+const stickyTop = 112;
+
+function FAQTitle({ title, description }) {
+  return (
+    <>
+      <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
+        {title}
+      </h2>
+      <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
+        {description}
+      </p>
+    </>
+  );
+}
 
 export default function ToolFAQ({
   faqs,
@@ -11,17 +26,81 @@ export default function ToolFAQ({
   className = "py-16 sm:py-20",
 }) {
   const [openIndex, setOpenIndex] = useState(0);
+  const [stickyPosition, setStickyPosition] = useState(null);
+  const sectionRef = useRef(null);
+  const titleRef = useRef(null);
+
+  useEffect(() => {
+    let frame = 0;
+
+    const updateStickyPosition = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const section = sectionRef.current;
+        const titleElement = titleRef.current;
+
+        if (!section || !titleElement || window.innerWidth < 1024) {
+          setStickyPosition(null);
+          return;
+        }
+
+        const sectionBounds = section.getBoundingClientRect();
+        const titleBounds = titleElement.getBoundingClientRect();
+        const titleHeight = titleElement.offsetHeight;
+
+        if (titleBounds.top > stickyTop || sectionBounds.bottom <= titleHeight) {
+          setStickyPosition(null);
+          return;
+        }
+
+        const nextPosition = {
+          left: titleBounds.left,
+          top: Math.min(stickyTop, sectionBounds.bottom - titleHeight),
+          width: titleBounds.width,
+        };
+
+        setStickyPosition((current) => {
+          if (
+            current &&
+            Math.abs(current.left - nextPosition.left) < 1 &&
+            Math.abs(current.top - nextPosition.top) < 1 &&
+            Math.abs(current.width - nextPosition.width) < 1
+          ) {
+            return current;
+          }
+          return nextPosition;
+        });
+      });
+    };
+
+    updateStickyPosition();
+    window.addEventListener("scroll", updateStickyPosition, { passive: true });
+    window.addEventListener("resize", updateStickyPosition);
+    const resizeObserver = new ResizeObserver(updateStickyPosition);
+    if (sectionRef.current) resizeObserver.observe(sectionRef.current);
+    if (titleRef.current) resizeObserver.observe(titleRef.current);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateStickyPosition);
+      window.removeEventListener("resize", updateStickyPosition);
+      resizeObserver.disconnect();
+    };
+  }, [description, title]);
 
   return (
-    <section id={id} className={`${container} scroll-mt-24 ${className}`}>
+    <section
+      ref={sectionRef}
+      id={id}
+      className={`${container} scroll-mt-24 ${className}`}
+    >
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
-        <div className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
-            {title}
-          </h2>
-          <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
-            {description}
-          </p>
+        <div
+          ref={titleRef}
+          className="lg:sticky lg:top-28 lg:self-start"
+          style={stickyPosition ? { visibility: "hidden" } : undefined}
+        >
+          <FAQTitle title={title} description={description} />
         </div>
 
         <div className="space-y-3">
@@ -76,6 +155,20 @@ export default function ToolFAQ({
           })}
         </div>
       </div>
+      {stickyPosition &&
+        createPortal(
+          <div
+            className="fixed z-40"
+            style={{
+              left: stickyPosition.left,
+              top: stickyPosition.top,
+              width: stickyPosition.width,
+            }}
+          >
+            <FAQTitle title={title} description={description} />
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }

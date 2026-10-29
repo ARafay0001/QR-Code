@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftRight, Banknote, ChevronDown, Clock, RefreshCw, Search, TriangleAlert } from "lucide-react";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
@@ -444,7 +443,6 @@ export default function CurrencyConverter() {
 
   return (
     <>
-      <Navbar />
       <main className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
         <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-violet-600/10 blur-[120px]" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-blue-500/10 blur-[120px]" />

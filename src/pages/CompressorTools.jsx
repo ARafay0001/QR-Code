@@ -1,4 +1,3 @@
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { Link } from "react-router-dom";
 import { Minimize2, ArrowRight, Image, Video } from "lucide-react";
@@ -25,7 +24,6 @@ const tools = [
 export default function MediaTools() {
   return (
     <>
-      <Navbar />
 
       <div className="relative min-h-screen overflow-hidden bg-page text-text">
         {/* Background Glow */}

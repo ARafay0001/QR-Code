@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Dices, Minus, Plus, Trash2, Volume2, VolumeX } from "lucide-react";
-import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 import ToolArticle from "../../components/common/ToolArticle";
 import ToolFAQ from "../../components/common/ToolFAQ";
@@ -458,7 +457,6 @@ export default function DiceRoller() {
 
   return (
     <>
-      <Navbar />
       <style>{CSS}</style>
       <main className="relative min-h-screen overflow-hidden bg-page text-text">
         <div className="pointer-events-none absolute left-0 top-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />

@@ -3,7 +3,6 @@ import {
   Upload, Download, Copy, Check, Loader2, Sparkles, ImagePlus, Zap, AlertTriangle, RefreshCw,
 } from "lucide-react";
 
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 
 /* ========================================================================== */
@@ -398,8 +397,7 @@ export default function ImageToVector() {
         <div className="absolute bottom-0 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-brand/10 blur-[150px]" />
       </div>
 
-      <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-page via-surface to-page text-text">
-        <Navbar />
+      <div className="min-h-screen overflow-x-clip bg-gradient-to-br from-page via-surface to-page text-text">
 
         <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <div className="text-center">

@@ -23,7 +23,6 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
 
@@ -1073,7 +1072,6 @@ export default function QRGenerator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
-      <Navbar />
 
       <main>
         <section id="qrcode" className="px-4 py-20">

@@ -13,13 +13,106 @@ import {
 } from "lucide-react";
 import { removeBackground, preload } from "@imgly/background-removal";
 
-import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
 /* ------------------------------------------------------------------ */
+
+const Article = {
+  title: "How to Remove the Background from an Image Online",
+
+  intro:
+    "Removing the background from a photo lets you isolate a person, product, or object and place it on any new background. Toolited's background remover runs an AI model directly in your browser, so you can create a transparent PNG without installing software or creating an account.",
+
+  sections: [
+    {
+      heading: "What can you do with a transparent background?",
+      paragraphs: [
+        "A transparent PNG keeps only your subject, which makes it easy to reuse in other designs. Many people remove backgrounds to prepare images for stores, profiles, presentations, and social posts.",
+      ],
+      bullets: [
+        "Create clean product photos for online shops and marketplaces.",
+        "Cut out a person for a profile picture, ID-style photo, or video thumbnail.",
+        "Place a subject on a solid color, gradient, or new scene.",
+        "Prepare logos, stickers, and graphics for posters or presentations.",
+      ],
+    },
+    {
+      heading: "How to remove a background in a few steps",
+      paragraphs: [
+        "Upload a PNG, JPG, or WEBP image by dragging it onto the tool, browsing for it, or pasting it from your clipboard with Ctrl+V. Then select Remove Background and wait for the AI to separate the subject from the background.",
+        "Use the preview to compare the result with your original, then download the finished image as a transparent PNG.",
+      ],
+    },
+    {
+      heading: "Tips for cleaner cutouts",
+      paragraphs: [
+        "Results depend on the photo. Clear contrast between the subject and the background usually gives the sharpest edges, while fine details such as hair, fur, or thin objects are harder to separate.",
+        "If the edges are not accurate on your device, use the Improve quality option when it appears. It runs a more detailed model, which can take longer on slower devices.",
+      ],
+      bullets: [
+        "Use a well-lit photo with the subject in focus.",
+        "Choose a background that differs in color from the subject when you can.",
+        "Start with the highest-resolution image available.",
+        "Check edges against both light and dark backgrounds before using the file.",
+      ],
+    },
+    {
+      heading: "Is it safe to remove backgrounds online?",
+      paragraphs: [
+        "File privacy depends on how a tool processes images. This tool runs its AI model inside your browser, so your photo stays on your device while the background is removed. If you use any online tool with sensitive images, check how it handles files before uploading.",
+      ],
+    },
+  ],
+
+  relatedTools: [
+    { label: "Image Compressor", href: "/image-compressor" },
+    { label: "Image to PDF", href: "/pdf-tools/image-to-pdf" },
+    { label: "Compress PDF", href: "/pdf-tools/compress" },
+  ],
+};
+
+const FAQ = [
+  {
+    question: "Is this background remover really free?",
+    answer:
+      "Yes. You can remove backgrounds without paying, creating an account, or getting a watermark on your image.",
+  },
+  {
+    question: "Are my images uploaded to a server?",
+    answer:
+      "No. The AI model runs in your browser, so your photos stay on your device while the background is removed.",
+  },
+  {
+    question: "Which image formats can I use?",
+    answer:
+      "You can upload PNG, JPG, JPEG, and WEBP images up to 20 MB. The result downloads as a PNG with a transparent background.",
+  },
+  {
+    question: "Why is the result different on some devices?",
+    answer:
+      "Devices with GPU acceleration use a more detailed model. Other devices use a lighter model and a smaller working size to stay responsive, and an Improve quality option may be offered to refine the result.",
+  },
+  {
+    question: "What does the Improve quality button do?",
+    answer:
+      "It processes your image again with a more detailed model for better edges. This can take longer on slower devices, and your first result stays available if you cancel.",
+  },
+  {
+    question: "Can I paste an image instead of uploading it?",
+    answer:
+      "Yes. Copy an image and press Ctrl+V (or Cmd+V on Mac) while the page is open to load it straight into the tool.",
+  },
+  {
+    question: "Can I use the background remover on my phone?",
+    answer:
+      "Yes. The tool adapts to smaller screens, though processing may take longer on older phones.",
+  },
+];
+
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const VALID_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -31,20 +124,6 @@ const LOADING_MESSAGES = [
   "📦 Finalizing PNG...",
 ];
 
-const FAQ = [
-  {
-    q: "Is this background remover really free?",
-    a: "Yes. It is free, needs no account and has no watermark.",
-  },
-  {
-    q: "Are my images uploaded to a server?",
-    a: "No. The AI model runs inside your browser, so your photos never leave your device.",
-  },
-  {
-    q: "Why is it faster on some devices?",
-    a: "If your device supports GPU acceleration (WebGPU) we use it at high quality. Otherwise we switch to a lighter model and a smaller working size so it stays fast on CPUs.",
-  },
-];
 
 const CHECKER_STYLE = {
   backgroundImage:
@@ -501,7 +580,6 @@ export default function BackgroundRemover() {
       </div>
 
       <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
-        <Navbar />
 
         <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           {/* Hero */}
@@ -767,12 +845,13 @@ export default function BackgroundRemover() {
             </p>
           )}
 
-          <ToolFAQ
-            faqs={FAQ}
-            description="Learn what the browser-based background remover supports and how AI processing works on your device."
-          />
+         
         </main>
-
+<ToolArticle {...Article} />
+                             <ToolFAQ
+                               faqs={FAQ}
+                             description="Remove image backgrounds free in your browser. Upload a PNG, JPG or WEBP and download a transparent PNG with no signup or watermark."
+                             />
         <Footer />
       </div>
     </>

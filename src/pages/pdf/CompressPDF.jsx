@@ -1,5 +1,4 @@
 import { useRef, useState, useCallback } from "react";
-import Navbar from "../../components/common/Navbar";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 import Footer from "../../components/common/Footer";
@@ -256,7 +255,6 @@ export default function CompressPDF() {
 
   return (
     <>
-      <Navbar />
 
       <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text">
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">

@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-page text-text">
-      <Navbar />
       <main className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24">
         <p className="text-sm font-semibold uppercase tracking-widest text-brand">
           About Toolited
