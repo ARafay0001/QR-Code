@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Check, Copy, RotateCcw, Search, Trash2, Type, X } from "lucide-react";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { TexttoolArticle as Article, TexttoolFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -411,6 +414,8 @@ export default function TextTools() {
         </div>
       </main>
 
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </div>
   );

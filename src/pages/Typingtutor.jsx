@@ -32,6 +32,9 @@ import {
   Zap,
 } from "lucide-react";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { TypingtutorArticle as Article, TypingtutorFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Data                                    */
@@ -2185,6 +2188,8 @@ export default function TypingTutor() {
 
       <main className={`flex-1 px-4 ${session ? "py-3 sm:py-4" : "py-12 sm:py-16"}`}>{content}</main>
 
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </div>
   );

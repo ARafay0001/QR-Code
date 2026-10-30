@@ -157,9 +157,11 @@ const TOOLS = [
 ];
 
 const linkBase =
-  "relative rounded-full px-4 py-2 text-sm font-medium transition-colors";
-const linkIdle = "text-text hover:bg-text/5 hover:text-text";
-const linkActive = "bg-text/10 text-text";
+  "relative rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200";
+const linkIdle =
+  "border-transparent text-muted hover:border-border/80 hover:bg-brand/5 hover:text-text";
+const linkActive =
+  "border-brand/20 bg-brand/10 text-brand shadow-[inset_0_0_18px_rgba(51,150,255,.06)]";
 
 /* -------------------------------------------------------------------------- */
 /*  Navbar                                                                   */
@@ -216,25 +218,33 @@ export default function Navbar() {
     `${linkBase} ${isActive ? linkActive : linkIdle}`;
 
   const mobileLinkClass = ({ isActive }) =>
-    `block rounded-2xl px-4 py-3.5 text-base font-medium ${
-      isActive ? "bg-text/10 text-text" : "text-text"
+    `block rounded-xl border px-4 py-3.5 text-base font-medium transition-colors ${
+      isActive
+        ? "border-brand/20 bg-brand/10 text-brand"
+        : "border-transparent text-text hover:bg-brand/5"
     }`;
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-text/5 bg-page/70 px-3 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-page/60 sm:px-5 sm:py-5">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-page/85 px-3 py-2.5 backdrop-blur-2xl supports-[backdrop-filter]:bg-page/75 sm:px-5 sm:py-3">
       <nav
         aria-label="Primary navigation"
-        className={`relative mx-auto flex max-w-7xl items-center justify-between rounded-full border px-3 py-2.5 backdrop-blur-xl transition-all duration-300 sm:px-4 ${
+        className={`relative mx-auto flex max-w-7xl items-center justify-between rounded-2xl border px-3 py-2 backdrop-blur-xl transition-all duration-300 sm:px-4 ${
           scrolled
-            ? "border-border/80 bg-surface/85 shadow-[0_10px_40px_rgba(0,0,0,.45)]"
-            : "border-border bg-surface/60"
+            ? "border-brand/20 bg-surface/95 shadow-[0_12px_36px_rgba(0,0,0,.4),0_0_24px_rgba(51,150,255,.06)]"
+            : "border-border/80 bg-surface/75 shadow-lg shadow-black/10"
         }`}
       >
         {/* Logo */}
-        <Link to="/" aria-label="Toolited home" className="group flex items-center  pl-1">
+        <Link to="/" aria-label="Toolited home" className="group flex items-center pl-1">
           <div>
-            <img src={logo} alt="" width="1000" height="500" className=" w-26" />
+            <img
+              src={logo}
+              alt=""
+              width="1000"
+              height="500"
+              className="w-26 transition-transform duration-200 group-hover:scale-[1.03]"
+            />
           </div>
           {/* <span className="text-xl font-bold tracking-tight text-text sm:text-2xl">
             Toolited
@@ -276,7 +286,7 @@ export default function Navbar() {
             >
               <div
                 id="desktop-tools"
-                className="max-h-[70vh] overflow-y-auto rounded-3xl border border-border/80 bg-surface/95 shadow-[0_30px_80px_rgba(0,0,0,.6)] backdrop-blur-2xl"
+                className="max-h-[70vh] overflow-y-auto rounded-3xl border border-border/80 bg-surface/95 shadow-[0_30px_80px_rgba(0,0,0,.6),0_0_32px_rgba(51,150,255,.08)] backdrop-blur-2xl"
               >
                 <div className="flex items-center justify-between border-b border-border px-6 py-4">
                   <span className="text-xs font-semibold uppercase tracking-widest text-muted">
@@ -296,8 +306,10 @@ export default function Navbar() {
                         key={tool.href}
                         to={tool.href}
                         onClick={() => setToolsOpen(false)}
-                        className={`group flex items-start gap-3.5 rounded-2xl p-3.5 transition-colors ${
-                          active ? "bg-text/10" : "hover:bg-text/5"
+                        className={`group flex items-start gap-3.5 rounded-2xl border p-3.5 transition-colors ${
+                          active
+                            ? "border-brand/20 bg-brand/10"
+                            : "border-transparent hover:border-border/70 hover:bg-page/60"
                         }`}
                       >
                         <div
@@ -366,7 +378,7 @@ export default function Navbar() {
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
           aria-controls="mobile-navigation"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface/60 text-text transition-colors hover:bg-border md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface/80 text-text transition-colors hover:border-brand/40 hover:bg-brand/10 md:hidden"
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
@@ -379,7 +391,7 @@ export default function Navbar() {
           aria-label="Mobile navigation"
           className="mx-auto mt-3 max-w-7xl md:hidden"
         >
-          <div className="max-h-[75vh] overflow-y-auto rounded-3xl border border-border/80 bg-surface/95 p-3 shadow-[0_30px_80px_rgba(0,0,0,.6)] backdrop-blur-2xl">
+          <div className="max-h-[75vh] overflow-y-auto rounded-3xl border border-border/80 bg-surface/95 p-3 shadow-[0_30px_80px_rgba(0,0,0,.6),0_0_32px_rgba(51,150,255,.08)] backdrop-blur-2xl">
             <NavLink to="/" end className={mobileLinkClass}>
               Home
             </NavLink>
@@ -409,7 +421,9 @@ export default function Navbar() {
                       key={tool.href}
                       to={tool.href}
                       className={`flex items-center gap-3.5 rounded-2xl px-3 py-2.5 ${
-                        active ? "bg-text/10" : "active:bg-text/5"
+                        active
+                          ? "bg-brand/10 ring-1 ring-inset ring-brand/20"
+                          : "active:bg-brand/5"
                       }`}
                     >
                       <div

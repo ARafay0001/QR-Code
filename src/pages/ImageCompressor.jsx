@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import imageCompression from "browser-image-compression";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
+import { ImageCompressorArticle as Article, ImageCompressorFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Constants                                  */
@@ -40,29 +42,6 @@ const PRESETS = [
   { label: "200 KB", size: 200, unit: "KB" },
   { label: "500 KB", size: 500, unit: "KB" },
   { label: "1 MB", size: 1, unit: "MB" },
-];
-
-const FAQ = [
-  {
-    q: "Can I compress multiple images at once?",
-    a: `Yes. Add up to ${MAX_FILES} images at a time, compress them all with the same settings, then download each one or everything together as a ZIP file.`,
-  },
-  {
-    q: "Is my image uploaded to a server?",
-    a: "No. Compression runs entirely inside your browser, so your photos never leave your device.",
-  },
-  {
-    q: "Which image formats are supported?",
-    a: `JPEG, PNG and WebP images up to ${MAX_INPUT_MB} MB each. You can also convert the output to WebP or JPEG for smaller files.`,
-  },
-  {
-    q: "How do I compress an image to a specific size like 100 KB?",
-    a: "Add your images, enter a target size (for example 100 KB), choose a compression mode and click Compress. The tool lowers quality and dimensions until each image reaches the target.",
-  },
-  {
-    q: "Will compressing reduce my image quality?",
-    a: "Best Quality mode keeps images nearly identical to the original. Smallest Size trades some detail for the lowest possible file size.",
-  },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -804,6 +783,7 @@ export default function ImageCompressor() {
             </div>
           </section>
 
+          <ToolArticle {...Article} />
           <ToolFAQ
             faqs={FAQ}
             description="Understand supported image formats, compression settings, and how to reach a target file size."

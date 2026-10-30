@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
 import {
   loadFFmpeg,
   compressVideo as compressWithFFmpeg,
 } from "../utils/ffmpeg";
+import { VideoCompressorArticle as Article, VideoCompressorFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Constants                                  */
@@ -29,25 +31,6 @@ const PRESETS = [
   { label: "25 MB", size: 25, unit: "MB" },
   { label: "50 MB", size: 50, unit: "MB" },
   { label: "100 MB", size: 100, unit: "MB" },
-];
-
-const FAQ = [
-  {
-    q: "Are my videos uploaded to a server?",
-    a: "No. Compression runs entirely in your browser using WebAssembly, so your videos never leave your device.",
-  },
-  {
-    q: "Which video formats are supported?",
-    a: "MP4, MOV, AVI, WebM and MKV files up to 500 MB. The compressed result is exported as MP4, which plays almost everywhere.",
-  },
-  {
-    q: "How do I compress a video to a specific size?",
-    a: "Upload your video, enter a target size such as 25 MB, optionally lower the resolution, then click Compress. The tool adjusts the bitrate to land near your target.",
-  },
-  {
-    q: "Why is compression slow on my device?",
-    a: "Video encoding in the browser uses your CPU, so longer or higher-resolution videos take more time. Keep the tab open until it finishes.",
-  },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -641,6 +624,7 @@ export default function VideoCompressor() {
             </div>
           </section>
 
+          <ToolArticle {...Article} />
           <ToolFAQ
             faqs={FAQ}
             description="Get practical details on video formats, target sizes, and browser-based encoding before you compress."

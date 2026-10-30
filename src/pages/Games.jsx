@@ -1,6 +1,9 @@
 import Footer from "../components/common/Footer";
 import { Link } from "react-router-dom";
 import { Dices, RotateCw, ArrowRight } from "lucide-react";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { GamesArticle as Article, GamesFAQ as FAQ } from "../data/seoContent.js";
 
 const games = [
   {
@@ -74,6 +77,8 @@ export default function Games() {
         </div>
       </div>
 
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </>
   );

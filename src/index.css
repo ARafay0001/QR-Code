@@ -2,17 +2,17 @@
 
 :root {
   color-scheme: dark;
-  --theme-page: #020617;
-  --theme-surface: #0f172a;
-  --theme-border: #1e293b;
-  --theme-text: #f8fafc;
-  --theme-muted: #94a3b8;
-  --theme-brand: #3b82f6;
-  --theme-accent: #60a5fa;
-  --theme-on-brand: #020617;
-  --theme-success: #10b981;
-  --theme-warning: #f59e0b;
-  --theme-danger: #ef4444;
+  --theme-page: #03060c;
+  --theme-surface: #0a111c;
+  --theme-border: #263a54;
+  --theme-text: #f4f8ff;
+  --theme-muted: #b1c0d3;
+  --theme-brand: #3396ff;
+  --theme-accent: #83c2ff;
+  --theme-on-brand: #03101f;
+  --theme-success: #34d399;
+  --theme-warning: #fbbf24;
+  --theme-danger: #fb7185;
   --container-width: 80rem;
   --page-gutter: clamp(1rem, 4vw, 2rem);
   --radius-card: 1rem;
@@ -44,10 +44,27 @@ body {
   min-height: 100vh;
   margin: 0;
   background: var(--theme-page);
+  background-image:
+    radial-gradient(
+      ellipse 48rem 34rem at 0% 0%,
+      color-mix(in srgb, var(--theme-brand) 9%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 40rem 30rem at 100% 12%,
+      color-mix(in srgb, var(--theme-brand) 6%, transparent),
+      transparent 74%
+    );
+  background-attachment: fixed;
   color: var(--theme-text);
   font-family: ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--theme-brand) 75%, transparent);
+  color: var(--theme-on-brand);
 }
 
 button,
@@ -80,6 +97,11 @@ a {
 :focus-visible {
   outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
+}
+
+#hero-tool-search:focus-visible,
+#tools-search-input:focus-visible {
+  outline: none;
 }
 
 img,

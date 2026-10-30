@@ -4,6 +4,9 @@ import {
 } from "lucide-react";
 
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { ImagetoVectorArticle as Article, ImagetoVectorFAQ as FAQ } from "../data/seoContent.js";
 
 /* ========================================================================== */
 /*  Image → SVG vectorizer. No dependencies, nothing uploaded.               */
@@ -508,6 +511,8 @@ export default function ImageToVector() {
           </div>
         </main>
 
+        <ToolArticle {...Article} />
+        <ToolFAQ faqs={FAQ} />
         <Footer />
       </div>
     </>

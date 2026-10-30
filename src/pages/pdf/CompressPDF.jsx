@@ -2,6 +2,8 @@ import { useRef, useState, useCallback } from "react";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
 import {
   Upload,
   Download,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
+import { CompressPDFArticle as Article, CompressPDFFAQ as FAQ } from "../../data/seoContent.js";
 
 export default function CompressPDF() {
   const inputRef = useRef(null);
@@ -546,6 +549,8 @@ export default function CompressPDF() {
         </main>
       </div>
 
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </>
   );

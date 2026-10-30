@@ -1,6 +1,9 @@
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
 import { Link } from "react-router-dom";
 import { Minimize2, ArrowRight, Image, Video } from "lucide-react";
+import { CompressorToolsArticle as Article, CompressorToolsFAQ as FAQ } from "../data/seoContent.js";
 
 const tools = [
   {
@@ -93,9 +96,11 @@ export default function MediaTools() {
               );
             })}
           </div>
-        </div>
+        </div> <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       </div>
 
+     
       <Footer />
     </>
   );

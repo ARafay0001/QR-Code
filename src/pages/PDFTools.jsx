@@ -10,66 +10,7 @@ import {
 } from "lucide-react";
 
 import ToolArticle from "../components/common/ToolArticle";
-
-const pdfArticle = {
-  title: "How to Work with PDF Files Online",
-
-  intro:
-    "PDF files are useful for sharing documents while keeping their layout consistent across devices. Toolited brings together PDF editing, compression, and conversion tools so you can choose the right workflow for your document.",
-
-  sections: [
-    {
-      heading: "What can you do with PDF files?",
-      paragraphs: [
-        "Different PDF tasks solve different problems. You may need to reduce a large document before sending it, combine a document with images, or convert its contents into an editable format.",
-      ],
-      bullets: [
-        "Compress a PDF to reduce its file size.",
-        "Edit a PDF when you need to make document changes.",
-        "Convert images into a PDF for easier sharing.",
-        "Convert PDF documents to Word or Excel when supported by the selected tool.",
-      ],
-    },
-    {
-      heading: "How to choose the right PDF tool",
-      paragraphs: [
-        "Start by identifying what you need to change. If the document is too large to email, use a compressor. If you need to work with its text or tables in another application, choose the appropriate conversion tool.",
-        "After processing, open the resulting file and check that its text, layout, images, and formatting meet your needs.",
-      ],
-    },
-    {
-      heading: "Are online PDF tools safe to use?",
-      paragraphs: [
-        "File privacy depends on how the particular tool processes documents. Check its privacy information before uploading sensitive files, and verify whether processing takes place in your browser or on a remote server.",
-      ],
-    },
-  ],
-
-  relatedTools: [
-    { label: "Compress PDF", href: "/pdf-tools/compress" },
-    { label: "PDF Editor", href: "/pdf-tools/pdf-editor" },
-    { label: "Image to PDF", href: "/pdf-tools/image-to-pdf" },
-    { label: "Image Compressor", href: "/image-compressor" },
-  ],
-};
-
-const FAQ = [
-  {
-    question: "Which PDF tasks can I do here?",
-    answer:
-      "Open the PDF editor, compress a document, convert images to PDF, or convert a PDF to Word or Excel. Choose a tool above to get started.",
-  },
-  {
-    question: "Are my documents uploaded?",
-    answer:
-      "PDF processing runs in your browser for the tools on this page. Your files remain on your device while you work with them.",
-  },
-  {
-    question: "Can I use these PDF tools on a phone?",
-    answer:
-      "Yes. The tool pages adapt to smaller screens, though editing or arranging many pages is usually easier on a larger display.",
-  },
-];
+import { PDFToolsArticle as pdfArticle, PDFToolsFAQ as FAQ } from "../data/seoContent.js";
 
 const tools = [
   

@@ -25,7 +25,6 @@ import { Link } from "react-router-dom";
 
 import Footer from "../components/common/Footer";
 import ToolFAQ from "../components/common/ToolFAQ";
-import Button from "../components/ui/Button";
 import ProductCard from "../components/ui/ProductCard";
 
 /* -------------------------------------------------------------------------- */
@@ -77,7 +76,7 @@ const products = [
     icon: Ruler,
     status: "live",
     href: "/unit-converter",
-    category: "Utilities",
+    category: "Converters",
     features: ["Convert every unit", "One Click"],
   },
   {
@@ -87,7 +86,7 @@ const products = [
     icon: Banknote,
     status: "live",
     href: "/currency-converter",
-    category: "Utilities",
+    category: "Converters",
     features: ["160+ currencies", "Popular currency conversions", "Rate update times"],
   },
   {
@@ -107,7 +106,7 @@ const products = [
     icon: Calculator,
     status: "live",
     href: "/scientific-calculator",
-    category: "Utilities",
+    category: "Calculators",
     features: ["Advanced Functions", "Scientific Notation", "Graphing Capabilities"],
   },
   {
@@ -117,7 +116,7 @@ const products = [
     icon: Calculator,
     status: "live",
     href: "/all-calculators",
-    category: "Utilities",
+    category: "Calculators",
     features: [
   "Financial Calculators",
   "Fitness & Health Calculators",
@@ -191,7 +190,7 @@ const products = [
     icon: Keyboard,
     status: "live",
     href: "/typing-tutor",
-    category: "Utilities",
+    category: "Text & Typing",
     features: ["Test", "Learn", "Type"],
   },
   {
@@ -201,7 +200,7 @@ const products = [
     icon: Text,
     status: "live",
     href: "/text-tool",
-    category: "Utilities",
+    category: "Text & Typing",
     features: ["Convert", "Clean", "Encode", "Count"],
   },
   {
@@ -211,7 +210,7 @@ const products = [
     icon: Gamepad2,
     status: "live",
     href: "/games",
-    category: "Utilities",
+    category: "Games",
     features: ["Dice Roller", "Spin the Wheel", "Custom Options"],
   },
   {
@@ -227,6 +226,83 @@ const products = [
 ];
 
 const categories = ["All", ...new Set(products.map((p) => p.category))];
+
+const searchSynonymGroups = [
+  ["pdf", "document", "documents"],
+  ["edit", "modify", "change", "annotate", "sign"],
+  ["merge", "combine", "join"],
+  ["split", "separate", "divide"],
+  ["compress", "shrink", "reduce", "smaller"],
+  ["image", "images", "photo", "photos", "picture", "pictures"],
+  ["qr", "code", "barcode"],
+  ["background", "bg"],
+  ["remove", "erase", "cutout"],
+  ["convert", "converter", "conversion", "transform", "format"],
+  ["calculator", "calculate", "math", "arithmetic"],
+  ["video", "movie", "clip"],
+  ["currency", "exchange", "money", "rates"],
+  ["unit", "units", "measurement", "measure"],
+  ["type", "typing", "keyboard", "wpm"],
+  ["invoice", "billing", "bill", "receipt"],
+  ["test", "tester", "check"],
+];
+
+const searchSynonyms = new Map(
+  searchSynonymGroups.flatMap((group) =>
+    group.map((word) => [word, group]),
+  ),
+);
+const searchStopWords = new Set([
+  "a",
+  "an",
+  "and",
+  "for",
+  "i",
+  "in",
+  "it",
+  "me",
+  "my",
+  "of",
+  "on",
+  "please",
+  "the",
+  "to",
+  "want",
+  "with",
+]);
+
+function getSearchGroups(query) {
+  const words = query.toLowerCase().match(/[a-z0-9]+/g) || [];
+  const groups = new Map();
+
+  for (const word of words) {
+    if (searchStopWords.has(word)) continue;
+    const synonyms = searchSynonyms.get(word);
+    const key = synonyms ? synonyms[0] : word;
+    if (!groups.has(key)) groups.set(key, synonyms || [word]);
+  }
+
+  return [...groups.values()];
+}
+
+function getProductSearchScore(product, queryGroups) {
+  const title = new Set(product.title.toLowerCase().match(/[a-z0-9]+/g) || []);
+  const features = new Set(
+    product.features.join(" ").toLowerCase().match(/[a-z0-9]+/g) || [],
+  );
+  const description = new Set(
+    `${product.description} ${product.category}`
+      .toLowerCase()
+      .match(/[a-z0-9]+/g) || [],
+  );
+
+  return queryGroups.reduce((score, group) => {
+    if (group.some((word) => title.has(word))) return score + 6;
+    if (group.some((word) => features.has(word))) return score + 4;
+    if (group.some((word) => description.has(word))) return score + 2;
+    return score;
+  }, 0);
+}
 
 const steps = [
   {
@@ -321,90 +397,138 @@ const faqs = [
 /* -------------------------------------------------------------------------- */
 
 function ToolPreview() {
-  const rows = products.slice(0, 5);
+  const featuredPaths = [
+    "/pdf-tools",
+    "/qr-generator",
+    "/background-remover",
+    "/image-video-compressor",
+  ];
+  const rows = featuredPaths
+    .map((href) => products.find((product) => product.href === href))
+    .filter(Boolean);
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-brand/20 via-brand/10 to-accent/20 blur-3xl" />
+    <div className="relative mx-auto w-full max-w-xl lg:ml-auto">
+      <div className="absolute -inset-5 rounded-[36px] bg-gradient-to-br from-brand/25 via-brand/10 to-accent/20 blur-3xl" />
 
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 shadow-2xl shadow-brand/40 backdrop-blur-xl">
-        <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-          <span className="ml-3 text-xs font-medium text-muted">
-            Popular tools
+      <div className="relative overflow-hidden rounded-[28px] border border-border/80 bg-surface/80 shadow-2xl shadow-brand/20 backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-border/80 px-5 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            {/* <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/15 text-brand">
+              <Sparkles size={18} />
+            </span> */}
+            <div>
+              <p className="text-sm font-semibold text-text">A good place to start</p>
+              <p className="mt-0.5 text-xs text-muted">A few everyday favorites</p>
+            </div>
+          </div>
+          <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
+            Free to use
           </span>
         </div>
 
-        <ul className="divide-y divide-border/80">
-          {rows.map(({ title, icon: Icon, href, category }) => (
+        <ul className="grid gap-2 p-3 sm:p-4">
+          {rows.map(({ title, icon: Icon, href, category }, index) => (
             <li key={title}>
               <Link
                 to={href}
-                className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface/50 focus:outline-none focus-visible:bg-surface/50"
+                className="group flex items-center gap-4 rounded-2xl border border-transparent px-3 py-3 transition-all hover:border-border hover:bg-page/60 focus-visible:border-brand/40 focus-visible:bg-page/60 sm:px-4"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
-                  <Icon size={20} />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand transition-transform group-hover:scale-105">
+                  <Icon size={21} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-text">
                     {title}
                   </span>
-                  <span className="block text-xs text-muted">
-                    {category}
-                  </span>
+                  <span className="mt-0.5 block text-xs text-muted">{category}</span>
                 </span>
-                <ChevronRight
-                  size={18}
-                  className="text-muted transition-colors group-hover:text-accent"
-                />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition-all group-hover:bg-brand/10 group-hover:text-brand">
+                  {index === 0 ? <ArrowRight size={17} /> : <ChevronRight size={18} />}
+                </span>
               </Link>
             </li>
           ))}
         </ul>
+
+        <div className="flex items-center gap-2 border-t border-border/80 px-5 py-4 text-xs text-muted sm:px-6">
+          <ShieldCheck size={15} className="shrink-0 text-brand" />
+          <span>No account needed. Just pick a tool and get started.</span>
+        </div>
       </div>
     </div>
   );
 }
 
-function Hero() {
+function Hero({ searchInput, setSearchInput, onSearch }) {
   return (
-    <section>
+    <section className="relative">
       <div
-        className={`${container} grid items-center gap-14 pb-16 pt-14 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-24 lg:pt-28`}
+        className={`${container} grid items-center gap-12 pb-16 pt-14 sm:pb-20 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-24 lg:pt-24`}
       >
-        <div>
-          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
+        <div className="relative z-10">
+          {/* <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-2 text-xs font-semibold tracking-wide text-brand sm:text-sm">
+            YOUR EVERYDAY TOOLKIT
+          </div> */}
+
+          <h1 className="max-w-3xl text-5xl font-black leading-[0.98] tracking-[-0.055em] text-text sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
             Free online tools.
             <br />
-            <span className="bg-gradient-to-r from-brand via-brand to-accent bg-clip-text text-transparent">
-              Every tool you need.
+            <span className="bg-gradient-to-r from-brand via-accent to-brand bg-clip-text text-transparent">
+              Ready when you are.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
-            Create a free QR code, remove image backgrounds with AI, compress
-            images online, or reduce video file sizes. Explore practical tools
-            for files, documents, and everyday tasks in one place.
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:mt-7 sm:text-lg sm:leading-8">
+            Convert a file, make a QR code, or get a document in order. Handy,
+            free tools for the little jobs that shouldn’t take all day.
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a href="#tools" className="w-full sm:w-auto">
-              <Button className="w-full justify-center sm:w-auto">
-                Explore tools
-                <ArrowRight size={18} className="ml-2" />
-              </Button>
-            </a>
-
-            <Link to="/pdf-tools" className="w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                className="w-full justify-center sm:w-auto"
+          <div className="mt-8 max-w-xl">
+            <label
+              htmlFor="hero-tool-search"
+              className="mb-2 block text-sm font-semibold text-text"
+            >
+              What can we help you with?
+            </label>
+            <form
+              role="search"
+              onSubmit={onSearch}
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-1 shadow-lg shadow-page/20 transition focus-within:border-brand/50 focus-within:ring-4 focus-within:ring-brand/10 focus-within:shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_24%,transparent)]"
+            >
+              <Search size={19} className="shrink-0 text-muted" aria-hidden="true" />
+              <input
+                id="hero-tool-search"
+                type="search"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Try “edit a PDF”"
+                className="min-w-0 flex-1 bg-transparent py-3 text-sm text-text outline-none placeholder:text-muted sm:text-base"
+              />
+              <button
+                type="submit"
+                className="shrink-0 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                Try PDF Tools
-              </Button>
-            </Link>
+                Search
+              </button>
+            </form>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+            <span className="mr-1 text-muted">Popular:</span>
+            {[
+              { label: "PDF tools", href: "/pdf-tools" },
+              { label: "QR codes", href: "/qr-generator" },
+              { label: "Image tools", href: "/background-remover" },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="rounded-full border border-border/80 bg-surface/50 px-3 py-1.5 font-medium text-text transition hover:border-brand/40 hover:bg-brand/10 hover:text-brand"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
 
@@ -420,24 +544,38 @@ function Hero() {
 
 function Stats() {
   const stats = [
-    { value: `${products.length}+`, label: "Tools live today" },
-    { value: "$0", label: "Free, forever" },
-    { value: "0", label: "Sign-ups required" },
+    { value: `${products.length}+`, label: "Tools live today", icon: Zap },
+    { value: "$0", label: "Free, forever", icon: ShieldCheck },
+    { value: "N0", label: "Sign-ups required", icon: Globe },
   ];
 
   return (
-    <section className="border-y border-border/80 bg-page/40 backdrop-blur">
+    <section className="border-y border-border/60 bg-page/85 py-6 backdrop-blur-2xl sm:py-8">
       <dl
-        className={`${container} grid grid-cols-3 divide-x divide-border/80`}
+        className={`${container} grid overflow-hidden rounded-2xl border border-border/80 bg-surface/75 shadow-lg shadow-black/20 sm:grid-cols-3`}
       >
-        {stats.map((s) => (
-          <div key={s.label} className="px-2 py-6 text-center sm:px-6 sm:py-8">
-            <dt className="order-2 text-xs text-muted sm:text-sm">
-              {s.label}
-            </dt>
-            <dd className="text-2xl font-bold text-text sm:text-4xl">
-              {s.value}
-            </dd>
+        {stats.map(({ value, label, icon: Icon }) => (
+          <div
+            key={label}
+            className="group relative overflow-hidden border-b border-border/70 p-5 transition-colors hover:bg-brand/5 last:border-b-0 sm:border-b-0 sm:border-r sm:p-6 sm:last:border-r-0"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-brand/10 blur-3xl transition-opacity group-hover:bg-brand/20"
+            />
+            <div className="relative flex items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand/20 bg-brand/10 text-brand transition-colors group-hover:bg-brand/15">
+                <Icon size={21} />
+              </span>
+              <div>
+                <dt className="text-xs font-medium text-muted sm:text-sm">
+                  {label}
+                </dt>
+                <dd className="text-3xl font-black tracking-tight text-text sm:text-4xl">
+                  {value}
+                </dd>
+              </div>
+            </div>
           </div>
         ))}
       </dl>
@@ -449,51 +587,69 @@ function Stats() {
 /*  Products                                                                  */
 /* -------------------------------------------------------------------------- */
 
-function Products() {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-
+function Products({
+  search,
+  searchInput,
+  setSearchInput,
+  setSearch,
+  category,
+  setCategory,
+  onClearSearch,
+  onSearch,
+}) {
   const filteredProducts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return products.filter((product) => {
-      const matchesCategory =
-        category === "All" || product.category === category;
-      const matchesSearch =
-        !query ||
-        product.title.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query);
-
-      return matchesCategory && matchesSearch;
-    });
+    const queryGroups = getSearchGroups(search);
+    return products
+      .map((product) => ({
+        product,
+        score: queryGroups.length
+          ? getProductSearchScore(product, queryGroups)
+          : 1,
+      }))
+      .filter(
+        ({ product, score }) =>
+          score > 0 && (category === "All" || product.category === category),
+      )
+      .sort((a, b) => b.score - a.score)
+      .map(({ product }) => product);
   }, [search, category]);
 
   return (
     <section id="tools" className={`${container} scroll-mt-24 py-20 sm:py-28`}>
       <SectionHeader
-        title="Everything you need in one platform."
-        subtitle="Toolited is a growing suite of fast, privacy-focused online tools."
+        title={search ? `Tools for “${search}”` : "Everything you need in one platform."}
+        subtitle={
+          search
+            ? `${filteredProducts.length} matching ${filteredProducts.length === 1 ? "tool" : "tools"}, ranked by relevance.`
+            : "Toolited is a growing suite of fast, privacy-focused online tools."
+        }
       >
-        <div className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface/70 px-4 py-3 transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 md:w-80">
+        <form
+          role="search"
+          onSubmit={onSearch}
+          className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-4 py-1 transition-colors focus-within:border-brand/60 md:w-80"
+        >
           <Search size={18} className="shrink-0 text-muted" />
           <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            id="tools-search-input"
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Search tools..."
             aria-label="Search tools"
-            className="w-full bg-transparent text-sm text-text outline-none placeholder:text-muted"
+            className="w-full bg-transparent py-2 text-sm text-text outline-none placeholder:text-muted"
           />
-          {search && (
+          {searchInput && (
             <button
               type="button"
-              onClick={() => setSearch("")}
-              className="text-xs font-medium text-muted transition hover:text-text"
+              onClick={onClearSearch}
+              aria-label="Clear search"
+              className="rounded-md px-2 py-1 text-xs font-medium text-muted transition hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
             >
               Clear
             </button>
           )}
-        </div>
+        </form>
       </SectionHeader>
 
       {/* Category filters */}
@@ -508,7 +664,11 @@ function Products() {
             <button
               key={c}
               type="button"
-              onClick={() => setCategory(c)}
+              onClick={() => {
+                setCategory(c);
+                setSearch("");
+                setSearchInput("");
+              }}
               aria-pressed={active}
               className={`rounded-full border px-4 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 active
@@ -530,8 +690,8 @@ function Products() {
           ))
         ) : (
           <p className="col-span-full rounded-2xl border border-dashed border-border py-14 text-center text-muted">
-            No tools match &ldquo;{search}&rdquo;. Try a different search or
-            category.
+            No tools match &ldquo;{search}&rdquo;. Try another description, like
+            “edit a PDF” or “make a QR code”.
           </p>
         )}
       </div>
@@ -667,6 +827,24 @@ function CTA() {
 /* -------------------------------------------------------------------------- */
 
 export default function Home() {
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const handleSearch = (event) => {
+    event.preventDefault();
+    setSearch(searchInput.trim());
+    setCategory("All");
+    document.getElementById("tools")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearch("");
+    setCategory("All");
+  };
+
   return (
     /*
       NOTE: `overflow-x-clip` (not `overflow-x-hidden`) is required here.
@@ -683,9 +861,22 @@ export default function Home() {
 
 
       <main>
-        <Hero />
+        <Hero
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          onSearch={handleSearch}
+        />
         <Stats />
-        <Products />
+        <Products
+          search={search}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          setSearch={setSearch}
+          category={category}
+          setCategory={setCategory}
+          onClearSearch={handleClearSearch}
+          onSearch={handleSearch}
+        />
         <WhyChoose />
         <HowItWorks />
         <ToolFAQ

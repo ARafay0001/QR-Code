@@ -33,25 +33,9 @@ import {
 import Footer from "../components/common/Footer";
 import Badge from "../components/ui/Badge";
 import SectionTitle from "../components/ui/SectionTitle";
+import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
-
-const FAQ = [
-  {
-    question: "Which measurements can I convert?",
-    answer:
-      "Convert common units for length, mass, temperature, volume, area, speed, time, data, pressure, energy, power, and more, including typography and cooking measurements.",
-  },
-  {
-    question: "How do I convert between temperature units?",
-    answer:
-      "Choose the Temperature category, enter a value, then select the starting and target units. Celsius, Fahrenheit, and Kelvin conversions use their proper temperature formulas.",
-  },
-  {
-    question: "Can I copy a conversion result?",
-    answer:
-      "Yes. Use the copy control beside a result when it is available, then paste the converted value into another app or document.",
-  },
-];
+import { UnitconverterArticle as Article, UnitconverterFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*  Conversion data                                                          */
@@ -1392,6 +1376,7 @@ export default function UnitConverter() {
               subtitle="All calculations run instantly in your browser using industry-standard conversion factors — no sign-up, no ads, no waiting."
             />
           </div>
+          <ToolArticle {...Article} />
           <ToolFAQ
             faqs={FAQ}
             description="Find out which measurement categories are supported and how specialized conversions work."

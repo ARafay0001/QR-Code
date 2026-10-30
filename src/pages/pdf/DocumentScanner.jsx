@@ -6,6 +6,9 @@ import {
 import { PDFDocument, StandardFonts } from "pdf-lib";
 
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
+import { DocumentScannerArticle as Article, DocumentScannerFAQ as FAQ } from "../../data/seoContent.js";
 
 /* ========================================================================== */
 /*  npm i pdf-lib pdfjs-dist jszip tesseract.js                              */
@@ -2067,6 +2070,8 @@ export default function DocumentScanner() {
           </div>
         </main>
 
+        <ToolArticle {...Article} />
+        <ToolFAQ faqs={FAQ} />
         <Footer />
       </div>
 

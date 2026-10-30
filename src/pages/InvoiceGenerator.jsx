@@ -6,6 +6,9 @@ import {
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { InvoiceGeneratorArticle as Article, InvoiceGeneratorFAQ as FAQ } from "../data/seoContent.js";
 
 /* ========================================================================== */
 /*  npm i jspdf                                                               */
@@ -1283,6 +1286,8 @@ export default function InvoiceGenerator() {
 
         {toast && <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium shadow-xl">{toast}</div>}
 
+        <ToolArticle {...Article} />
+        <ToolFAQ faqs={FAQ} />
         <Footer />
       </div>
     </>

@@ -3,127 +3,14 @@ import { ArrowLeftRight, Banknote, ChevronDown, Clock, RefreshCw, Search, Triang
 import Footer from "../components/common/Footer";
 import ToolArticle from "../components/common/ToolArticle";
 import ToolFAQ from "../components/common/ToolFAQ";
+import { CurrencyConverterArticle as Article, CurrencyConverterFAQ as FAQ } from "../data/seoContent.js";
 
 const POPULAR = ["USD", "EUR", "GBP", "PKR", "AED", "SAR", "INR", "CAD", "AUD", "CNY", "JPY", "TRY"];
 const QUICK_AMOUNTS = [1, 10, 100, 1000, 10000];
 
 
 
-const Article = {
-  title: "How to Convert Currency Online and Understand Exchange Rates",
  
-  intro:
-    "Whether you are shopping from an overseas store, planning a trip, sending money to family, or pricing work for an international client, you need to know what an amount is worth in another currency. Toolited's currency converter turns any amount into more than 160 world currencies using up-to-date exchange rates, so you can get a clear estimate in a few seconds.",
- 
-  sections: [
-    {
-      heading: "What is a currency converter?",
-      paragraphs: [
-        "A currency converter calculates how much a sum of money in one currency is worth in another. It multiplies your amount by the exchange rate between the two currencies. For example, if 1 US dollar equals a certain number of Pakistani rupees, then 100 dollars is worth 100 times that rate.",
-        "Exchange rates change as currencies are traded on global markets, which is why the same amount can be worth slightly more or less from one day to the next.",
-      ],
-    },
-    {
-      heading: "How to convert currency step by step",
-      paragraphs: [
-        "Converting an amount with Toolited takes only a few clicks.",
-      ],
-      bullets: [
-        "Enter the amount you want to convert, or tap one of the quick amounts.",
-        "Choose the currency you are converting from, for example USD.",
-        "Choose the currency you want to convert to, for example PKR, EUR, GBP or AED.",
-        "Read the converted amount and the exchange rate shown below it.",
-        "Use the swap button to reverse the conversion, or select another popular currency to compare.",
-      ],
-    },
-    {
-      heading: "What affects exchange rates?",
-      paragraphs: [
-        "Exchange rates move for many reasons. Interest rates set by central banks, inflation, economic growth, trade balances, political events and market demand all influence how strong or weak a currency is compared with others.",
-        "Because of this, a rate you checked last week may not match today's rate. Always check a recent rate before you make a payment or a financial decision.",
-      ],
-    },
-    {
-      heading: "Why the converter rate can differ from your bank's rate",
-      paragraphs: [
-        "The rate shown by an online converter is a reference rate. Banks, exchange offices, card providers and money-transfer services usually add a margin or a fee on top of it, so the amount you actually receive or pay is often a little different.",
-        "Use the converter to estimate and compare, then confirm the final rate and any fees with your bank or provider before you send or exchange money.",
-      ],
-    },
-    {
-      heading: "Common ways to use a currency converter",
-      paragraphs: [
-        "A converter is useful in many everyday situations.",
-      ],
-      bullets: [
-        "Checking the price of products from international online stores.",
-        "Budgeting for travel, hotels and daily spending abroad.",
-        "Estimating the value of money sent or received from overseas.",
-        "Pricing freelance work and invoices for clients in other countries.",
-        "Comparing salaries, tuition fees or costs between countries.",
-        "Following the value of savings or investments held in foreign currency.",
-      ],
-    },
-    {
-      heading: "Tips for getting the best value when exchanging money",
-      paragraphs: [
-        "Compare at least two or three providers instead of accepting the first offer. Look at both the exchange rate and any fixed fees, because a low fee with a poor rate can cost more than a higher fee with a better rate.",
-        "Avoid exchanging large amounts at airports where margins are often wider, and be careful with offers that advertise zero fees but hide the cost in the rate. For larger transfers, check whether you can wait for a more favourable rate, but remember that rates can move in either direction.",
-      ],
-    },
-  ],
- 
-  relatedTools: [
-    { label: "Unit Converter", href: "/unit-converter" },
-    { label: "Scientific Calculator", href: "/scientific-calculator" },
-    { label: "Text Tool", href: "/text-tool" },
-    { label: "QR Code Generator", href: "/qr-generator" },
-  ],
-};
- 
-const FAQ = [
-  {
-    question: "How does the currency converter work?",
-    answer:
-      "You enter an amount and choose two currencies. The tool loads current exchange rates and multiplies your amount by the rate between the two currencies. The result and the rate in both directions appear instantly.",
-  },
-  {
-    question: "How many currencies can I convert?",
-    answer:
-      "You can convert between more than 160 world currencies, including USD, EUR, GBP, PKR, INR, AED, SAR, CAD, AUD, CNY, JPY and TRY. The most popular currencies are listed first to make them easy to find.",
-  },
-  {
-    question: "How often are the exchange rates updated?",
-    answer:
-      "The converter uses daily reference rates. The date and time of the latest update are shown under the result, and you can use the refresh button to load the newest rates available.",
-  },
-  {
-    question: "Is this the same rate my bank will give me?",
-    answer:
-      "Not exactly. The converter shows a reference rate for estimating values. Banks, exchange offices and transfer services usually add fees or a margin, so confirm the final rate with your provider before you exchange or send money.",
-  },
-  {
-    question: "Can I convert Pakistani rupees (PKR) to US dollars and other currencies?",
-    answer:
-      "Yes. Choose PKR as the currency you are converting from and pick USD, EUR, GBP, AED, SAR or any other currency in the To list. You can also tap the swap button to reverse the direction instantly.",
-  },
-  {
-    question: "Is the currency converter free to use?",
-    answer:
-      "Yes. The converter is free, needs no account or sign-up, and has no limit on how many conversions you can make.",
-  },
-  {
-    question: "Does it work on a phone?",
-    answer:
-      "Yes. The page adapts to smaller screens, so you can check a rate on your phone while you shop, travel or send money.",
-  },
-  {
-    question: "Should I use it for large financial decisions?",
-    answer:
-      "Use it as a quick guide. For large payments, investments or contracts, check the live rate and fees with your bank or a licensed provider, because rates can change quickly and the figures here are for information only.",
-  },
-];
-
 const names = (() => {
   try {
     return new Intl.DisplayNames(["en"], { type: "currency" });

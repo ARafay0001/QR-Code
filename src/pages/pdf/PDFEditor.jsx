@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 
 import Footer from "../../components/common/Footer";
+import ToolArticle from "../../components/common/ToolArticle";
+import ToolFAQ from "../../components/common/ToolFAQ";
+import { PDFEditorArticle as Article, PDFEditorFAQ as FAQ } from "../../data/seoContent.js";
 
 /* ========================================================================== */
 /*  npm i pdf-lib pdfjs-dist jszip @dnd-kit/core @dnd-kit/sortable           */
@@ -1778,6 +1781,8 @@ export default function PDFEditor() {
             )}
           </div>
         </main>
+        <ToolArticle {...Article} />
+        <ToolFAQ faqs={FAQ} />
         <Footer />
       </div>
 

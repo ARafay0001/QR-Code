@@ -5,6 +5,9 @@ import {
   RotateCcw, Copy, Check, LockKeyhole, CalendarDays, Ruler, Percent, Clock3, Hash, Type,
   ArrowLeftRight, GraduationCap, Activity, ChevronRight, RefreshCw,
 } from "lucide-react";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { AllcalculatorsArticle as Article, AllcalculatorsFAQ as FAQ } from "../data/seoContent.js";
 
 /* ------------------------------ pure helpers ------------------------------ */
 
@@ -2151,6 +2154,8 @@ export default function ToolsDirectory() {
           )}
         </div>
       </main>
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </>
   );

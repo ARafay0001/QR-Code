@@ -12,6 +12,9 @@ import {
   Vibrate,
 } from "lucide-react";
 import Footer from "../components/common/Footer";
+import ToolArticle from "../components/common/ToolArticle";
+import ToolFAQ from "../components/common/ToolFAQ";
+import { InputTesterArticle as Article, InputTesterFAQ as FAQ } from "../data/seoContent.js";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Helpers                                  */
@@ -1271,6 +1274,8 @@ export default function InputTester() {
         </div>
       </main>
 
+      <ToolArticle {...Article} />
+      <ToolFAQ faqs={FAQ} />
       <Footer />
     </div>
   );
