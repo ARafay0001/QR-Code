@@ -40,6 +40,23 @@
         "Convert an amount between two currencies.",
         "Check the exchange rate between popular world currencies."
       ]
+    },
+    {
+      "identifier": "urn:air:toolited.com:invoice-generator",
+      "displayName": "Toolited Invoice Generator",
+      "type": "text/html",
+      "url": "https://toolited.com/invoice-generator",
+      "description": "Create professional invoices with customizable line items, taxes, discounts, payment terms, and PDF export. Invoice details stay in the browser.",
+      "tags": ["invoice generator", "invoice", "business", "PDF"],
+      "capabilities": [
+        "Create and customize invoices",
+        "Calculate taxes, discounts, and totals",
+        "Download invoices as PDF"
+      ],
+      "representativeQueries": [
+        "Create an invoice for a client and download it as a PDF.",
+        "Generate an invoice with line items, taxes, and payment terms."
+      ]
     }
   ]
 }

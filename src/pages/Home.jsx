@@ -91,6 +91,16 @@ const products = [
     features: ["160+ currencies", "Popular currency conversions", "Rate update times"],
   },
   {
+    title: "Invoice Generator",
+    description:
+      "Create professional invoices with line items, taxes, discounts, payment terms, and downloadable PDFs.",
+    icon: FileText,
+    status: "live",
+    href: "/invoice-generator",
+    category: "Business",
+    features: ["Custom invoices", "Multiple currencies", "PDF export"],
+  },
+  {
     title: "Scientific Calculator",
     description:
       "Perform advanced mathematical calculations with this powerful scientific calculator.",

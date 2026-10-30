@@ -6,9 +6,9 @@ const SOCIAL_IMAGE = `${SITE_ORIGIN}/preview.png.jpg`;
 
 const PAGE_METADATA = {
   "/": {
-    title: "Toolited | PDF, Calculator & Image Tools",
+    title: "Toolited | Free Online Tools",
     description:
-      "Use free browser-based PDF tools, scientific and everyday calculators, WebP and SVG image converters, typing practice, and input testers.",
+      "Use free browser-based PDF, image, invoice, calculator, text, and everyday tools. Create invoices and process files privately in your browser.",
   },
   "/about": {
     title: "About Toolited | Free Online Tools",
@@ -47,6 +47,22 @@ const PAGE_METADATA = {
         "Convert amounts between more than 160 world currencies with regularly updated exchange rates.",
       url: `${SITE_ORIGIN}/currency-converter`,
       applicationCategory: "FinanceApplication",
+      operatingSystem: "Any",
+      isAccessibleForFree: true,
+    },
+  },
+  "/invoice-generator": {
+    title: "Free Online Invoice Generator | Toolited",
+    description:
+      "Create professional invoices with customizable line items, taxes, discounts, payment terms, and PDF export. Your invoice data stays on your device.",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: "Toolited Invoice Generator",
+      description:
+        "Create and download professional invoices in your browser. Invoice details are stored on your device.",
+      url: `${SITE_ORIGIN}/invoice-generator`,
+      applicationCategory: "BusinessApplication",
       operatingSystem: "Any",
       isAccessibleForFree: true,
     },

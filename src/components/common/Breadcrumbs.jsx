@@ -9,6 +9,7 @@ const LABELS = {
   "image-compressor": "Image Compressor",
   "unit-converter": "Unit Converter",
   "currency-converter": "Currency Converter",
+  "invoice-generator": "Invoice Generator",
   "video-compressor": "Video Compressor",
   "background-remover": "Background Remover",
   "pdf-tools": "PDF Tools",
@@ -58,37 +59,39 @@ export default function Breadcrumbs({ bare = false, light = false }) {
     : "transition hover:text-text focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand";
 
   return (
-    <div className={wrapperClass}>
-      <nav
-        aria-label="Breadcrumb"
-        className={`flex w-fit max-w-full items-center gap-1 overflow-hidden text-xs sm:text-sm ${navClass}`}
-      >
-        {crumbs.map((crumb, index) => (
-          <Fragment key={crumb.to ?? crumb.label}>
-            {index > 0 && (
-              <ChevronRight
-                aria-hidden="true"
-                className="h-3.5 w-3.5 shrink-0 text-muted"
-              />
-            )}
-            {crumb.to ? (
-              <Link
-                to={crumb.to}
-                className={`shrink-0 ${linkClass}`}
-              >
-                {crumb.label}
-              </Link>
-            ) : (
-              <span
-                aria-current="page"
-                className={`truncate font-medium ${light ? "text-page dark:text-text" : "text-text"}`}
-              >
-                {crumb.label}
-              </span>
-            )}
-          </Fragment>
-        ))}
-      </nav>
+    <div className="w-full bg-page">
+      <div className={wrapperClass}>
+        <nav
+          aria-label="Breadcrumb"
+          className={`flex w-fit max-w-full items-center gap-1 overflow-hidden text-xs sm:text-sm ${navClass}`}
+        >
+          {crumbs.map((crumb, index) => (
+            <Fragment key={crumb.to ?? crumb.label}>
+              {index > 0 && (
+                <ChevronRight
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0 text-muted"
+                />
+              )}
+              {crumb.to ? (
+                <Link
+                  to={crumb.to}
+                  className={`shrink-0 ${linkClass}`}
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span
+                  aria-current="page"
+                  className={`truncate font-medium ${light ? "text-page dark:text-text" : "text-text"}`}
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </Fragment>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }

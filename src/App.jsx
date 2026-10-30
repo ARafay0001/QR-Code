@@ -70,6 +70,7 @@ export default function App() {
           <Route path="/image-compressor" element={<ImageCompressor />} />
           <Route path="/unit-converter" element={<UnitConverter />} />
           <Route path="/currency-converter" element={<CurrencyConverter />} />
+          <Route path="/invoice-generator" element={<InvoiceGenerator />} />
           <Route path="/video-compressor" element={<VideoCompressor />} />
           <Route path="/background-remover" element={<BackgroundRemover />} />
           <Route path="/pdf-tools" element={<PDFTools />} />

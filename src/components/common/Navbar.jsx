@@ -59,6 +59,14 @@ const TOOLS = [
     accentBg: "bg-brand/10",
   },
   {
+    title: "Invoice Generator",
+    description: "Create invoices and download them as PDFs",
+    icon: FileText,
+    href: "/invoice-generator",
+    accent: "text-brand",
+    accentBg: "bg-brand/10",
+  },
+  {
     title: "Image Compressor",
     description: "Compress JPEG, PNG, and WebP images",
     icon: Minimize2,

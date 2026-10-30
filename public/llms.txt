@@ -29,6 +29,7 @@ possible; each tool page describes its supported features and file handling.
 - [WebP to image](https://toolited.com/webp-to-image): Convert WebP images to JPG or PNG.
 - [Image to vector](https://toolited.com/image-to-vector): Trace images into SVG artwork.
 - [Unit converter](https://toolited.com/unit-converter): Convert measurements across unit categories.
+- [Invoice generator](https://toolited.com/invoice-generator): Create professional invoices and download them as PDFs.
 - [Scientific calculator](https://toolited.com/scientific-calculator): Perform scientific calculations.
 - [All calculators](https://toolited.com/all-calculators): Browse calculators for everyday use.
 - [Text tools](https://toolited.com/text-tool): Transform, clean, encode, and count text.
