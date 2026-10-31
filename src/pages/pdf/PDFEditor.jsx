@@ -28,11 +28,15 @@ import { PDFEditorArticle as Article, PDFEditorFAQ as FAQ } from "../../data/seo
 /*  Data model: every page = { id, srcId, srcIndex, w, h, baseRot, rotation, */
 /*  annots[] }. Annotation coordinates are normalised (0..1) against the     */
 /*  UNROTATED page, so they rotate together with the page automatically.     */
+/*  Text / image / stamp / signature / rectangle / ellipse items can also    */
+/*  carry their own `rot` (degrees, clockwise, around the item's centre).    */
 /*                                                                            */
 /*  Features                                                                  */
 /*   - DOUBLE-CLICK any real text to edit it in place (original size/font    */
 /*     are kept; "Original size" button restores them).                       */
 /*   - 20+ web fonts + Helvetica/Times/Courier, bold/italic/underline/strike. */
+/*   - ROTATE any item: drag the round handle above it (Shift = 15° steps),   */
+/*     use the Rotate controls, or press [ and ]. Pages rotate too.           */
 /*   - Eraser (auto-matches page), eyedropper, find + highlight/redact all,   */
 /*     stamps, arrows, opacity, duplicate, layers, nudge, zoom, shortcuts.    */
 /* ========================================================================== */
@@ -51,6 +55,12 @@ const PDF_FONT = {
   times: StandardFonts.TimesRoman, "times-b": StandardFonts.TimesRomanBold, "times-i": StandardFonts.TimesRomanItalic, "times-bi": StandardFonts.TimesRomanBoldItalic,
   courier: StandardFonts.Courier, "courier-b": StandardFonts.CourierBold, "courier-i": StandardFonts.CourierOblique, "courier-bi": StandardFonts.CourierBoldOblique,
 };
+const COLOR_KINDS = ["text", "highlight", "draw", "rect", "ellipse", "line", "arrow", "whiteout"];
+const OPACITY_KINDS = ["draw", "rect", "ellipse", "line", "arrow", "text", "image"];
+/* items that can be rotated on their own (around their centre) */
+const ROT_KINDS = ["text", "image", "rect", "ellipse"];
+/* selection UI sizes, in CSS pixels */
+const HANDLE = { pad: 4, rot: 26 };
 
 /* ----------------------------- web fonts ---------------------------------- */
 /* family, group, has-bold(700), has-italic */
@@ -81,8 +91,9 @@ function loadWebFont(id) {
       const face = new FontFace(f.family, `url(${fontUrl(id, w, st)})`, { weight: String(w), style: st });
       await face.load();
       document.fonts.add(face);
-    } catch (e) { console.warn("font load failed", id, w, st, e); }
-  }));
+      return true;
+    } catch (e) { console.warn("font load failed", id, w, st, e); return false; }
+  })).then((res) => { if (res.some((ok) => !ok)) webLoaded.delete(id); }); // failed (offline?) → allow a retry next time
   webLoaded.set(id, p);
   return p;
 }
@@ -116,6 +127,18 @@ const mulM = (m, n) => [
   m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
   m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
 ];
+
+/* rotate a vector by `deg` degrees (clockwise on screen, i.e. y-down coordinates) */
+const rotPt = (dx, dy, deg) => {
+  const t = (deg * Math.PI) / 180, c = Math.cos(t), s = Math.sin(t);
+  return [dx * c - dy * s, dx * s + dy * c];
+};
+/* same idea in PDF space (y-up): a clockwise item rotation of `deg` is a counter-clockwise angle of -deg */
+const rotPdf = (cx, cy, dx, dy, deg) => {
+  const t = (-deg * Math.PI) / 180, c = Math.cos(t), s = Math.sin(t);
+  return [cx + dx * c - dy * s, cy + dx * s + dy * c];
+};
+const rd = (a) => degrees(a.rot ? -a.rot : 0);
 
 /* ------------------------------- pdf.js ----------------------------------- */
 
@@ -266,6 +289,26 @@ function bboxOf(a, pg) {
   return { u: a.u, v: a.v, w: a.w, h: a.h };
 }
 
+/* ---- rotation helpers (all in PDF points of the unrotated page, y down) ---- */
+const centerPts = (a, pg) => { const b = bboxOf(a, pg); return [(b.u + b.w / 2) * pg.w, (b.v + b.h / 2) * pg.h]; };
+/* a page position (normalised u,v) expressed in the item's own un-rotated frame */
+function toLocal(a, pg, u, v) {
+  const px = u * pg.w, py = v * pg.h;
+  if (!a.rot) return [px, py];
+  const [cx, cy] = centerPts(a, pg), [dx, dy] = rotPt(px - cx, py - cy, -a.rot);
+  return [cx + dx, cy + dy];
+}
+/* where the item's top-left corner really is on the page once rotated */
+function tlWorld(a, pg) {
+  const [cx, cy] = centerPts(a, pg), b = bboxOf(a, pg), [dx, dy] = rotPt((-b.w * pg.w) / 2, (-b.h * pg.h) / 2, a.rot || 0);
+  return [cx + dx, cy + dy];
+}
+/* after resizing, move the item so its top-left corner stays exactly where it was */
+function anchorTL(a, pg, tl) {
+  const b = bboxOf(a, pg), hw = (b.w * pg.w) / 2, hh = (b.h * pg.h) / 2, [dx, dy] = rotPt(hw, hh, a.rot || 0);
+  return { ...a, u: (tl[0] + dx - hw) / pg.w, v: (tl[1] + dy - hh) / pg.h };
+}
+
 const segD = (px, py, x1, y1, x2, y2) => {
   const dx = x2 - x1, dy = y2 - y1, l = dx * dx + dy * dy;
   const t = l ? Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / l)) : 0;
@@ -281,7 +324,8 @@ function hit(a, pg, u, v, tol) {
     return a.pts.length === 1 && Math.hypot(px - a.pts[0][0] * pg.w, py - a.pts[0][1] * pg.h) < tol + a.width;
   }
   const b = bboxOf(a, pg);
-  return px >= b.u * pg.w - tol && px <= (b.u + b.w) * pg.w + tol && py >= b.v * pg.h - tol && py <= (b.v + b.h) * pg.h + tol;
+  const [lx, ly] = a.rot ? toLocal(a, pg, u, v) : [px, py];
+  return lx >= b.u * pg.w - tol && lx <= (b.u + b.w) * pg.w + tol && ly >= b.v * pg.h - tol && ly <= (b.v + b.h) * pg.h + tol;
 }
 
 const inCover = (a, pg, u, v) =>
@@ -309,6 +353,14 @@ function drawAnnots(ctx, pg, s, selId, live) {
   for (const a of live ? [...pg.annots, live] : pg.annots) {
     ctx.save();
     const x = (a.u ?? 0) * Wp, y = (a.v ?? 0) * Hp, w = (a.w ?? 0) * Wp, h = (a.h ?? 0) * Hp;
+    /* rotate the drawing context around the item's centre */
+    const rotCtx = () => {
+      if (!a.rot) return;
+      const [cx, cy] = centerPts(a, pg);
+      ctx.translate(cx * s, cy * s);
+      ctx.rotate((a.rot * Math.PI) / 180);
+      ctx.translate(-cx * s, -cy * s);
+    };
     ctx.strokeStyle = a.color;
     ctx.fillStyle = a.color;
     ctx.lineWidth = (a.width || 1) * s;
@@ -316,8 +368,8 @@ function drawAnnots(ctx, pg, s, selId, live) {
     if (a.type === "highlight") { ctx.globalCompositeOperation = "multiply"; ctx.globalAlpha = 0.5 * (a.opacity ?? 1); ctx.fillRect(x, y, w, h); }
     else if (a.type === "whiteout") { ctx.fillStyle = a.color || "#fff"; ctx.fillRect(x, y, w, h); }
     else if (a.type === "redact") { ctx.fillStyle = "#000"; ctx.fillRect(x, y, w, h); }
-    else if (a.type === "rect") ctx.strokeRect(x, y, w, h);
-    else if (a.type === "ellipse") { ctx.beginPath(); ctx.ellipse(x + w / 2, y + h / 2, Math.abs(w / 2), Math.abs(h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
+    else if (a.type === "rect") { rotCtx(); ctx.strokeRect(x, y, w, h); }
+    else if (a.type === "ellipse") { rotCtx(); ctx.beginPath(); ctx.ellipse(x + w / 2, y + h / 2, Math.abs(w / 2), Math.abs(h / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
     else if (a.type === "line") {
       const x1 = a.u1 * Wp, y1 = a.v1 * Hp, x2 = a.u2 * Wp, y2 = a.v2 * Hp;
       ctx.beginPath();
@@ -333,7 +385,7 @@ function drawAnnots(ctx, pg, s, selId, live) {
       a.pts.forEach(([px, py], i) => (i ? ctx.lineTo(px * Wp, py * Hp) : ctx.moveTo(px * Wp, py * Hp)));
       if (a.pts.length === 1) ctx.lineTo(a.pts[0][0] * Wp + 0.1, a.pts[0][1] * Hp);
       ctx.stroke();
-    } else if (a.type === "image") { const im = imgStore.get(a.src); if (im) ctx.drawImage(im, x, y, w, h); }
+    } else if (a.type === "image") { const im = imgStore.get(a.src); if (im) { rotCtx(); ctx.drawImage(im, x, y, w, h); } }
     else if (a.type === "text") {
       const cr = coverRect(a, pg);
       if (cr) {
@@ -343,6 +395,7 @@ function drawAnnots(ctx, pg, s, selId, live) {
         ctx.fillStyle = a.color;
         ctx.globalAlpha = a.opacity ?? 1;
       }
+      rotCtx(); // the cover stays put, the new text turns
       const lines = wrapLines(a);
       ctx.font = cssFont(a, s);
       ctx.textBaseline = "alphabetic";
@@ -360,19 +413,44 @@ function drawAnnots(ctx, pg, s, selId, live) {
   }
   const sel = selId && pg.annots.find((a) => a.id === selId);
   if (sel) {
-    const b = bboxOf(sel, pg), pad = 4 * (window.devicePixelRatio || 1);
+    const b = bboxOf(sel, pg), cssW = ctx.canvas.getBoundingClientRect?.().width;
+    const f = cssW ? ctx.canvas.width / cssW : window.devicePixelRatio || 1; // canvas px per CSS px
+    const pad = HANDLE.pad * f, canRot = ROT_KINDS.includes(sel.type);
     ctx.save();
+    if (sel.rot && canRot) {
+      const cx = (b.u + b.w / 2) * Wp, cy = (b.v + b.h / 2) * Hp;
+      ctx.translate(cx, cy);
+      ctx.rotate((sel.rot * Math.PI) / 180);
+      ctx.translate(-cx, -cy);
+    }
     ctx.setLineDash([8, 5]);
     ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = 1.5 * (window.devicePixelRatio || 1);
+    ctx.lineWidth = 1.5 * f;
     ctx.strokeRect(b.u * Wp - pad, b.v * Hp - pad, b.w * Wp + pad * 2, b.h * Hp + pad * 2);
+    ctx.setLineDash([]);
     if (sel.type !== "line" && sel.type !== "draw") {
-      const r = 7 * (window.devicePixelRatio || 1);
-      ctx.setLineDash([]);
+      const r = 7 * f;
       ctx.fillStyle = "#fff";
       ctx.beginPath();
       ctx.arc((b.u + b.w) * Wp + pad, (b.v + b.h) * Hp + pad, r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
+    }
+    if (canRot) {
+      /* round rotate handle on a stem above the top edge */
+      const tx = (b.u + b.w / 2) * Wp, ty = b.v * Hp - pad, hy = b.v * Hp - (HANDLE.pad + HANDLE.rot) * f, r = 8 * f;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx, hy);
+      ctx.stroke();
+      ctx.fillStyle = "#3b82f6";
+      ctx.beginPath();
+      ctx.arc(tx, hy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.6 * f;
+      ctx.beginPath();
+      ctx.arc(tx, hy, r * 0.5, Math.PI * 0.25, Math.PI * 1.85);
       ctx.stroke();
     }
     ctx.restore();
@@ -565,10 +643,13 @@ async function drawVector(out, page, pg, getFont, embedCache) {
   for (const a of pg.annots) {
     const col = a.color ? hexRgb(a.color) : undefined;
     const op = a.opacity ?? 1;
+    const rot = a.rot || 0;
     if (a.type === "highlight") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, color: col, opacity: 0.5 * op, blendMode: BlendMode.Multiply });
     else if (a.type === "whiteout") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, color: col || rgb(1, 1, 1) });
-    else if (a.type === "rect") page.drawRectangle({ x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, borderColor: col, borderWidth: a.width, borderOpacity: op, opacity: 0 });
-    else if (a.type === "ellipse") page.drawEllipse({ x: X(a.u + a.w / 2), y: Y(a.v + a.h / 2), xScale: (a.w * W) / 2, yScale: (a.h * H) / 2, borderColor: col, borderWidth: a.width, borderOpacity: op, opacity: 0 });
+    else if (a.type === "rect") {
+      const w = a.w * W, h = a.h * H, [px, py] = rotPdf(X(a.u + a.w / 2), Y(a.v + a.h / 2), -w / 2, -h / 2, rot);
+      page.drawRectangle({ x: px, y: py, width: w, height: h, rotate: rd(a), borderColor: col, borderWidth: a.width, borderOpacity: op, opacity: 0 });
+    } else if (a.type === "ellipse") page.drawEllipse({ x: X(a.u + a.w / 2), y: Y(a.v + a.h / 2), xScale: (a.w * W) / 2, yScale: (a.h * H) / 2, rotate: rd(a), borderColor: col, borderWidth: a.width, borderOpacity: op, opacity: 0 });
     else if (a.type === "line") {
       const x1 = X(a.u1), y1 = Y(a.v1), x2 = X(a.u2), y2 = Y(a.v2);
       const o = { thickness: a.width, color: col, lineCap: LineCapStyle.Round, opacity: op };
@@ -583,24 +664,29 @@ async function drawVector(out, page, pg, getFont, embedCache) {
     } else if (a.type === "image") {
       let img = embedCache.get(a.src);
       if (!img) { img = await out.embedPng(dataUrlBytes(a.src)); embedCache.set(a.src, img); }
-      page.drawImage(img, { x: X(a.u), y: Y(a.v + a.h), width: a.w * W, height: a.h * H, opacity: op });
+      const w = a.w * W, h = a.h * H, [px, py] = rotPdf(X(a.u + a.w / 2), Y(a.v + a.h / 2), -w / 2, -h / 2, rot);
+      page.drawImage(img, { x: px, y: py, width: w, height: h, rotate: rd(a), opacity: op });
     } else if (a.type === "text") {
       const cr = coverRect(a, pg);
       if (cr) page.drawRectangle({ x: X(cr.u), y: Y(cr.v + cr.h), width: cr.w * W, height: cr.h * H, color: hexRgb(cr.color) });
       const wl = wrapLines(a);
+      const ts = textSize(a), tcx = X(a.u) + ts.w / 2, tcy = Y(a.v) - ts.h / 2; // centre of the text block (PDF space)
       if (NON_LATIN.test(a.text)) {
         const im = textToPng(a, wl);
         const img = await out.embedPng(dataUrlBytes(im.url));
-        page.drawImage(img, { x: X(a.u) - 2, y: Y(a.v) - im.h + 2, width: im.w, height: im.h, opacity: op });
+        const [px, py] = rotPdf(tcx, tcy, -ts.w / 2 - 2, -ts.h / 2 - 2, rot);
+        page.drawImage(img, { x: px, y: py, width: im.w, height: im.h, rotate: rd(a), opacity: op });
       } else {
         const font = await getFont(a);
         wl.map(latin).forEach((l, i) => {
-          const bx = X(a.u), by = Y(a.v) - a.size * 0.8 - i * a.size * 1.2;
-          page.drawText(l, { x: bx, y: by, size: a.size, font, color: col, opacity: op });
+          const ldx = -ts.w / 2, ldy = ts.h / 2 - a.size * 0.8 - i * a.size * 1.2;
+          const [bx, by] = rotPdf(tcx, tcy, ldx, ldy, rot);
+          page.drawText(l, { x: bx, y: by, size: a.size, font, color: col, opacity: op, rotate: rd(a) });
           if (a.underline || a.strike) {
             const tw = font.widthOfTextAtSize(l, a.size), th = Math.max(0.5, a.size * 0.06);
-            if (a.underline) page.drawLine({ start: { x: bx, y: by - a.size * 0.12 }, end: { x: bx + tw, y: by - a.size * 0.12 }, thickness: th, color: col, opacity: op });
-            if (a.strike) page.drawLine({ start: { x: bx, y: by + a.size * 0.28 }, end: { x: bx + tw, y: by + a.size * 0.28 }, thickness: th, color: col, opacity: op });
+            const seg = (dy) => ({ start: { x: rotPdf(tcx, tcy, ldx, ldy + dy, rot)[0], y: rotPdf(tcx, tcy, ldx, ldy + dy, rot)[1] }, end: { x: rotPdf(tcx, tcy, ldx + tw, ldy + dy, rot)[0], y: rotPdf(tcx, tcy, ldx + tw, ldy + dy, rot)[1] } });
+            if (a.underline) page.drawLine({ ...seg(-a.size * 0.12), thickness: th, color: col, opacity: op });
+            if (a.strike) page.drawLine({ ...seg(a.size * 0.28), thickness: th, color: col, opacity: op });
           }
         });
       }
@@ -765,7 +851,8 @@ function SortableCard({ pg, thumb, index, selected, onToggle, onOpen, onRotate, 
       <div className="mt-2 flex items-center justify-between text-xs text-muted">
         <span className="font-semibold text-text">{index + 1}{pg.annots.length > 0 && <span className="ml-1 rounded bg-danger/20 px-1 text-[10px] text-danger">{pg.annots.length}</span>}</span>
         <span className="flex gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" onPointerDown={(e) => e.stopPropagation()}>
-          <button onClick={(e) => { e.stopPropagation(); onRotate(pg.id); }} aria-label="Rotate page" className="rounded p-1 hover:bg-text/10 hover:text-text"><RotateCw size={14} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onRotate(pg.id, -90); }} aria-label="Rotate page left" className="rounded p-1 hover:bg-text/10 hover:text-text"><RotateCcw size={14} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onRotate(pg.id, 90); }} aria-label="Rotate page right" className="rounded p-1 hover:bg-text/10 hover:text-text"><RotateCw size={14} /></button>
           <button onClick={(e) => { e.stopPropagation(); onDelete(pg.id); }} aria-label="Delete page" className="rounded p-1 hover:bg-text/10 hover:text-danger"><Trash2 size={14} /></button>
         </span>
       </div>
@@ -809,7 +896,7 @@ function SignatureModal({ onSave, onClose, last }) {
         <div className="flex items-center justify-between"><h3 className="text-lg font-bold">Add signature</h3><button onClick={onClose} aria-label="Close"><X size={18} /></button></div>
         <div className="flex gap-2"><Chip on={tab === "draw"} onClick={() => setTab("draw")}>Draw</Chip><Chip on={tab === "type"} onClick={() => setTab("type")}>Type</Chip>{last && <Chip on={false} onClick={() => onSave(last)}>Use last</Chip>}</div>
         {tab === "draw" ? (
-          <canvas ref={cv} width={700} height={240} onPointerDown={start} onPointerMove={move} onPointerUp={() => (down.current = false)}
+          <canvas ref={cv} width={700} height={240} onPointerDown={start} onPointerMove={move} onPointerUp={() => (down.current = false)} onPointerCancel={() => (down.current = false)}
             className="w-full touch-none rounded-xl bg-text" />
         ) : (
           <div className="rounded-xl bg-text p-4"><input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type your name"
@@ -819,7 +906,7 @@ function SignatureModal({ onSave, onClose, last }) {
           <Swatches colors={["#111827", "#2563eb", "#dc2626"]} value={color} onChange={setColor} />
           <div className="flex gap-2">
             {tab === "draw" && <button className={btn} onClick={() => cv.current.getContext("2d").clearRect(0, 0, 700, 240)}>Clear</button>}
-            <button className={btnPrimary} onClick={save}>Place on page</button>
+            <button className={btnPrimary} onClick={save} disabled={tab === "type" && !typed.trim()}>Place on page</button>
           </div>
         </div>
       </div>
@@ -833,9 +920,11 @@ function HelpModal({ onClose }) {
   const rows = [
     ["Double-click", "Edit any text in place"], ["V", "Select / move"], ["E", "Edit existing text (one click)"], ["T", "Add text"], ["H", "Highlight"], ["D", "Draw"],
     ["R / O", "Rectangle / Ellipse"], ["L / A", "Line / Arrow"], ["X", "Eraser"], ["S", "Stamps"], ["I", "Eyedropper"],
+    ["Drag ● handle", "Rotate the selected item (Shift = 15° steps)"], ["[ / ]", "Rotate item 15° (Shift = 1°) — or the page if nothing is selected"],
     ["Ctrl+Z / Y", "Undo / Redo"], ["Ctrl+D", "Duplicate item"], ["Ctrl+F", "Find in document"],
     ["Arrows", "Nudge item (Shift = 10×)"], ["← →", "Previous / next page"], ["+ / −", "Zoom"],
-    ["Del", "Delete item"], ["Esc / Ctrl+Enter", "Finish text editing"], ["?", "This help"],
+    ["Del", "Delete item"], ["Esc / Ctrl+Enter", "Finish text editing"],
+    ["Organize: Ctrl+A", "Select all pages"], ["Organize: Del · [ ]", "Delete / rotate selected pages"], ["?", "This help"],
   ];
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-page/70 p-4" onClick={onClose}>
@@ -845,7 +934,7 @@ function HelpModal({ onClose }) {
           {rows.map(([k, d]) => (
             <div key={k} className="flex items-center justify-between gap-3 text-sm">
               <span className="text-muted">{d}</span>
-              <kbd className="rounded-md border border-border bg-page/60 px-2 py-0.5 text-xs font-semibold">{k}</kbd>
+              <kbd className="shrink-0 rounded-md border border-border bg-page/60 px-2 py-0.5 text-xs font-semibold">{k}</kbd>
             </div>
           ))}
         </div>
@@ -955,10 +1044,20 @@ function Viewer({ pg, srcs, c }) {
     ...extra,
   });
 
-  /* start typing directly on the page (unrotated pages); rotated pages use the bar editor */
+  /* start typing directly on the page (unrotated pages, unrotated items); otherwise the bar editor is used */
   const beginInline = (id) => {
-    if (tot === 0) { c.snapshot(); setInline(id); }
+    const an = pg.annots.find((a) => a.id === id);
+    if (tot === 0 && !an?.rot) { c.snapshot(); setInline(id); }
     else c.setFocusText(true);
+  };
+
+  /* leave the in-place editor; a brand-new text box left empty is removed instead of lingering invisibly */
+  const closeInline = () => {
+    if (ia && !ia.text.trim() && !ia.cover) {
+      c.updateAnnots(pg.id, (l) => l.filter((a) => a.id !== ia.id), false);
+      c.setSelAnn(null);
+    }
+    setInline(null);
   };
 
   /* replace a piece of real PDF text: cover the original with the sampled background and put editable text on top.
@@ -1019,11 +1118,24 @@ function Viewer({ pg, srcs, c }) {
     ovRef.current.setPointerCapture(e.pointerId);
     if (tool === "select") {
       const sel = pg.annots.find((a) => a.id === c.selAnn);
-      if (sel && sel.type !== "line" && sel.type !== "draw") {
-        const b = bboxOf(sel, pg);
-        if (Math.hypot((u - (b.u + b.w)) * pg.w, (v - (b.v + b.h)) * pg.h) < 16 * ptsPerPx) {
+      /* rotate handle (round knob above the item) */
+      if (sel && ROT_KINDS.includes(sel.type)) {
+        const b = bboxOf(sel, pg), [lx, ly] = toLocal(sel, pg, u, v);
+        const hx = (b.u + b.w / 2) * pg.w, hy = b.v * pg.h - (HANDLE.pad + HANDLE.rot) * ptsPerPx;
+        if (Math.hypot(lx - hx, ly - hy) < 14 * ptsPerPx) {
           c.snapshot();
-          drag.current = { mode: "resize", id: sel.id, size0: sel.size, w0: Math.max(1, b.w * pg.w) };
+          const [cx, cy] = centerPts(sel, pg);
+          drag.current = { mode: "rotate", id: sel.id, cx, cy };
+          return;
+        }
+      }
+      /* resize handle (bottom-right corner, follows the item's rotation) */
+      if (sel && sel.type !== "line" && sel.type !== "draw") {
+        const b = bboxOf(sel, pg), [lx, ly] = toLocal(sel, pg, u, v);
+        if (Math.hypot(lx - (b.u + b.w) * pg.w, ly - (b.v + b.h) * pg.h) < 16 * ptsPerPx) {
+          c.snapshot();
+          const tlp = tlWorld(sel, pg), [dx, dy] = rotPt(u * pg.w - tlp[0], v * pg.h - tlp[1], -(sel.rot || 0));
+          drag.current = { mode: "resize", id: sel.id, size0: sel.size, w0: Math.max(1, b.w * pg.w), tl: tlp, ox: dx - b.w * pg.w, oy: dy - b.h * pg.h };
           return;
         }
       }
@@ -1064,13 +1176,22 @@ function Viewer({ pg, srcs, c }) {
       const du = u - d.last.u, dv = v - d.last.v;
       d.last = { u, v };
       c.updateAnnots(pg.id, (l) => l.map((a) => (a.id === d.id ? moveAnnot(a, du, dv) : a)), false);
+    } else if (d?.mode === "rotate") {
+      let ang = (Math.atan2(v * pg.h - d.cy, u * pg.w - d.cx) * 180) / Math.PI + 90; // handle straight up = 0°
+      if (e.shiftKey) ang = Math.round(ang / 15) * 15;
+      else { const n = Math.round(ang / 45) * 45; if (Math.abs(ang - n) < 3) ang = n; } // soft snap to 0/45/90…
+      const r = norm(Math.round(ang * 10) / 10);
+      c.updateAnnots(pg.id, (l) => l.map((a) => (a.id === d.id ? { ...a, rot: r } : a)), false);
     } else if (d?.mode === "resize") {
       c.updateAnnots(pg.id, (l) => l.map((a) => {
         if (a.id !== d.id) return a;
-        if (a.type === "text") return { ...a, size: Math.max(4, Math.min(300, d.size0 * (((u - a.u) * pg.w) / d.w0))) };
-        const w = Math.max(0.01, u - a.u);
-        if (a.type === "image") return { ...a, w, h: (w * pg.w) / a.ar / pg.h };
-        return { ...a, w, h: Math.max(0.01, v - a.v) };
+        const [dx, dy] = rotPt(u * pg.w - d.tl[0], v * pg.h - d.tl[1], -(a.rot || 0));
+        const Wn = Math.max(pg.w * 0.01, dx - d.ox), Hn = Math.max(pg.h * 0.01, dy - d.oy);
+        let n;
+        if (a.type === "text") n = { ...a, size: Math.max(4, Math.min(300, d.size0 * (Wn / d.w0))) };
+        else if (a.type === "image") n = { ...a, w: Wn / pg.w, h: Wn / a.ar / pg.h };
+        else n = { ...a, w: Wn / pg.w, h: Hn / pg.h };
+        return anchorTL(n, pg, d.tl); // keep the top-left corner where it was, even when rotated
       }), false);
     } else if (L) {
       if (L.type === "draw") L.pts.push([u, v]);
@@ -1095,7 +1216,7 @@ function Viewer({ pg, srcs, c }) {
 
   /* in-place text editor geometry */
   let inStyle = null;
-  if (ia && tot === 0) {
+  if (ia && tot === 0 && !ia.rot) {
     const ts = textSize(ia);
     const w = ia.maxW ? ia.maxW * k + 6 : Math.max(ts.w * k + 18, ia.cover ? ia.cover.w * vw : 0, 40);
     inStyle = {
@@ -1111,12 +1232,12 @@ function Viewer({ pg, srcs, c }) {
     <div ref={wrap} className="flex w-full">
       <div className="relative mx-auto shrink-0 shadow-2xl" style={{ width: vw, aspectRatio: `${dw} / ${dh}` }}>
         <canvas ref={baseRef} className="absolute inset-0 h-full w-full rounded bg-text" />
-        <canvas ref={ovRef} onPointerDown={down} onPointerMove={move} onPointerUp={up} onDoubleClick={dbl} className={`absolute inset-0 h-full w-full touch-none ${cursor}`} />
+        <canvas ref={ovRef} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onDoubleClick={dbl} className={`absolute inset-0 h-full w-full touch-none ${cursor}`} />
         {inStyle && (
           <textarea ref={inRef} value={ia.text} spellCheck={false} style={inStyle}
             onChange={(e) => c.updateAnnots(pg.id, (l) => l.map((a) => (a.id === ia.id ? { ...a, text: e.target.value } : a)), false)}
-            onBlur={() => setInline(null)}
-            onKeyDown={(e) => { if (e.key === "Escape" || (e.key === "Enter" && (e.ctrlKey || e.metaKey))) { e.preventDefault(); setInline(null); } }} />
+            onBlur={closeInline}
+            onKeyDown={(e) => { if (e.key === "Escape" || (e.key === "Enter" && (e.ctrlKey || e.metaKey))) { e.preventDefault(); closeInline(); } }} />
         )}
       </div>
     </div>
@@ -1167,7 +1288,12 @@ export default function PDFEditor() {
 
   /* ------------------------------ history -------------------------------- */
 
-  const snapshot = () => { const h = hist.current; h.past.push(pagesRef.current); if (h.past.length > 60) h.past.shift(); h.future = []; };
+  /* identical consecutive snapshots are skipped, so clicking around never pollutes the undo stack */
+  const snapshot = () => {
+    const h = hist.current;
+    if (h.past[h.past.length - 1] !== pagesRef.current) { h.past.push(pagesRef.current); if (h.past.length > 60) h.past.shift(); }
+    h.future = [];
+  };
   const mutate = (fn, record = true) => { if (record) snapshot(); setPages((ps) => fn(ps)); };
   const undo = () => { const h = hist.current; if (!h.past.length) return; h.future.push(pagesRef.current); setPages(h.past.pop()); };
   const redo = () => { const h = hist.current; if (!h.future.length) return; h.past.push(pagesRef.current); setPages(h.future.pop()); };
@@ -1191,25 +1317,25 @@ export default function PDFEditor() {
   const addFiles = async (files) => {
     note("Opening files…", true);
     try {
-      const pdfjs = await getPdfjs(), created = [];
+      const pdfjs = await getPdfjs(), created = [], errors = [];
       for (const f of files) {
         let bytes;
         if (f.type === "application/pdf" || /\.pdf$/i.test(f.name)) bytes = await f.arrayBuffer();
         else if (/^image\/(jpeg|png|webp|gif)/.test(f.type)) bytes = await imageFileToPdfBytes(f);
-        else continue;
+        else { errors.push(`“${f.name}” isn't a PDF or image.`); continue; }
         const id = uid();
         let doc;
         try { doc = await pdfjs.getDocument({ data: bytes.slice(0), fontExtraProperties: true }).promise; }
-        catch (e) { note(e?.name === "PasswordException" ? `“${f.name}” is password-protected and can't be opened.` : `Couldn't read “${f.name}”.`); continue; }
+        catch (e) { errors.push(e?.name === "PasswordException" ? `“${f.name}” is password-protected and can't be opened.` : `Couldn't read “${f.name}”.`); continue; }
         srcs.current.set(id, { id, name: f.name, bytes, doc });
         for (let i = 0; i < doc.numPages; i++) {
           const p = await doc.getPage(i + 1), vp = p.getViewport({ scale: 1, rotation: 0 });
           created.push({ id: uid(), srcId: id, srcIndex: i, w: vp.width, h: vp.height, baseRot: norm(p.rotate || 0), rotation: 0, annots: [], av: 0 });
         }
       }
-      if (!created.length) return note("Please choose PDF, JPG or PNG files.");
+      if (!created.length) return note(errors[0] || "Please choose PDF, JPG or PNG files.");
       mutate((ps) => [...ps, ...created]);
-      note("");
+      note(errors.join(" ")); // empty string simply clears the "Opening…" toast
       setOpt((o) => (!o.name || o.name === "document" ? { ...o, name: (files[0].name || "document").replace(/\.[^.]+$/, "") } : o));
     } catch (e) { console.error(e); note("Something went wrong opening those files."); }
   };
@@ -1318,6 +1444,14 @@ export default function PDFEditor() {
   };
   const onPick = (hex) => { setProp("color", hex); setPicking(false); };
 
+  /* rotate the selected item (text, image, stamp, signature, rectangle, ellipse) around its centre */
+  const setRot = (v, rec = true) => {
+    if (!selA || !editPage) return;
+    const r = norm(Math.round(v * 10) / 10);
+    updateAnnots(editPage.id, (l) => l.map((a) => (a.id === selA.id ? { ...a, rot: r } : a)), rec);
+  };
+  const rotAnn = (d) => setRot((selA?.rot || 0) + d);
+
   const duplicateAnn = () => {
     if (!selA) return;
     const copy = { ...moveAnnot(selA, 0.02, 0.02), id: uid(), cover: undefined, orig: undefined };
@@ -1353,9 +1487,18 @@ export default function PDFEditor() {
       const k = e.key.toLowerCase();
       if (mod && k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
       if (mod && k === "y") { e.preventDefault(); redo(); return; }
+      if (mod && k === "a" && mode === "organize" && pages.length) { e.preventDefault(); setSel(new Set(pages.map((p) => p.id))); return; }
       if (mod && k === "d" && mode === "edit" && selA) { e.preventDefault(); duplicateAnn(); return; }
       if (mod) return;
       if (e.key === "?") { setHelpOpen((h) => !h); return; }
+      /* organize view: delete / rotate the selected pages from the keyboard */
+      if (mode === "organize") {
+        if (!selIds.length) return;
+        if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); remove(selIds); }
+        else if (e.code === "BracketLeft") rotate(selIds, -90);
+        else if (e.code === "BracketRight") rotate(selIds, 90);
+        return;
+      }
       if (mode !== "edit" || !editPage) return;
       const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
       if (selA && (e.key === "Delete" || e.key === "Backspace")) { updateAnnots(editPage.id, (l) => l.filter((a) => a.id !== selA.id)); setSelAnn(null); }
@@ -1364,6 +1507,11 @@ export default function PDFEditor() {
         if (selA) { const m = e.shiftKey ? 10 : 1; nudge(arrows[e.key][0] * m, arrows[e.key][1] * m); }
         else if (e.key === "ArrowLeft") goto(editIdx - 1);
         else if (e.key === "ArrowRight") goto(editIdx + 1);
+      }
+      else if (e.code === "BracketLeft" || e.code === "BracketRight") {
+        const dir = e.code === "BracketRight" ? 1 : -1;
+        if (selA && ROT_KINDS.includes(selA.type)) rotAnn(dir * (e.shiftKey ? 1 : 15));
+        else if (!selA) rotate([editPage.id], dir * 90);
       }
       else if (e.key === "+" || e.key === "=") zoomBy(0.25);
       else if (e.key === "-") zoomBy(-0.25);
@@ -1474,11 +1622,10 @@ export default function PDFEditor() {
   const TOOLS = [["select", MousePointer2, "Select"], ["edittext", TextCursorInput, "Edit text"], ["text", Type, "Text"], ["highlight", Highlighter, "Highlight"], ["draw", Pencil, "Draw"],
     ["rect", Square, "Rectangle"], ["ellipse", Circle, "Ellipse"], ["line", Minus, "Line"], ["arrow", MoveUpRight, "Arrow"], ["whiteout", Eraser, "Eraser"],
     ["redact", EyeOff, "Redact"], ["stamp", Stamp, "Stamp"], ["sig", PenTool, "Sign"], ["image", ImagePlus, "Image"]];
-  const COLOR_KINDS = ["text", "highlight", "draw", "rect", "ellipse", "line", "arrow", "whiteout"];
-  const OPACITY_KINDS = ["draw", "rect", "ellipse", "line", "arrow", "text", "image"];
   const pickVal = selA?.color || (kind === "highlight" ? style.hl : kind === "whiteout" ? style.cover : style.color);
   const curFont = selA?.font ?? style.font;
   const curSize = Math.round((selA?.size ?? style.size) * 10) / 10;
+  const rotatable = !!selA && ROT_KINDS.includes(selA.type);
 
   const Empty = (
     <div className="flex flex-col items-center rounded-3xl border-2 border-dashed border-border bg-surface/60 px-6 py-20 text-center transition hover:border-danger">
@@ -1490,7 +1637,7 @@ export default function PDFEditor() {
         <button onClick={() => mutate(() => [{ id: uid(), srcId: null, srcIndex: 0, w: A4[0], h: A4[1], baseRot: 0, rotation: 0, annots: [], av: 0 }])} className={btn}><FilePlus2 size={18} />Blank page</button>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs text-muted">
-        {["Double-click to edit text", "20+ fonts", "Find & redact", "Stamps & signatures", "Eraser + eyedropper", "Merge · split · reorder", "100% private"].map((t) => <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>)}
+        {["Double-click to edit text", "20+ fonts", "Rotate pages & items", "Find & redact", "Stamps & signatures", "Eraser + eyedropper", "Merge · split · reorder", "100% private"].map((t) => <span key={t} className="rounded-full border border-border px-3 py-1">{t}</span>)}
       </div>
     </div>
   );
@@ -1632,13 +1779,13 @@ export default function PDFEditor() {
                       <input value={rangeIn} onChange={(e) => selectByRange(e.target.value)} placeholder="Select: 1,3-6"
                         className="ml-auto w-32 shrink-0 rounded-lg border border-border bg-page/60 px-3 py-1.5 text-sm outline-none focus:border-danger/50" />
                     </div>
-                    <p className="px-1 text-xs text-muted">Click pages to select · drag to reorder · double-click to edit a page · drop more files anywhere to add them.</p>
+                    <p className="px-1 text-xs text-muted">Click pages to select · drag to reorder · double-click to edit a page · drop more files anywhere to add them · Ctrl+A selects all, [ ] rotate, Del removes.</p>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                       <SortableContext items={pages.map((p) => p.id)} strategy={rectSortingStrategy}>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                           {pages.map((p, i) => (
                             <SortableCard key={p.id} pg={p} index={i} thumb={thumbs[p.id]?.url} selected={sel.has(p.id)}
-                              onToggle={toggle} onOpen={openEdit} onRotate={(id) => rotate([id], 90)} onDelete={(id) => remove([id])} />
+                              onToggle={toggle} onOpen={openEdit} onRotate={(id, d) => rotate([id], d)} onDelete={(id) => remove([id])} />
                           ))}
                         </div>
                       </SortableContext>
@@ -1676,6 +1823,18 @@ export default function PDFEditor() {
                       {OPACITY_KINDS.includes(kind) && (
                         <label className="flex items-center gap-2 text-xs text-muted">Opacity
                           <input type="range" min={10} max={100} value={Math.round((selA?.opacity ?? style.opacity) * 100)} onPointerDown={snapshot} onChange={(e) => setProp("opacity", +e.target.value / 100, false)} className="w-24 accent-danger" /></label>
+                      )}
+                      {rotatable && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-xs text-muted">Rotate</span>
+                          <button className={btn + " !px-2.5 !py-1.5"} onClick={() => rotAnn(-90)} title="Rotate left 90°" aria-label="Rotate item left 90 degrees"><RotateCcw size={14} /></button>
+                          <button className={btn + " !px-2.5 !py-1.5"} onClick={() => rotAnn(-15)} title="−15°  ( [ )">−15°</button>
+                          <input type="range" min={0} max={359} value={Math.round(selA.rot || 0) % 360} onPointerDown={snapshot} onChange={(e) => setRot(+e.target.value, false)} className="w-28 accent-danger" aria-label="Item rotation" />
+                          <button className={btn + " !px-2.5 !py-1.5"} onClick={() => rotAnn(15)} title="+15°  ( ] )">+15°</button>
+                          <button className={btn + " !px-2.5 !py-1.5"} onClick={() => rotAnn(90)} title="Rotate right 90°" aria-label="Rotate item right 90 degrees"><RotateCw size={14} /></button>
+                          <span className="w-10 text-center text-xs text-muted">{Math.round((selA.rot || 0) * 10) / 10}°</span>
+                          <button className={btn + " !px-2.5 !py-1.5"} onClick={() => setRot(0)} disabled={!selA.rot}>Reset</button>
+                        </div>
                       )}
                       {kind === "text" && <>
                         <select value={curFont} onChange={(e) => setProp("font", e.target.value)} className={`${inputCls} max-w-[190px]`} aria-label="Font">
@@ -1735,12 +1894,12 @@ export default function PDFEditor() {
                           <button className={btn + " !px-3 !py-1.5"} onClick={addDate}><CalendarDays size={14} />Today</button>
                         </div>
                       )}
-                      {kind === "stamp" && <span className="text-xs text-muted">Click a stamp to drop it on the page, then drag it into place.</span>}
+                      {kind === "stamp" && <span className="text-xs text-muted">Click a stamp to drop it on the page, then drag it into place — use the round handle above it to rotate.</span>}
                       {kind === "edittext" && <span className="text-xs text-muted">Click any text on the page to change it (or just double-click it in Select mode). Works on real, selectable text — scanned pages have none. Delete the edit to bring the original back.</span>}
                       {kind === "text" && selA?.cover && <span className="text-xs text-muted">Edited text: the original is covered with the page’s background colour (see “Permanently remove…” when saving).</span>}
                       {kind === "redact" && <span className="text-xs text-warning">Redacted pages are flattened on save so the hidden text is truly removed.</span>}
                       {kind === "whiteout" && <span className="text-xs text-muted">Square eraser: drag a box. It fills with the page’s own background colour automatically — or choose a colour / use the eyedropper. Use Redact to remove text for good.</span>}
-                      {kind === "select" && !selA && <span className="text-xs text-muted"><b>Double-click any text to edit it.</b> Click an item to move, resize (corner handle) or restyle it · arrows nudge · Ctrl+D duplicates · ? for shortcuts.</span>}
+                      {kind === "select" && !selA && <span className="text-xs text-muted"><b>Double-click any text to edit it.</b> Click an item to move, resize (corner handle), rotate (round handle on top) or restyle it · arrows nudge · Ctrl+D duplicates · ? for shortcuts.</span>}
                       {selA && (
                         <div className="ml-auto flex flex-wrap gap-2">
                           <button className={btn} onClick={duplicateAnn} title="Duplicate (Ctrl+D)"><Copy size={14} />Duplicate</button>
@@ -1771,7 +1930,8 @@ export default function PDFEditor() {
                           <button className={btn + " min-w-[64px]"} onClick={() => setZoom(1)} title="Reset zoom">{Math.round(zoom * 100)}%</button>
                           <button className={btn} onClick={() => zoomBy(0.25)} disabled={zoom >= 2.5} aria-label="Zoom in"><ZoomIn size={16} /></button>
                           <span className="mx-1 h-6 w-px bg-border" />
-                          <button className={btn} onClick={() => rotate([editPage.id], 90)}><RotateCw size={15} />Rotate</button>
+                          <button className={btn} onClick={() => rotate([editPage.id], -90)} title="Rotate page left" aria-label="Rotate page left"><RotateCcw size={15} /></button>
+                          <button className={btn} onClick={() => rotate([editPage.id], 90)} title="Rotate page right"><RotateCw size={15} />Rotate page</button>
                         </div>
                       </div>
                     </div>

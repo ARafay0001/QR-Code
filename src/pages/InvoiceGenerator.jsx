@@ -1,21 +1,20 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Receipt, Plus, Trash2, Copy, ArrowUp, ArrowDown, Download, Printer, Save, FilePlus,
-  ImagePlus, Check, Sparkles, Pencil, Loader2, X, Palette, FolderOpen, SlidersHorizontal,
+  ImagePlus, Check, Sparkles, Pencil, Loader2, X, Palette, FolderOpen, LayoutGrid, ListChecks, Send,
+  Percent, Landmark, Truck, Wallet, Timer, AlarmClock, Hash, CreditCard, StickyNote, MessageCircle, Mail,
 } from "lucide-react";
 
-import Navbar from "../components/common/Navbar";
+
 import Footer from "../components/common/Footer";
-import ToolArticle from "../components/common/ToolArticle";
-import ToolFAQ from "../components/common/ToolFAQ";
-import { InvoiceGeneratorArticle as Article, InvoiceGeneratorFAQ as FAQ } from "../data/seoContent.js";
 
 /* ========================================================================== */
 /*  npm i jspdf                                                               */
 /*  100% in-browser: nothing is uploaded. Business details, logo and brand    */
 /*  colour are remembered on this device; saved invoices live in localStorage. */
 /*                                                                            */
-/*  The invoice page IS the editor: click any text and type. Dashed "+"      */
+/*  The invoice page IS the editor, with a floating tool rail on the left.   */
+/*  Click any text and type. Dashed "+"                                      */
 /*  buttons grow the page (discount, tax, deposit, early-payment offer, late  */
 /*  fee, payment details, notes). Plus: "fix it" checklist, amount in words,  */
 /*  PAID / DRAFT / VOID stamps, brand colour from logo, three layouts,        */
@@ -63,7 +62,12 @@ const PAY_CHIPS = [
 const TEMPLATES = [["clean", "Clean"], ["band", "Banner"], ["bold", "Bold"]];
 
 const K_DRAFT = "toolited-invoice-draft", K_PROFILE = "toolited-invoice-profile", K_VAULT = "toolited-invoice-vault";
-const PROFILE_KEYS = ["from", "logo", "currency", "paper", "template", "accent", "taxName", "taxRate", "taxInclusive", "payment", "notes", "showWords", "showBrand", "earlyPct", "earlyDays", "lateFee", "terms"];
+const FONTS = {
+  sans: { css: "Helvetica, Arial, sans-serif", pdf: "helvetica", label: "Sans" },
+  serif: { css: "Georgia, 'Times New Roman', serif", pdf: "times", label: "Serif" },
+  mono: { css: "'Courier New', Courier, monospace", pdf: "courier", label: "Mono" },
+};
+const PROFILE_KEYS = ["font", "from", "logo", "currency", "paper", "template", "accent", "taxName", "taxRate", "taxInclusive", "payment", "notes", "showWords", "showBrand", "earlyPct", "earlyDays", "lateFee", "terms"];
 
 /* ------------------------------- helpers ---------------------------------- */
 
@@ -100,7 +104,7 @@ const blankParty = () => ({ name: "", email: "", phone: "", address: "", taxId: 
 const blank = (p = {}) => {
   const issue = todayISO();
   const o = {
-    id: uid(), title: "Invoice", show: {}, number: "INV-0001", issue, due: addDays(issue, 14), terms: "14", po: "", status: "draft",
+    id: uid(), title: "Invoice", font: "sans", show: {}, number: "INV-0001", issue, due: addDays(issue, 14), terms: "14", po: "", status: "draft",
     currency: "USD", paper: "a4", template: "clean", accent: "#2563eb", stamp: "auto",
     from: blankParty(), logo: null, to: blankParty(), items: [newItem()],
     discType: "percent", discValue: "", taxName: "Tax", taxRate: "", taxInclusive: false, shipping: "", paid: "",
@@ -239,18 +243,18 @@ async function exportPdf(inv, c) {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: inv.paper === "letter" ? "letter" : "a4", compress: true });
   const PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
-  const M = 42, CW = PW - M * 2;
+  const M = 42, CW = PW - M * 2, FF = (FONTS[inv.font] || FONTS.sans).pdf, LIM = PH - 46; // content stops just above the footer line
   const ACC = hexToRgb(inv.accent), INK = hexToRgb(inkOn(inv.accent)), TINT = mixRgb(ACC, [255, 255, 255], 0.9);
   const DARK = [31, 41, 55], MUTED = [107, 114, 128], LINE = [229, 231, 235], WHITE = [255, 255, 255];
   const tpl = inv.template, money = (n) => fmtMoney(n, c.cur), S = pdfSafe, title = inv.title || "Invoice";
 
   const T = (s, x, y, o = {}) => {
-    doc.setFont("helvetica", o.bold ? "bold" : "normal");
+    doc.setFont(FF, o.bold ? "bold" : "normal");
     doc.setFontSize(o.size || 10);
     doc.setTextColor(...(o.color || DARK));
     doc.text(S(s), x, y, o.align ? { align: o.align } : undefined);
   };
-  const wrap = (s, w, size, bold) => { doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setFontSize(size); return doc.splitTextToSize(S(s), w); };
+  const wrap = (s, w, size, bold) => { doc.setFont(FF, bold ? "bold" : "normal"); doc.setFontSize(size); return doc.splitTextToSize(S(s), w); };
   const rect = (x, y, w, h, col, r = 0) => { doc.setFillColor(...col); if (r) doc.roundedRect(x, y, w, h, r, r, "F"); else doc.rect(x, y, w, h, "F"); };
   const hline = (x1, x2, y, col = LINE, w = 0.7) => { doc.setDrawColor(...col); doc.setLineWidth(w); doc.line(x1, y, x2, y); };
   const fit = (maxH, maxW) => {
@@ -332,7 +336,7 @@ async function exportPdf(inv, c) {
   c.rows.forEach((r) => {
     const dl = wrap(r.desc || "Item", descW, 10, true), tl = r.detail ? wrap(r.detail, descW, 8.5, false) : [];
     const rh = 12 + dl.length * 13 + tl.length * 11 + 6;
-    if (y + rh > PH - M - 40) { doc.addPage(); y = M; head(); }
+    if (y + rh > LIM) { doc.addPage(); y = M; head(); }
     let ty = y + 17;
     dl.forEach((l) => { T(l, descX, ty, { size: 10, bold: true }); ty += 13; });
     tl.forEach((l) => { T(l, descX, ty - 1, { size: 8.5, color: MUTED }); ty += 11; });
@@ -346,7 +350,7 @@ async function exportPdf(inv, c) {
   /* totals */
   y += 14;
   const tx = M + CW - 240, tw = 240;
-  if (y + 190 > PH - M - 30) { doc.addPage(); y = M; }
+  if (y + 190 > LIM) { doc.addPage(); y = M; }
   const trow = (label, val, o = {}) => {
     T(label, tx + 8, y + 12, { size: o.size || 10, color: o.color || MUTED, bold: o.bold });
     T(val, tx + tw - 8, y + 12, { size: o.size || 10, bold: o.bold, align: "right" });
@@ -367,7 +371,7 @@ async function exportPdf(inv, c) {
   y += bh + 16;
 
   /* callouts and text blocks */
-  const ensure = (h) => { if (y + h > PH - M - 30) { doc.addPage(); y = M; } };
+  const ensure = (h) => { if (y + h > LIM) { doc.addPage(); y = M; } };
   if (c.early > 0 && c.balance > 0) {
     const days = Math.max(0, Math.round(num(inv.earlyDays)));
     const msg = `Pay within ${days} days (by ${fmtDate(addDays(inv.issue, days))}) and save ${money(c.early)}: pay ${money(c.balance - c.early)} instead of ${money(c.balance)}.`;
@@ -380,7 +384,7 @@ async function exportPdf(inv, c) {
   if (inv.showWords && c.balance > 0) {
     const lines = wrap(`Amount due in words: ${amountWords(c.balance, c.cur)}`, CW, 9, false);
     ensure(lines.length * 12 + 10);
-    lines.forEach((l) => { doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text(l, M, y + 9); y += 12; });
+    lines.forEach((l) => { doc.setFont(FF, "italic"); doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text(l, M, y + 9); y += 12; });
     y += 10;
   }
   const block = (title, text) => {
@@ -406,7 +410,7 @@ async function exportPdf(inv, c) {
   if (st) {
     doc.setPage(1);
     const ang = 18 * (Math.PI / 180), cx = PW / 2, cy = PH * 0.42;
-    doc.setFont("helvetica", "bold"); doc.setFontSize(96);
+    doc.setFont(FF, "bold"); doc.setFontSize(96);
     const w = doc.getTextWidth(st.t);
     doc.saveGraphicsState();
     doc.setGState(new doc.GState({ opacity: 0.13 }));
@@ -530,7 +534,7 @@ function Paper({ inv, c }) {
 
   return (
     <div id="invoice-paper" style={{
-      width: W, minHeight: H, background: "#fff", color: "#1f2937", fontFamily: "Helvetica, Arial, sans-serif", fontSize: 13, lineHeight: 1.35,
+      width: W, minHeight: H, background: "#fff", color: "#1f2937", fontFamily: (FONTS[inv.font] || FONTS.sans).css, fontSize: 13, lineHeight: 1.35,
       position: "relative", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden",
       WebkitPrintColorAdjust: "exact", printColorAdjust: "exact",
     }}>
@@ -609,7 +613,6 @@ const card = "rounded-2xl border border-border bg-surface/60 backdrop-blur-xl";
 const btn = "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 py-2 text-sm font-semibold text-text transition hover:border-muted disabled:opacity-40";
 const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-accent px-4 py-2 text-sm font-semibold text-text shadow-[0_0_24px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100";
 const iconBtn = "rounded-lg border border-border p-1.5 text-muted transition hover:text-text disabled:opacity-30";
-const selCls = "rounded-xl border border-border bg-surface/70 px-3 py-2 text-sm font-semibold text-text outline-none focus:border-brand/60";
 
 const Chip = ({ on, onClick, children }) => (
   <button type="button" onClick={onClick} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${on ? "border-brand bg-brand/15 text-text" : "border-border text-text hover:border-muted"}`}>{children}</button>
@@ -629,6 +632,12 @@ select.inv-ed option{color:#111827;background:#fff}
 .inv-tools{opacity:0;pointer-events:none;transition:opacity .15s}
 .inv-row:hover>.inv-tools,.inv-row:focus-within>.inv-tools{opacity:1;pointer-events:auto}
 @media (hover:none){.inv-tools{opacity:1;pointer-events:auto}}
+@media (min-width:1024px){
+  .inv-desktop-rail{left:clamp(24px,5vw,80px)}
+  .inv-desktop-panel{left:calc(clamp(24px,5vw,80px) + 88px)}
+  .inv-content-rail{padding-left:calc(clamp(24px,5vw,80px) + 88px)}
+  .inv-content-panel{padding-left:calc(clamp(24px,5vw,80px) + 436px)}
+}
 .inv-mini{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:24px;min-width:24px;padding:0 6px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:11px;font-weight:600;cursor:pointer}
 .inv-mini:hover{color:#111827;border-color:#9ca3af}
 .inv-mini:disabled{opacity:.35;cursor:default}
@@ -781,7 +790,7 @@ function EditablePaper({ inv, c, api }) {
   const wordsOn = inv.showWords && c.balance > 0;
 
   return (
-    <div className="relative mx-auto w-full overflow-hidden bg-white shadow-2xl md:min-h-[1000px]" style={{ maxWidth: W, color: "#1f2937", fontFamily: "Helvetica, Arial, sans-serif", fontSize: 13, lineHeight: 1.35, "--acc": acc }}>
+    <div className="relative mx-auto w-full overflow-hidden bg-white shadow-2xl md:min-h-[1000px]" style={{ maxWidth: W, color: "#1f2937", fontFamily: (FONTS[inv.font] || FONTS.sans).css, fontSize: 13, lineHeight: 1.35, "--acc": acc }}>
       <input ref={fileRef} hidden type="file" accept="image/*" onChange={(e) => { api.onLogo(e.target.files[0]); e.target.value = ""; }} />
       {stamp && (
         <div className="pointer-events-none absolute left-0 right-0 z-[2] text-center" style={{ top: "34%", transform: "rotate(-18deg)" }}>
@@ -978,10 +987,10 @@ function EditablePaper({ inv, c, api }) {
   );
 }
 
-function Ring({ pct, color }) {
+function Ring({ pct, color, size = 40 }) {
   const r = 22, C = 2 * Math.PI * r;
   return (
-    <svg width="40" height="40" viewBox="0 0 56 56" className="shrink-0" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 56 56" className="shrink-0" aria-hidden="true">
       <circle cx="28" cy="28" r={r} fill="none" stroke="currentColor" strokeOpacity=".15" strokeWidth="6" />
       <circle cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(C * pct) / 100} ${C}`} transform="rotate(-90 28 28)" />
       <text x="28" y="33" textAnchor="middle" fontSize="16" fontWeight="700" fill="currentColor">{pct}</text>
@@ -1004,6 +1013,80 @@ function TemplateThumb({ id, acc }) {
   );
 }
 
+/* ---------------------------- the left tool rail --------------------------- */
+
+const BLOCKS = [
+  ["discount", "Discount", "Percent or fixed amount off", Percent],
+  ["tax", "Tax", "VAT, GST or sales tax", Landmark],
+  ["shipping", "Shipping or fees", "Extra charges on top", Truck],
+  ["paid", "Deposit paid", "Takes off what is already paid", Wallet],
+  ["early", "Early-payment offer", "Reward clients who pay fast", Timer],
+  ["late", "Late fee", "Monthly fee on overdue balances", AlarmClock],
+  ["po", "PO number", "A reference from your client", Hash],
+  ["payment", "Payment details", "Bank, wallet or payment link", CreditCard],
+  ["notes", "Notes", "A thank-you or extra terms", StickyNote],
+];
+const RAIL = [["design", "Design", Palette], ["blocks", "Blocks", LayoutGrid], ["check", "Check", ListChecks], ["send", "Send", Send], ["saved", "Saved", FolderOpen]];
+const PANEL_TITLE = { design: "Design", blocks: "Blocks", check: "Ready to send?", send: "Send it", saved: "Saved invoices" };
+const quickCls = "flex h-10 items-center justify-center rounded-xl text-muted transition hover:bg-text/5 hover:text-text disabled:opacity-40";
+
+function RailBtn({ label, Icon, active, badge, onClick }) {
+  return (
+    <button type="button" onClick={onClick} aria-pressed={active} aria-label={label}
+      className={`relative flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10.5px] font-semibold transition ${active ? "bg-brand/15 text-brand" : "text-muted hover:bg-text/5 hover:text-text"}`}>
+      <Icon size={21} />
+      <span>{label}</span>
+      {badge && <span className={`absolute right-1 top-0.5 min-w-[17px] rounded-full px-1 text-center text-[9.5px] font-bold leading-[17px] ${badge.cls}`}>{badge.text}</span>}
+    </button>
+  );
+}
+
+/* desktop: a floating rail with a slide-out panel. phones: a bottom bar with a bottom sheet. */
+function RailShell({ tool, setTool, badges, quick, onPdf, busy, panel }) {
+  const toggle = (id) => setTool(tool === id ? null : id);
+  return (
+    <>
+      <nav aria-label="Invoice tools" className="inv-desktop-rail fixed top-34  z-40 hidden max-h-[calc(100vh-7rem)] w-[76px] flex-col gap-1 overflow-y-auto rounded-2xl border border-border bg-surface/90 p-2 shadow-xl backdrop-blur-xl lg:flex">
+        {RAIL.map(([id, label, Icon]) => <RailBtn key={id} label={label} Icon={Icon} active={tool === id} badge={badges[id]} onClick={() => toggle(id)} />)}
+        <div className="my-1 h-px bg-border" />
+        {quick}
+      </nav>
+
+      {tool && (
+        <>
+          <div className="fixed inset-0 z-30 bg-page/50 lg:hidden" onClick={() => setTool(null)} aria-hidden="true" />
+          <aside role="dialog" aria-label={PANEL_TITLE[tool]}
+            className="inv-desktop-panel fixed inset-x-2 bottom-[76px] z-40 max-h-[65vh] overflow-y-auto rounded-2xl border border-border bg-surface shadow-2xl lg:inset-x-auto lg:bottom-auto lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:w-[340px]">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface px-4 py-3">
+              <h2 className="text-sm font-bold">{PANEL_TITLE[tool]}</h2>
+              <button type="button" onClick={() => setTool(null)} className={iconBtn} aria-label="Close panel"><X size={15} /></button>
+            </div>
+            <div className="p-4">{panel}</div>
+          </aside>
+        </>
+      )}
+
+      <nav aria-label="Invoice tools" className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around gap-1 border-t border-border bg-surface/95 px-2 py-1.5 backdrop-blur-xl lg:hidden">
+        {RAIL.map(([id, label, Icon]) => <RailBtn key={id} label={label} Icon={Icon} active={tool === id} badge={badges[id]} onClick={() => toggle(id)} />)}
+        <button type="button" onClick={onPdf} disabled={busy} aria-label="Download PDF" className="flex flex-col items-center gap-1 rounded-xl bg-gradient-to-r from-brand to-accent px-3 py-2 text-[10.5px] font-bold text-text disabled:opacity-40">
+          {busy ? <Loader2 size={21} className="animate-spin" /> : <Download size={21} />}<span>PDF</span>
+        </button>
+      </nav>
+    </>
+  );
+}
+
+function buildMessage(inv, c) {
+  const who = inv.to.name.trim().split(/\s+/)[0] || "there";
+  const me = inv.from.name.trim();
+  const days = Math.max(0, Math.round(num(inv.earlyDays)));
+  let m = `Hi ${who},\n\nHere is ${(inv.title || "invoice").toLowerCase()} ${inv.number} for ${fmtMoney(c.balance > 0 ? c.balance : c.total, c.cur)}${inv.po ? ` (ref ${inv.po})` : ""}, due ${fmtDate(inv.due)}.`;
+  if (c.early > 0 && c.balance > 0) m += `\nPay by ${fmtDate(addDays(inv.issue, days))} and save ${fmtMoney(c.early, c.cur)}.`;
+  if (inv.payment.trim()) m += `\n\nHow to pay:\n${inv.payment.trim()}`;
+  m += me ? `\n\nThank you,\n${me}` : "\n\nThank you!";
+  return m;
+}
+
 /* ================================== PAGE ================================== */
 
 export default function InvoiceGenerator() {
@@ -1012,8 +1095,8 @@ export default function InvoiceGenerator() {
     return d ? { ...blank(), ...d, show: d.show || {}, items: d.items?.length ? d.items : [newItem()] } : blank(LS.get(K_PROFILE, {}));
   });
   const [vault, setVault] = useState(() => LS.get(K_VAULT, []));
-  const [tray, setTray] = useState(null); // null | "style" | "check"
-  const [vaultOpen, setVaultOpen] = useState(false);
+  const [tool, setTool] = useState(null); // null | design | blocks | check | send | saved
+  const [msgEdit, setMsgEdit] = useState(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
   const toastRef = useRef(null);
@@ -1027,12 +1110,15 @@ export default function InvoiceGenerator() {
     const t = setTimeout(() => { LS.set(K_DRAFT, inv); LS.set(K_PROFILE, pickProfile(inv)); }, 400);
     return () => clearTimeout(t);
   }, [inv]);
+  const saveRef = useRef(null);
   useEffect(() => {
-    if (!vaultOpen) return undefined;
-    const onKey = (e) => { if (e.key === "Escape") setVaultOpen(false); };
+    const onKey = (e) => {
+      if (e.key === "Escape") setTool(null);
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); saveRef.current?.(); }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [vaultOpen]);
+  }, []);
 
   const flash = (m) => { setToast(m); clearTimeout(toastRef.current); toastRef.current = setTimeout(() => setToast(""), 2600); };
 
@@ -1082,21 +1168,21 @@ export default function InvoiceGenerator() {
   const newInvoice = () => {
     if (hasContent) saveToVault(inv, true);
     setInv(blank({ ...pickProfile(inv), number: bump(inv.number) }));
-    setTray(null);
+    setTool(null);
     flash(hasContent ? "Saved the last invoice and started a new one" : "Started a new invoice");
     window.scrollTo?.({ top: 0, behavior: "smooth" });
   };
   const openEntry = (e) => {
     if (e.id !== inv.id && hasContent) saveToVault(inv, true);
     setInv({ ...blank(), ...e.inv, show: e.inv.show || {}, logo: inv.logo });
-    setVaultOpen(false);
+    if (window.innerWidth < 1024) setTool(null);
     window.scrollTo?.({ top: 0, behavior: "smooth" });
   };
   const dupEntry = (e) => {
     const n = { ...blank(), ...e.inv, show: { ...(e.inv.show || {}), paid: false }, id: uid(), number: bump(e.inv.number), issue: todayISO(), paid: "", status: "draft", logo: inv.logo };
     n.due = n.terms === "custom" ? addDays(n.issue, 14) : addDays(n.issue, +n.terms);
     setInv(n);
-    setVaultOpen(false);
+    if (window.innerWidth < 1024) setTool(null);
     flash(`Copied as ${n.number}`);
   };
   const markPaid = (e) => {
@@ -1113,7 +1199,7 @@ export default function InvoiceGenerator() {
     finally { setBusy(false); }
   };
   const doPrint = async () => { if (!(await printInvoice(inv, c))) flash("Allow pop-ups for this site to print."); };
-  const fix = (t) => { if (t.addon) addon(t.addon); else focusId(t.id); setTray(null); };
+  const fix = (t) => { if (t.addon) addon(t.addon); else focusId(t.id); if (window.innerWidth < 1024) setTool(null); };
 
   const outstanding = useMemo(() => {
     const m = {};
@@ -1121,9 +1207,209 @@ export default function InvoiceGenerator() {
     return Object.entries(m);
   }, [vault]);
 
+  saveRef.current = () => saveToVault(inv);
   const api = { set, setParty, setItem, moveItem, dupItem, delItem, addItem, enterOnItem, pickTerms, setIssue, addon, removeAddon, onLogo };
   const ringColor = h.score >= 90 ? "#16a34a" : h.score >= 60 ? "#d97706" : "#dc2626";
   const ringLabel = h.score >= 90 ? "Ready to send" : h.score >= 60 ? "Almost there" : "Needs details";
+
+  /* ---------------------------------- panels ------------------------------- */
+
+  const closeOnPhone = () => { if (window.innerWidth < 1024) setTool(null); };
+  const money = (n) => fmtMoney(n, c.cur);
+  const msg = msgEdit ?? buildMessage(inv, c);
+  const copyMsg = async () => {
+    try { await navigator.clipboard.writeText(msg); flash("Message copied"); } catch { flash("Couldn’t copy. Select the text and copy it."); }
+  };
+  const sendWhatsApp = () => window.open(`https://wa.me/${inv.to.phone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  const sendEmail = () => { window.location.href = `mailto:${encodeURIComponent(inv.to.email.trim())}?subject=${encodeURIComponent(`${inv.title || "Invoice"} ${inv.number} from ${inv.from.name || "me"}`)}&body=${encodeURIComponent(msg)}`; };
+
+  const totalDays = Math.max(1, daysBetween(inv.issue, inv.due));
+  const elapsed = clamp(daysBetween(inv.issue, todayISO()), 0, totalDays);
+  const left = daysBetween(todayISO(), inv.due);
+  const pulse = status === "paid" ? "Paid in full" : left > 0 ? `Due in ${left} day${left === 1 ? "" : "s"}` : left === 0 ? "Due today" : `${-left} day${left === -1 ? "" : "s"} overdue`;
+  const lateNow = status !== "paid" && left < 0;
+
+  const lab = "mb-2 text-xs font-medium text-muted";
+  const designPanel = (
+    <div className="space-y-5">
+      <div>
+        <p className={lab}>Layout</p>
+        <div className="flex flex-wrap gap-2.5">
+          {TEMPLATES.map(([id, l]) => (
+            <button key={id} type="button" onClick={() => set({ template: id })} aria-pressed={inv.template === id}
+              className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 transition ${inv.template === id ? "border-brand bg-brand/10" : "border-border hover:border-muted"}`}>
+              <TemplateThumb id={id} acc={inv.accent} /><span className="text-xs font-medium">{l}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className={lab}>Brand colour</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {ACCENTS.map((a) => (
+            <button key={a} type="button" onClick={() => set({ accent: a })} aria-label={`Use colour ${a}`} aria-pressed={inv.accent === a}
+              className={`h-8 w-8 rounded-full border-2 transition ${inv.accent === a ? "scale-110 border-text" : "border-transparent"}`} style={{ background: a }} />
+          ))}
+          <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted hover:text-text">
+            <Palette size={14} />Custom<input type="color" value={inv.accent} onChange={(e) => set({ accent: e.target.value })} className="sr-only" />
+          </label>
+        </div>
+        {inv.logo && <button type="button" onClick={brandFromLogo} className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted hover:text-text"><Sparkles size={14} />Match my logo</button>}
+      </div>
+      <div>
+        <p className={lab}>Typeface</p>
+        <div className="flex gap-2">
+          {Object.entries(FONTS).map(([k, f]) => (
+            <button key={k} type="button" onClick={() => set({ font: k })} aria-pressed={inv.font === k}
+              className={`rounded-xl border px-4 py-2 text-sm transition ${inv.font === k ? "border-brand bg-brand/10" : "border-border hover:border-muted"}`} style={{ fontFamily: f.css }}>
+              <span className="text-lg font-bold">Aa</span> <span className="text-xs">{f.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className={lab}>Stamp</p>
+        <div className="flex flex-wrap gap-2">{[["auto", "Automatic"], ["none", "None"], ["paid", "Paid"], ["draft", "Draft"], ["void", "Void"]].map(([v, l]) => <Chip key={v} on={inv.stamp === v} onClick={() => set({ stamp: v })}>{l}</Chip>)}</div>
+        <p className="mt-1 text-xs text-muted">Automatic adds “Paid” once the balance reaches zero.</p>
+      </div>
+      <div>
+        <p className={lab}>Paper</p>
+        <div className="flex gap-2"><Chip on={inv.paper === "a4"} onClick={() => set({ paper: "a4" })}>A4</Chip><Chip on={inv.paper === "letter"} onClick={() => set({ paper: "letter" })}>US Letter</Chip></div>
+      </div>
+      <div className="space-y-2 border-t border-border pt-4">
+        <label className="flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={inv.showWords} onChange={(e) => set({ showWords: e.target.checked })} className="h-4 w-4 accent-brand" />Show the amount due in words</label>
+        <label className="flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={inv.showBrand} onChange={(e) => set({ showBrand: e.target.checked })} className="h-4 w-4 accent-brand" />Show “Created with Toolited” in the footer</label>
+      </div>
+    </div>
+  );
+
+  const blocksPanel = (
+    <div className="space-y-2">
+      <p className="text-xs text-muted">Switch parts of the invoice on or off. Each one appears on the page where you can type into it.</p>
+      {BLOCKS.map(([k, label, desc, Icon]) => {
+        const on = isShown(inv, k);
+        return (
+          <button key={k} type="button" aria-pressed={on} onClick={() => { if (on) removeAddon(k); else { addon(k); closeOnPhone(); } }}
+            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${on ? "border-brand/50 bg-brand/10" : "border-border hover:border-muted"}`}>
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${on ? "bg-brand/20 text-brand" : "bg-text/5 text-muted"}`}><Icon size={17} /></span>
+            <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{label}</span><span className="block text-xs text-muted">{desc}</span></span>
+            <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${on ? "bg-brand" : "bg-text/15"}`}><span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${on ? "left-[18px]" : "left-0.5"}`} /></span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const checkPanel = (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Ring pct={h.score} color={ringColor} size={64} />
+        <div><p className="font-semibold">{ringLabel}</p><p className="text-xs text-muted">{h.todo.length ? `${h.todo.length} thing${h.todo.length === 1 ? "" : "s"} to check before you send it` : "Everything a client needs to pay is on this invoice."}</p></div>
+      </div>
+      {h.todo.length > 0 && (
+        <ul className="space-y-2">
+          {h.todo.map((t) => (
+            <li key={t.msg} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-page/40 px-3 py-2 text-sm">
+              <span>{t.msg}</span>
+              <button type="button" onClick={() => fix(t)} className="shrink-0 rounded-lg bg-brand/15 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-brand/25">Take me there</button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  const sendPanel = (
+    <div className="space-y-5">
+      <div className="rounded-xl border border-border bg-page/40 p-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm font-semibold">{money(c.balance > 0 ? c.balance : c.total)}</span>
+          <span className={`text-xs font-semibold ${lateNow ? "text-danger" : status === "paid" ? "text-success" : "text-muted"}`}>{pulse}</span>
+        </div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-text/10"><div className={`h-full rounded-full ${lateNow ? "bg-danger" : status === "paid" ? "bg-success" : "bg-brand"}`} style={{ width: `${status === "paid" ? 100 : Math.round((elapsed / totalDays) * 100)}%` }} /></div>
+        <div className="mt-1 flex justify-between text-[11px] text-muted"><span>Issued {fmtDate(inv.issue)}</span><span>Due {fmtDate(inv.due)}</span></div>
+      </div>
+      <div>
+        <p className={lab}>Status</p>
+        <div className="flex flex-wrap gap-2">
+          <Chip on={inv.status === "draft"} onClick={() => setStatus("draft")}>Draft</Chip>
+          <Chip on={inv.status === "sent"} onClick={() => setStatus("sent")}>Sent</Chip>
+          <Chip on={inv.status === "paid"} onClick={() => setStatus("paid")}>Paid in full</Chip>
+        </div>
+      </div>
+      <div>
+        <div className="mb-2 flex items-center justify-between"><p className="text-xs font-medium text-muted">Message to your client</p>{msgEdit !== null && <button type="button" onClick={() => setMsgEdit(null)} className="text-xs font-medium text-brand hover:underline">Reset</button>}</div>
+        <textarea rows={9} value={msg} onChange={(e) => setMsgEdit(e.target.value)} className="w-full resize-y rounded-xl border border-border bg-page/60 px-3 py-2 text-sm text-text outline-none focus:border-brand/60" />
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" className={btn} onClick={copyMsg}><Copy size={15} />Copy</button>
+          <button type="button" className={btn} onClick={sendWhatsApp}><MessageCircle size={15} />WhatsApp</button>
+          <button type="button" className={btn} onClick={sendEmail}><Mail size={15} />Email</button>
+        </div>
+        <p className="mt-2 text-xs text-muted">Download the PDF first, then attach it. The message fills itself from your invoice.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 border-t border-border pt-4">
+        <button type="button" className={btnPrimary} onClick={doPdf} disabled={busy}>{busy ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}PDF</button>
+        <button type="button" className={btn} onClick={doPrint}><Printer size={16} />Print</button>
+        <button type="button" className={btn} onClick={() => saveToVault(inv)}><Save size={16} />Save</button>
+        <button type="button" className={btn} onClick={newInvoice}><FilePlus size={16} />New</button>
+      </div>
+    </div>
+  );
+
+  const savedPanel = (
+    <div className="space-y-4">
+      <p className="text-xs text-muted">Stored in this browser only. Clearing site data removes them. Ctrl+S saves the invoice you are editing.</p>
+      {outstanding.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">Waiting to be paid:</span>
+          {outstanding.map(([code, amt]) => <span key={code} className="rounded-full bg-brand/15 px-3 py-0.5 font-semibold text-brand">{fmtMoney(amt, curOf(code))}</span>)}
+        </div>
+      )}
+      {vault.length === 0 ? (
+        <p className="text-sm text-muted">Nothing saved yet. Press Save to keep this invoice, or start a new one and the current one is saved for you.</p>
+      ) : (
+        <ul className="space-y-2">
+          {vault.map((e) => {
+            const cc = calc(e.inv), st = statusOf(e.inv, cc), late = st === "overdue" ? daysBetween(e.inv.due, todayISO()) : 0;
+            return (
+              <li key={e.id} className="space-y-2 rounded-xl border border-border bg-page/40 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{e.inv.number || "Untitled"} {e.inv.to.name && <span className="font-normal text-muted">for {e.inv.to.name}</span>}</p>
+                    <p className="text-xs text-muted">{fmtMoney(cc.total, cc.cur)}, due {fmtDate(e.inv.due)}{late ? `, ${late} day${late === 1 ? "" : "s"} late` : ""}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLS[st]}`}>{STATUS_LABEL[st]}</span>
+                </div>
+                <div className="flex gap-1">
+                  <button type="button" className={iconBtn} onClick={() => openEntry(e)} aria-label="Open invoice"><Pencil size={15} /></button>
+                  <button type="button" className={iconBtn} onClick={() => dupEntry(e)} aria-label="Copy as new invoice"><Copy size={15} /></button>
+                  <button type="button" className={iconBtn} onClick={() => markPaid(e)} disabled={st === "paid"} aria-label="Mark as paid"><Check size={15} /></button>
+                  <button type="button" className={iconBtn} onClick={() => delEntry(e)} aria-label="Delete invoice"><Trash2 size={15} /></button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+
+  const panel = { design: designPanel, blocks: blocksPanel, check: checkPanel, send: sendPanel, saved: savedPanel }[tool] || null;
+  const badges = {
+    check: { text: h.score, cls: h.score >= 90 ? "bg-success text-white" : h.score >= 60 ? "bg-warning text-white" : "bg-danger text-white" },
+    saved: vault.length ? { text: vault.length, cls: "bg-brand text-white" } : null,
+  };
+  const quick = (
+    <>
+      <button type="button" title="Save (Ctrl+S)" aria-label="Save invoice" onClick={() => saveToVault(inv)} className={quickCls}><Save size={18} /></button>
+      <button type="button" title="New invoice" aria-label="New invoice" onClick={newInvoice} className={quickCls}><FilePlus size={18} /></button>
+      <button type="button" title="Print or save as PDF" aria-label="Print" onClick={doPrint} className={quickCls}><Printer size={18} /></button>
+      <button type="button" title="Download PDF" aria-label="Download PDF" onClick={doPdf} disabled={busy}
+        className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand to-accent text-xs font-bold text-text shadow-[0_0_20px_color-mix(in_srgb,var(--theme-brand)_30%,transparent)] transition hover:scale-[1.03] disabled:opacity-40">
+        {busy ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}PDF
+      </button>
+    </>
+  );
 
   /* ---------------------------------- JSX --------------------------------- */
 
@@ -1135,159 +1421,33 @@ export default function InvoiceGenerator() {
         <div className="absolute top-1/2 -right-32 h-[500px] w-[500px] rounded-full bg-accent/15 blur-[180px]" />
       </div>
 
-      {/* overflow-x: clip (not hidden) so the dock below can stay sticky */}
       <div className="min-h-screen bg-gradient-to-br from-page via-surface to-page text-text" style={{ overflowX: "clip" }}>
-        {/* <Navbar /> */}
+     
 
-        <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-          <div className="mx-auto max-w-[794px]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand"><Receipt size={15} />Invoice generator</span>
-            <h1 className="mt-4 text-4xl font-black sm:text-5xl">Type straight onto your invoice.</h1>
-            <p className="mt-3 text-muted">This page is the invoice. Click any text to edit it, and use the dashed buttons to add discounts, tax, deposits, late fees and notes. Nothing leaves your device.</p>
-          </div>
-
-          {/* dock (sticky). Change top-20 if your navbar is taller or shorter */}
-          <div className="sticky top-20 z-30 mx-auto mt-6 max-w-[794px]">
-            <div className={`${card} flex flex-wrap items-center gap-2 p-2 shadow-lg sm:p-2.5`}>
-              <button type="button" className={btn} onClick={() => setTray(tray === "style" ? null : "style")} aria-expanded={tray === "style"}><SlidersHorizontal size={16} />Style</button>
-              <select aria-label="Invoice status" value={inv.status} onChange={(e) => setStatus(e.target.value)} className={selCls}>
-                <option value="draft">Draft</option><option value="sent">Sent</option><option value="paid">Paid in full</option>
-              </select>
-              <button type="button" onClick={() => setTray(tray === "check" ? null : "check")} aria-expanded={tray === "check"} className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-2.5 py-1 text-left transition hover:border-muted">
-                <Ring pct={h.score} color={ringColor} />
-                <span className="hidden text-xs leading-tight sm:block"><span className="block font-semibold">{ringLabel}</span><span className="text-muted">{h.todo.length ? `${h.todo.length} to check` : "All set"}</span></span>
-              </button>
-              <div className="ml-auto flex flex-wrap items-center gap-2">
-                <button type="button" className={btn} onClick={() => setVaultOpen(true)}><FolderOpen size={16} /><span className="hidden sm:inline">Saved</span>{vault.length > 0 && <span className="rounded-full bg-brand/15 px-1.5 text-xs text-brand">{vault.length}</span>}</button>
-                <button type="button" className={btn} onClick={() => saveToVault(inv)}><Save size={16} /><span className="hidden sm:inline">Save</span></button>
-                <button type="button" className={btn} onClick={newInvoice}><FilePlus size={16} /><span className="hidden sm:inline">New</span></button>
-                <button type="button" className={btn} onClick={doPrint}><Printer size={16} /><span className="hidden sm:inline">Print</span></button>
-                <button type="button" className={btnPrimary} onClick={doPdf} disabled={busy}>{busy ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}PDF</button>
-              </div>
+        {/* the left padding makes room for the rail (and its open panel), so the page never hides behind them */}
+        <div className={`transition-[padding] duration-200 ${tool ? "inv-content-panel" : "inv-content-rail"}`}>
+          <main className="mx-automax-w-5xl px-4 py-6 pb-28 sm:px-6 lg:pb-10">
+            <div className="mx-auto max-w-[794px]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-sm font-medium text-brand"><Receipt size={15} />Invoice generator</span>
+              <h1 className="mt-4 text-4xl font-black sm:text-5xl">Type straight onto your invoice.</h1>
+              <p className="mt-3 text-muted">This page is the invoice. Click any text to edit it, and use the tools on the left for design, blocks, a readiness check and sending. Nothing leaves your device.</p>
             </div>
 
-            {tray === "style" && (
-              <div className={`${card} mt-2 max-h-[65vh] space-y-5 overflow-y-auto p-4 shadow-lg`}>
-                <div>
-                  <p className="mb-2 text-xs font-medium text-muted">Layout</p>
-                  <div className="flex flex-wrap gap-3">
-                    {TEMPLATES.map(([id, l]) => (
-                      <button key={id} type="button" onClick={() => set({ template: id })} aria-pressed={inv.template === id}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 transition ${inv.template === id ? "border-brand bg-brand/10" : "border-border hover:border-muted"}`}>
-                        <TemplateThumb id={id} acc={inv.accent} /><span className="text-xs font-medium">{l}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-2 text-xs font-medium text-muted">Brand colour</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {ACCENTS.map((a) => (
-                      <button key={a} type="button" onClick={() => set({ accent: a })} aria-label={`Use colour ${a}`} aria-pressed={inv.accent === a}
-                        className={`h-8 w-8 rounded-full border-2 transition ${inv.accent === a ? "scale-110 border-text" : "border-transparent"}`} style={{ background: a }} />
-                    ))}
-                    <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted hover:text-text">
-                      <Palette size={14} />Custom<input type="color" value={inv.accent} onChange={(e) => set({ accent: e.target.value })} className="sr-only" />
-                    </label>
-                    {inv.logo && <button type="button" onClick={brandFromLogo} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted hover:text-text"><Sparkles size={14} />Match my logo</button>}
-                  </div>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-2 text-xs font-medium text-muted">Stamp</p>
-                    <div className="flex flex-wrap gap-2">{[["auto", "Automatic"], ["none", "None"], ["paid", "Paid"], ["draft", "Draft"], ["void", "Void"]].map(([v, l]) => <Chip key={v} on={inv.stamp === v} onClick={() => set({ stamp: v })}>{l}</Chip>)}</div>
-                    <p className="mt-1 text-xs text-muted">Automatic adds “Paid” once the balance reaches zero.</p>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-xs font-medium text-muted">Paper</p>
-                    <div className="flex gap-2"><Chip on={inv.paper === "a4"} onClick={() => set({ paper: "a4" })}>A4</Chip><Chip on={inv.paper === "letter"} onClick={() => set({ paper: "letter" })}>US Letter</Chip></div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={inv.showWords} onChange={(e) => set({ showWords: e.target.checked })} className="h-4 w-4 accent-brand" />Show the amount due in words</label>
-                  <label className="flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={inv.showBrand} onChange={(e) => set({ showBrand: e.target.checked })} className="h-4 w-4 accent-brand" />Show “Created with Toolited” in the footer</label>
-                </div>
-              </div>
+            {nonLatin && (
+              <p className="mx-auto mt-4 max-w-[794px] rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+                Some of your text uses characters the PDF download can’t draw, such as Urdu or Arabic. Press Print and choose Save as PDF in the print window to keep every character.
+              </p>
             )}
 
-            {tray === "check" && (
-              <div className={`${card} mt-2 max-h-[65vh] overflow-y-auto p-4 shadow-lg`}>
-                <p className="text-sm font-semibold">{h.todo.length ? "Before you send it" : "Everything a client needs to pay is on this invoice."}</p>
-                {h.todo.length > 0 && (
-                  <ul className="mt-3 space-y-2">
-                    {h.todo.map((t) => (
-                      <li key={t.msg} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-page/40 px-3 py-2 text-sm">
-                        <span>{t.msg}</span>
-                        <button type="button" onClick={() => fix(t)} className="shrink-0 rounded-lg bg-brand/15 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-brand/25">Take me there</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
+            <div className="mt-6"><EditablePaper inv={inv} c={c} api={api} /></div>
+            <p className="mx-auto mt-4 max-w-[794px] text-center text-xs text-muted">Press Enter in a description to jump to the next line item. Hover a row to move, copy or delete it. Ctrl+S saves.</p>
+          </main>
+        </div>
 
-          {nonLatin && (
-            <p className="mx-auto mt-3 max-w-[794px] rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-              Some of your text uses characters the PDF download can’t draw, such as Urdu or Arabic. Press Print and choose Save as PDF in the print window to keep every character.
-            </p>
-          )}
+        <RailShell tool={tool} setTool={setTool} badges={badges} quick={quick} onPdf={doPdf} busy={busy} panel={panel} />
 
-          <div className="mt-5">
-            <EditablePaper inv={inv} c={c} api={api} />
-          </div>
-          <p className="mx-auto mt-4 max-w-[794px] text-center text-xs text-muted">Tip: press Enter in a description to jump to the next line item. Hover a row to move, copy or delete it.</p>
-        </main>
+        {toast && <div role="status" className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium shadow-xl lg:bottom-5">{toast}</div>}
 
-        {/* saved invoices */}
-        {vaultOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-page/70 p-4 backdrop-blur-sm" onClick={() => setVaultOpen(false)}>
-            <div role="dialog" aria-modal="true" aria-label="Saved invoices" onClick={(e) => e.stopPropagation()} className={`${card} max-h-[85vh] w-full max-w-xl space-y-4 overflow-y-auto bg-surface p-5 shadow-2xl`}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-bold">Saved invoices</h2>
-                  <p className="text-xs text-muted">Stored in this browser only. Clearing site data removes them.</p>
-                </div>
-                <button type="button" className={iconBtn} onClick={() => setVaultOpen(false)} aria-label="Close"><X size={16} /></button>
-              </div>
-              {outstanding.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-muted">Waiting to be paid:</span>
-                  {outstanding.map(([code, amt]) => <span key={code} className="rounded-full bg-brand/15 px-3 py-0.5 font-semibold text-brand">{fmtMoney(amt, curOf(code))}</span>)}
-                </div>
-              )}
-              {vault.length === 0 ? (
-                <p className="text-sm text-muted">Nothing saved yet. Press Save to keep this invoice, or start a new one and the current one is saved for you.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {vault.map((e) => {
-                    const cc = calc(e.inv), st = statusOf(e.inv, cc), late = st === "overdue" ? daysBetween(e.inv.due, todayISO()) : 0;
-                    return (
-                      <li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-page/40 p-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold">{e.inv.number || "Untitled"} {e.inv.to.name && <span className="font-normal text-muted">for {e.inv.to.name}</span>}</p>
-                          <p className="text-xs text-muted">{fmtMoney(cc.total, cc.cur)}, due {fmtDate(e.inv.due)}{late ? `, ${late} day${late === 1 ? "" : "s"} late` : ""}</p>
-                        </div>
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLS[st]}`}>{STATUS_LABEL[st]}</span>
-                        <div className="flex gap-1">
-                          <button type="button" className={iconBtn} onClick={() => openEntry(e)} aria-label="Open invoice"><Pencil size={15} /></button>
-                          <button type="button" className={iconBtn} onClick={() => dupEntry(e)} aria-label="Copy as new invoice"><Copy size={15} /></button>
-                          <button type="button" className={iconBtn} onClick={() => markPaid(e)} disabled={st === "paid"} aria-label="Mark as paid"><Check size={15} /></button>
-                          <button type="button" className={iconBtn} onClick={() => delEntry(e)} aria-label="Delete invoice"><Trash2 size={15} /></button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </div>
-        )}
-
-        {toast && <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium shadow-xl">{toast}</div>}
-
-        <ToolArticle {...Article} />
-        <ToolFAQ faqs={FAQ} />
         <Footer />
       </div>
     </>

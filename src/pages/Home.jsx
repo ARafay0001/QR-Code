@@ -362,33 +362,44 @@ const features = [
 
 const faqs = [
   {
-    question: "Is Toolited free to use?",
+    question: "What free online tools can I use on Toolited?",
     answer:
-      "Yes. Our core tools are completely free to use with no sign-up required.",
+      "Toolited brings together online PDF and image tools, a QR code generator, an invoice generator, unit and currency converters, calculators, text tools, and more. Browse the tool categories or search by task to find the right tool.",
   },
   {
-    question: "Do I need to create an account?",
-    answer: "No. Most Toolited tools work instantly without requiring an account.",
+    question: "Are Toolited's online tools free, and do I need an account?",
+    answer:
+      "Toolited's core tools are free to use, and you can get started without creating an account. Open a tool, follow its on-page instructions, and check its individual limits or requirements for your task.",
   },
   {
-    question: "Can I use generated QR codes commercially?",
+    question: "What can I put in a QR code with the free QR code generator?",
     answer:
-      "Absolutely. QR codes generated with Toolited can be used for both personal and commercial projects.",
+      "Create QR codes for website links, plain text, email, phone numbers, SMS, WhatsApp, Wi-Fi, or locations. You can customize the design and download the generated code. Test a downloaded QR code with a phone camera before sharing or printing it.",
   },
   {
-    question: "Are my files stored on your servers?",
+    question: "Can I create an invoice online and download it as a PDF?",
     answer:
-      "We prioritize user privacy. Whenever possible, processing happens directly in your browser. If a tool requires server-side processing, it will be clearly stated.",
+      "Yes. Use the online invoice generator to add line items, taxes, discounts, payment terms, and other invoice details, then download a PDF. Invoice details are stored in your browser on your device.",
   },
   {
-    question: "What tools are coming next?",
+    question: "Are files uploaded or stored when I use an online tool?",
     answer:
-      "We're working on an AI Resume Builder and many more useful online tools. Check back often.",
+      "File handling depends on the tool: some processing happens in your browser, while other features may rely on an online service. Check the specific tool's instructions before using it, especially with sensitive files. Invoice data is saved in your browser on your device.",
   },
   {
-    question: "Which file formats do you support?",
+    question: "Which file formats do Toolited's PDF and image tools support?",
     answer:
-      "Depending on the tool, we support formats such as PNG, SVG, PDF, JPG, and WebP.",
+      "Supported formats vary by tool and task. Image tools include workflows for formats such as JPG, PNG, and WebP, while PDF tools work with PDF documents and offer selected conversions. Check the tool page for its accepted input and download formats.",
+  },
+  {
+    question: "Can I use Toolited on a phone or tablet?",
+    answer:
+      "Yes. Toolited pages are designed to work in a mobile or desktop browser, so you can use many tools without installing an app. File processing speed and available memory can depend on your device and the size of the file.",
+  },
+  {
+    question: "How do I find the right tool for my task?",
+    answer:
+      "Search the tool directory using a task such as compressing an image, editing a PDF, converting a unit, or creating a QR code. You can also browse by category and open a tool to see its steps and requirements.",
   },
 ];
 
@@ -800,7 +811,7 @@ function CTA() {
             <h2 className="text-3xl font-black tracking-tight text-text sm:text-4xl md:text-5xl">
               Ready to create something amazing?
             </h2>
-            <p className="mt-5 text-base leading-7 text-brand sm:text-lg sm:leading-8">
+            <p className="mt-5 text-base text-black leading-7 sm:text-lg sm:leading-8">
               Generate QR codes in seconds and explore a growing collection of
               fast, modern, privacy-focused online tools.
             </p>
@@ -882,7 +893,7 @@ export default function Home() {
         <ToolFAQ
           id="faq"
           faqs={faqs}
-          description="Everything you need to know before using Toolited."
+          description="Answers about Toolited's free online tools, QR codes, invoices, file formats, privacy, and using tools on mobile."
           className="py-20 sm:py-28"
         />
         <CTA />

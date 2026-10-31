@@ -117,7 +117,7 @@ export default function ProductCard({
   };
 
   const base =
-    "group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface/60 p-6 backdrop-blur-xl transition-all duration-300 motion-reduce:transition-none sm:p-7";
+    "group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-page p-4 backdrop-blur-xl transition-all duration-300 motion-reduce:transition-none lg:p-5";
 
   const interactive = `${a.border} hover:bg-surface/80 hover:shadow-[0_20px_60px_rgba(0,0,0,.35)] active:scale-[0.99] sm:hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60`;
 
@@ -148,17 +148,17 @@ export default function ProductCard({
         className={`absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-60 ${a.text}`}
       />
 
-      <div className="relative z-10 flex h-full flex-col">
+      <div className="relative z-10 flex h-full min-w-0 flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 motion-reduce:transform-none sm:h-14 sm:w-14 ${a.bg} ${a.text} ${a.ring}`}
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 motion-reduce:transform-none sm:h-12 sm:w-12 ${a.bg} ${a.text} ${a.ring}`}
           >
-            <Icon size={24} className="sm:size-7" />
+            <Icon size={20} className="sm:size-6" />
           </div>
 
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:text-xs ${s.pill}`}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:text-xs ${s.pill}`}
           >
             <span className="relative flex h-1.5 w-1.5">
               {s.pulse && (
@@ -173,31 +173,31 @@ export default function ProductCard({
         </div>
 
         {/* Title + description */}
-        <h3 className="mt-6 text-xl font-bold tracking-tight text-text sm:text-2xl">
+        <h3 className="mt-3 text-lg font-bold leading-snug tracking-tight text-text sm:mt-4 sm:text-xl">
           {title}
         </h3>
 
-        <p className="mt-2.5 line-clamp-3 text-[14px] leading-6 text-muted sm:text-[15px]">
+        <p className="mt-1.5 text-[13px] leading-5 tracking-[0.005em] text-muted sm:mt-2 sm:text-sm sm:leading-5">
           {description}
         </p>
 
         {/* Feature chips */}
         {features.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2">
+          <ul className="mt-3 flex flex-wrap gap-x-2 gap-y-1.5 sm:mt-4">
             {features.slice(0, 4).map((feature) => (
               <li
                 key={feature}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs text-text ${a.chip}`}
+                className={`inline-flex max-w-full items-center gap-1.5 break-words rounded-full border px-2 py-0.5 text-xs leading-5 text-text ${a.chip}`}
               >
-                <Check size={12} className={a.text} />
+                <Check size={12} className={`shrink-0 ${a.text}`} />
                 {feature}
               </li>
             ))}
           </ul>
         )}
-
+        
         {/* Footer */}
-        <div className="mt-auto flex items-center justify-end border-t border-border/80 pt-5 sm:mt-auto">
+        <div className="mt-auto flex items-center justify-end border-t border-border/80 pt-3 sm:pt-4">
           {isLive ? (
             <>
               {/* <span className="text-sm font-semibold text-text transition-colors group-hover:text-text">
