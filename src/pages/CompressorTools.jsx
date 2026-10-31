@@ -33,9 +33,9 @@ export default function MediaTools() {
         <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-brand/10 blur-[120px]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-16">
+        <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16">
           {/* Heading */}
-          <h1 className="text-center text-5xl font-black tracking-tight">
+          <h1 className="text-center text-4xl font-black tracking-tight sm:text-5xl">
             Media Tools
           </h1>
 
@@ -45,7 +45,7 @@ export default function MediaTools() {
           </p>
 
           {/* Tools Grid */}
-          <div className="mt-16 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:mt-16 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
             {tools.map((tool) => {
               return (
                 <ToolSubCard key={tool.title} {...tool} />

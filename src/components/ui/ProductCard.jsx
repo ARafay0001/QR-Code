@@ -1,75 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Check } from "lucide-react";
-
-/* -------------------------------------------------------------------------- */
-/*  Accent palette (full class names so Tailwind can detect them)            */
-/* -------------------------------------------------------------------------- */
-
-const ACCENTS = {
-  blue: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  violet: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  emerald: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  cyan: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  pink: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  red: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-  amber: {
-    text: "text-brand",
-    bg: "bg-brand/10",
-    ring: "ring-brand/20",
-    border: "hover:border-accent/40",
-    chip: "border-brand/15 bg-brand/5",
-    btn: "group-hover:bg-accent group-hover:border-accent",
-    glow: "color-mix(in srgb, var(--theme-brand) 16%, transparent)",
-  },
-};
+import { ArrowRight } from "lucide-react";
 
 const STATUS = {
   live: {
@@ -103,27 +33,19 @@ export default function ProductCard({
   status = "live",
   href,
   features = [],
-  accent = "blue",
 }) {
-  const a = ACCENTS[accent] || ACCENTS.blue;
   const s = STATUS[status] || STATUS.live;
   const isLive = status === "live" || status === "beta";
 
-  // Cursor-following spotlight
-  const handleMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
-  };
-
   const base =
-    "group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-page p-4 backdrop-blur-xl transition-all duration-300 motion-reduce:transition-none lg:p-5";
+    "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-border/70 bg-page p-4 backdrop-blur transition-all duration-300 motion-reduce:transition-none lg:p-5";
 
-  const interactive = `${a.border} hover:bg-surface/80 hover:shadow-[0_20px_60px_rgba(0,0,0,.35)] active:scale-[0.99] sm:hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60`;
+  const interactive =
+    "hover:-translate-y-2 hover:border-accent hover:shadow-[0_0_35px_color-mix(in_srgb,var(--theme-brand)_15%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60";
 
   const Wrapper = isLive ? Link : "div";
   const wrapperProps = isLive
-    ? { to: href, onMouseMove: handleMove, "aria-label": `Open ${title}` }
+    ? { to: href, "aria-label": `Open ${title}` }
     : { "aria-disabled": true };
 
   return (
@@ -131,30 +53,20 @@ export default function ProductCard({
       {...wrapperProps}
       className={`${base} ${isLive ? interactive : "opacity-70"}`}
     >
-      {/* Spotlight */}
       {isLive && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            background: `radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), ${a.glow}, transparent 70%)`,
-          }}
+          className="absolute inset-0 bg-gradient-to-br from-brand/0 via-brand/0 to-accent/0 transition-all duration-500 group-hover:from-brand/5 group-hover:to-accent/10"
         />
       )}
 
-      {/* Top accent line */}
-      <div
-        aria-hidden="true"
-        className={`absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-60 ${a.text}`}
-      />
-
-      <div className="relative z-10 flex h-full min-w-0 flex-col">
+      <div className="relative flex h-full min-w-0 flex-col">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div
-            className={`flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 motion-reduce:transform-none sm:h-12 sm:w-12 ${a.bg} ${a.text} ${a.ring}`}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-accent shadow-lg"
           >
-            <Icon size={20} className="sm:size-6" />
+            <Icon className="h-6 w-6 text-text" />
           </div>
 
           <span
@@ -173,23 +85,22 @@ export default function ProductCard({
         </div>
 
         {/* Title + description */}
-        <h3 className="mt-3 text-lg font-bold leading-snug tracking-tight text-text sm:mt-4 sm:text-xl">
+        <h3 className="mt-4 break-words text-lg font-bold leading-snug sm:text-xl">
           {title}
         </h3>
 
-        <p className="mt-1.5 text-[13px] leading-5 tracking-[0.005em] text-muted sm:mt-2 sm:text-sm sm:leading-5">
+        <p className="mt-1.5 break-words text-[13px] leading-5 text-muted sm:text-sm">
           {description}
         </p>
 
         {/* Feature chips */}
         {features.length > 0 && (
-          <ul className="mt-3 flex flex-wrap gap-x-2 gap-y-1.5 sm:mt-4">
+          <ul className="mt-3 flex flex-wrap gap-2">
             {features.slice(0, 4).map((feature) => (
               <li
                 key={feature}
-                className={`inline-flex max-w-full items-center gap-1.5 break-words rounded-full border px-2 py-0.5 text-xs leading-5 text-text ${a.chip}`}
+                className="max-w-full break-words rounded-full border border-border bg-surface/70 px-2.5 py-1 text-xs font-medium leading-5 text-text"
               >
-                <Check size={12} className={`shrink-0 ${a.text}`} />
                 {feature}
               </li>
             ))}
@@ -197,20 +108,11 @@ export default function ProductCard({
         )}
         
         {/* Footer */}
-        <div className="mt-auto flex items-center justify-end border-t border-border/80 pt-3 sm:pt-4">
+        <div className="mt-auto flex items-center gap-2 pt-5 font-semibold text-brand">
           {isLive ? (
             <>
-              {/* <span className="text-sm font-semibold text-text transition-colors group-hover:text-text">
-                Open tool
-              </span> */}
-              <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/80 text-text transition-all duration-300 group-hover:text-text ${a.btn}`}
-              >
-                <ArrowUpRight
-                  size={17}
-                  className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </span>
+              Open Tool
+              <ArrowRight className="h-5 w-5 shrink-0 transition-transform duration-300 group-hover:translate-x-2" />
             </>
           ) : (
             <span className="text-sm text-muted">Available soon</span>
